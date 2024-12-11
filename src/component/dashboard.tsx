@@ -1,11 +1,15 @@
 import React from "react";
+import LayoutProject from "../layout/layoutProject";
 
-const Dashboard: React.FC = () => {
+
+const DashboardProject: React.FC = () => {
     return (
         <div>
+            <LayoutProject>
             <h1>Dashboard</h1>
+            </LayoutProject>
         </div>
     );
 };
 
-export default Dashboard;
+export default DashboardProject;
