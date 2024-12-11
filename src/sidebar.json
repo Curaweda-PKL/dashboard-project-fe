@@ -1,0 +1,32 @@
+[
+    {
+      "name": "Dashboard",
+      "path": "/dashboard",
+      "icon": "FaHome",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      }
+    },
+    {
+      "name": "Team",
+      "path": "/team",
+      "icon": "FaUser"
+    },
+    {
+      "name": "Messages",
+      "path": "/messages",
+      "icon": "FaCommentDots"
+    },
+    {
+      "name": "Calendar",
+      "path": "/calendar",
+      "icon": "FaCalendarAlt"
+    },
+    {
+      "name": "Settings",
+      "path": "/settings",
+      "icon": "FaCog"
+    }
+  ]
+  
