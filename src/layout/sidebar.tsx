@@ -21,17 +21,18 @@ const Sidebar: React.FC = () => {
         width: "250px",
         backgroundColor: "#fff",
         color: "#000",
-        height: "100vh", // Full viewport height
-        padding: "70px 0 20px", // Header height plus some padding
+        height: "100vh",
+        padding: "100px 0",
         display: "flex",
         flexDirection: "column",
-        position: "fixed", // Fixed to the left side
+        position: "fixed",
         left: 0,
-        top: 0, // Header height
-        borderRight: "1px solid #ddd",
-        overflowY: "auto", // Scroll if needed
+        top: 0,
+        overflow: "hidden",
+        borderRight: "3px solid #ddd",
       }}
     >
+     
       <nav>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {menuItems.map((item, index) => (
@@ -61,5 +62,4 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
-
 
