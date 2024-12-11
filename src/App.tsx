@@ -1,29 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css'
-import DashboardProject from './component/dashboard';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import LayoutProject from "./layout/layoutProject";
+import Dashboard from "./component/dashboard";
 
-const Dashboard = () => <div>Dashboard Page</div>;
-const Team = () => <div>Team Page</div>;
-const Messages = () => <div>Messages Page</div>;
-const Calendar = () => <div>Calendar Page</div>;
-const Settings = () => <div>Settings Page</div>;
-
-const App = () => {
-
+const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<DashboardProject />} >
-          <Route index element={<Dashboard />} />
-          <Route path="team" element={<Team />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
+      <LayoutProject>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+        </Routes>
+      </LayoutProject>
     </Router>
-  )
-}
+  );
+};
 
 export default App;
-

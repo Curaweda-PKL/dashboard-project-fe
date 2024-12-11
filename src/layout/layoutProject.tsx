@@ -1,46 +1,21 @@
+// LayoutProject.tsx
 import React from "react";
 import Sidebar from "./sidebar";
+import Header from "./header";
 
-type Props = {
-  children?: React.ReactNode;
-};
-
-const LayoutProject: React.FC<Props> = ({ children }) => {
+const LayoutProject: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh", // Full viewport height
-        width: "100vw",
-        overflow: "hidden", // Prevent horizontal scroll and overflow
-        position: "relative", // Prevent any overflow issues
-      }}
-    >
+    <div className="h-screen grid grid-cols-[250px_1fr] grid-rows-[auto_1fr]">
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
-      <div
-        style={{
-          marginLeft: "250px", // Sidebar width (fixed)
-          flex: 1,
-          backgroundColor: "#f5f5f5",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "auto", // Ensure scrolling in main content if it overflows
-        }}
-      >
-        {/* Main Section */}
-        <main
-          style={{
-            padding: "20px",
-            flex: 1,
-            overflowY: "auto", // Allow vertical scrolling if content overflows
-          }}
-        >
-          {children}
-        </main>
-      </div>
+      {/* Header */}
+      <Header />
+
+      {/* Page Content */}
+      <main className="p-6 bg-white overflow-y-auto">
+        {children}
+      </main>
     </div>
   );
 };

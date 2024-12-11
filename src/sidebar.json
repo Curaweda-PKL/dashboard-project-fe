@@ -11,22 +11,38 @@
     {
       "name": "Team",
       "path": "/team",
-      "icon": "FaUser"
+      "icon": "FaUser",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      }
     },
     {
       "name": "Messages",
       "path": "/messages",
-      "icon": "FaCommentDots"
+      "icon": "FaCommentDots",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      }
     },
     {
       "name": "Calendar",
       "path": "/calendar",
-      "icon": "FaCalendarAlt"
+      "icon": "FaCalendarAlt",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      }
     },
     {
       "name": "Settings",
       "path": "/settings",
-      "icon": "FaCog"
+      "icon": "FaCog",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      }
     }
   ]
   

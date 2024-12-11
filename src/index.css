@@ -1,3 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -66,3 +71,29 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+.flex {
+  display: flex;
+}
+.flex-1 {
+  flex: 1;
+}
+.h-screen {
+  height: 100vh;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+
+
+
