@@ -1,6 +1,5 @@
 import React from "react";
 import Sidebar from "./sidebar";
-import DashboardHeader from "./dashboardHeader";
 
 type Props = {
   children?: React.ReactNode;
@@ -11,10 +10,10 @@ const LayoutProject: React.FC<Props> = ({ children }) => {
     <div
       style={{
         display: "flex",
-        height: "100vh",
+        height: "100vh", // Full viewport height
         width: "100vw",
-        overflow: "hidden", // Menghilangkan scroll horizontal
-        overflowX: "hidden",
+        overflow: "hidden", // Prevent horizontal scroll and overflow
+        position: "relative", // Prevent any overflow issues
       }}
     >
       {/* Sidebar */}
@@ -23,22 +22,28 @@ const LayoutProject: React.FC<Props> = ({ children }) => {
       {/* Main Content */}
       <div
         style={{
-          marginLeft: "250px",
+          marginLeft: "250px", // Sidebar width (fixed)
           flex: 1,
           backgroundColor: "#f5f5f5",
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
+          overflowY: "auto", // Ensure scrolling in main content if it overflows
         }}
       >
-        {/* Header */}
-        <DashboardHeader />
-
         {/* Main Section */}
-        <main style={{ padding: "20px", flex: 1, overflow: "auto" }}>{children}</main>
+        <main
+          style={{
+            padding: "20px",
+            flex: 1,
+            overflowY: "auto", // Allow vertical scrolling if content overflows
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
 };
 
 export default LayoutProject;
+
