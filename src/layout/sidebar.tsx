@@ -21,19 +21,17 @@ const Sidebar: React.FC = () => {
         width: "250px",
         backgroundColor: "#fff",
         color: "#000",
-        height: "100vh",
-        padding: "20px 0",
+        height: "100vh", // Full viewport height
+        padding: "70px 0 20px", // Header height plus some padding
         display: "flex",
         flexDirection: "column",
-        position: "fixed",
+        position: "fixed", // Fixed to the left side
         left: 0,
-        top: 0,
-        overflow: "hidden",
+        top: 0, // Header height
+        borderRight: "1px solid #ddd",
+        overflowY: "auto", // Scroll if needed
       }}
     >
-      <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "20px", paddingLeft: "20px" }}>
-        Dashboard
-      </h2>
       <nav>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {menuItems.map((item, index) => (
@@ -63,4 +61,5 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
+
 
