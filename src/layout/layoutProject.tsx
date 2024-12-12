@@ -1,24 +1,16 @@
-// LayoutProject.tsx
-import React from "react";
-import Sidebar from "./sidebar";
-import Header from "./header";
-
-const LayoutProject: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+type Props = {
+  children?: React.ReactNode;
+  bgColor?: string;
+};
+const layoutProject: React.FC<Props> = ({ children, bgColor = "bg-white" }) => {
   return (
-    <div className="h-screen grid grid-cols-[250px_1fr] grid-rows-[auto_1fr]">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Header */}
-      <Header />
-
-      {/* Page Content */}
-      <main className="p-6 bg-white overflow-y-auto">
+    <>
+      <div
+        className={`justify-between w-full overflow-x-auto rounded-lg min-h-96 card text-slate-800 ${bgColor}`}
+      >
         {children}
-      </main>
-    </div>
+      </div>
+    </>
   );
 };
-
-export default LayoutProject;
-
+export default layoutProject;

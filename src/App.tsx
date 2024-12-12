@@ -1,18 +1,19 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import LayoutProject from "./layout/layoutProject";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./layout/header";
 import Dashboard from "./component/dashboard";
 
 const App: React.FC = () => {
   return (
     <Router>
-      <LayoutProject>
-        <Routes>
+      <Routes>
+        <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
-        </Routes>
-      </LayoutProject>
+        </Route>
+      </Routes>
     </Router>
   );
 };
 
 export default App;
+
