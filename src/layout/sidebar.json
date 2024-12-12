@@ -1,7 +1,7 @@
 [
     {
       "name": "Dashboard",
-      "path": "/dashboard",
+      "path": "/",
       "icon": "FaHome",
       "style": {
         "backgroundColor": "green",
