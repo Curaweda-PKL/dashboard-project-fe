@@ -1,7 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./layout/header";
-import Dashboard from "./component/dashboard";
+import Dashboard from "./pages/dashboard";
+import TeamTable from "./pages/Team";
 
 const App: React.FC = () => {
   return (
@@ -9,6 +10,7 @@ const App: React.FC = () => {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/team" element={<TeamTable />} />
         </Route>
       </Routes>
     </Router>

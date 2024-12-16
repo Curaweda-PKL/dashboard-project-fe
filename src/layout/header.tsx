@@ -6,7 +6,6 @@ import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
 import { HiMail } from "react-icons/hi";
-import { BsFilterLeft } from "react-icons/bs";
 
 // Types for better type safety
 interface SidebarLink {
@@ -25,9 +24,9 @@ const Layout = () => {
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
 
   const toggleSubmenu = (name: string) => {
-    setOpenSubmenus(prevState => ({
+    setOpenSubmenus((prevState) => ({
       ...prevState,
-      [name]: !prevState[name]
+      [name]: !prevState[name],
     }));
   };
 
@@ -37,7 +36,7 @@ const Layout = () => {
 
     return (
       <li key={link.name} className="flex flex-col text-lg">
-        <div 
+        <div
           className={`flex items-center justify-between cursor-pointer p-2 rounded ${
             isOpen ? "bg-white text-black shadow-md" : ""
           }`}
@@ -55,10 +54,10 @@ const Layout = () => {
               <span>{link.name}</span>
             )}
           </div>
-          
+
           {link.children && (
-            <MdExpandMore 
-              className={`transition-transform ${isOpen ? "rotate-180" : ""}`} 
+            <MdExpandMore
+              className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
             />
           )}
         </div>
@@ -66,15 +65,15 @@ const Layout = () => {
         {link.children && isOpen && (
           <ul className="ml-4 mt-2">
             {link.children
-              .filter(subLink => location.pathname.includes(subLink.path || ''))
-              .map(subLink => (
+              .filter((subLink) => location.pathname.includes(subLink.path || ""))
+              .map((subLink) => (
                 <li key={subLink.path} className="my-1">
                   <NavLink
-                    to={subLink.path || ''}
+                    to={subLink.path || ""}
                     className={({ isActive }) =>
                       `block p-1 rounded ${
-                        isActive 
-                          ? "text-[#76A8D8BF] font-semibold bg-green-700" 
+                        isActive
+                          ? "text-[#76A8D8BF] font-semibold bg-green-700"
                           : "text-black hover:bg-green-600"
                       }`
                     }
@@ -93,16 +92,17 @@ const Layout = () => {
     <div className="h-screen drawer lg:drawer-open">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
-      <div className="drawer-content flex flex-col bg-[#F0F0F0F0] h-screen">
+      {/* Main Content */}
+      <div className="drawer-content flex flex-col bg-white h-screen">
         {/* Navbar */}
         <div className="mx-4 mt-4">
-          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800">
+          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
             {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
                 htmlFor="my-drawer-3"
                 aria-label="open sidebar"
-                className="btn btn-square btn-ghost bg-green-600 hover:bg-green-700"
+                className="btn btn-square btn-ghost bg-green-600 hover:bg-green-700 transition-none"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -120,39 +120,29 @@ const Layout = () => {
               </label>
             </div>
 
+            <div className="flex items-center justify-start">
+              <div className="text-2xl font-bold mr-8">Dashboard</div>
+            </div>
+
             {/* User Profile and Notifications */}
             <div className="ml-auto">
               <div className="flex items-center justify-center">
                 <div className="indicator mr-8">
                   <button>
-                  <IoNotificationsSharp
-                    size={30}
-                    className="text-2xl font-bold"
-                  />
-                  <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
-                     99+
-                  </span>
+                    <IoNotificationsSharp size={30} className="text-2xl font-bold" />
+                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
+                      99+
+                    </span>
                   </button>
                 </div>
 
                 <div className="indicator mr-8">
                   <button>
-                  <HiMail
-                    size={30}
-                    className="text-2xl font-bold"
-                  />
-                 <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-amber-600">
-                     99+
-                  </span>
+                    <HiMail size={30} className="text-2xl font-bold" />
+                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-amber-600">
+                      99+
+                    </span>
                   </button>
-                </div>
-
-                <div className="indicator mr-3">
-                  <button>
-                <BsFilterLeft
-                size={30}
-                className="text-2xl font-bold" />
-                </button>
                 </div>
 
                 <details className="dropdown dropdown-end">
@@ -167,25 +157,25 @@ const Layout = () => {
                       </div>
                     </div>
                     <div className="text-right mr-4">
-                  <p className="text-sm font-semibold lg:text-base">John Doe</p>
-                  <p className="text-xs">axyz@gmail</p>
-                </div>
+                      <p className="text-sm font-semibold lg:text-base">
+                        Mochammad Faith
+                      </p>
+                      <p className="text-xs">axyz@gmail</p>
+                    </div>
                   </summary>
-                  
                 </details>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex flex-col m-4 overflow-y-auto">
           <Outlet />
         </div>
       </div>
 
       {/* Sidebar */}
-      <div className="h-screen drawer-side">
+      <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
           <li className="text-center font-bold text-xl mb-10"></li>
@@ -197,4 +187,5 @@ const Layout = () => {
 };
 
 export default Layout;
+
 
