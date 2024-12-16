@@ -10,7 +10,7 @@ const Dashboard = () => {
 
   return (
     <LayoutProject>
-      <div className="bg-white shadow-md rounded-lg p-6">
+      <div className="bg-white shadow-md rounded-lg p-6 border border-gray-300">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-4xl font-bold">Projects</h2>
@@ -51,3 +51,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
