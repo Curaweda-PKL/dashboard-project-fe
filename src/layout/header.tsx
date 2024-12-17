@@ -1,13 +1,12 @@
 import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
 import { HiMail } from "react-icons/hi";
 
-// Types for better type safety
 interface SidebarLink {
   name: string;
   path?: string;
@@ -15,7 +14,6 @@ interface SidebarLink {
   children?: SidebarLink[];
 }
 
-// Import iconMap more explicitly
 import iconMap from "./iconMap";
 import sidebarLinks from "../layout/sidebar.json";
 
@@ -23,15 +21,15 @@ const Layout = () => {
   const location = useLocation();
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
 
-  const toggleSubmenu = (name: string) => {
+  const toggleSubmenu = useCallback((name: string) => {
     setOpenSubmenus((prevState) => ({
       ...prevState,
       [name]: !prevState[name],
     }));
-  };
+  }, []);
 
-  const renderSubLinks = (link: SidebarLink) => {
-    const isOpen = openSubmenus[link.name];
+  const renderSubLinks = useCallback((link: SidebarLink) => {
+    const isOpen = !!openSubmenus[link.name];
     const IconComponent = iconMap[link.icon];
 
     return (
@@ -86,18 +84,15 @@ const Layout = () => {
         )}
       </li>
     );
-  };
+  }, [openSubmenus, toggleSubmenu, location.pathname]);
 
   return (
     <div className="h-screen drawer lg:drawer-open">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
-      {/* Main Content */}
       <div className="drawer-content flex flex-col bg-white h-screen">
-        {/* Navbar */}
         <div className="mx-4 mt-4">
           <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
-            {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
                 htmlFor="my-drawer-3"
@@ -124,7 +119,6 @@ const Layout = () => {
               <div className="text-2xl font-bold mr-8">Dashboard</div>
             </div>
 
-            {/* User Profile and Notifications */}
             <div className="ml-auto">
               <div className="flex items-center justify-center">
                 <div className="indicator mr-8">
@@ -174,7 +168,6 @@ const Layout = () => {
         </div>
       </div>
 
-      {/* Sidebar */}
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
@@ -187,5 +180,4 @@ const Layout = () => {
 };
 
 export default Layout;
-
 
