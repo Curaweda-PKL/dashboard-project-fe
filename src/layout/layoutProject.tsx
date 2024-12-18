@@ -6,7 +6,7 @@ const layoutProject: React.FC<Props> = ({ children, bgColor = "bg-white" }) => {
   return (
     <>
       <div
-        className={`justify-between w-full overflow-x-auto rounded-lg  text-slate-800 ${bgColor}`}
+        className={` text-black ${bgColor}`}
       >
         {children}
       </div>

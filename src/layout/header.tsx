@@ -93,6 +93,7 @@ const Layout = () => {
       <div className="drawer-content flex flex-col bg-white h-screen">
         <div className="mx-4 mt-4">
           <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
+            {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
                 htmlFor="my-drawer-3"
@@ -116,7 +117,7 @@ const Layout = () => {
             </div>
 
             <div className="flex items-center justify-start">
-              <div className="text-2xl font-bold mr-8">Dashboard</div>
+              <div className="text-5xl font-bold mr-8">Dashboard</div>
             </div>
 
             <div className="ml-auto">
