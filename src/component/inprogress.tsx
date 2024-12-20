@@ -22,7 +22,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => (
   <div className="card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl">
     {/* Duration */}
-    <p className="text-sm text-black mb-2 text-center">{duration}</p>
+    <p className="text-lg text-black mb-2 text-center">{duration}</p>
 
     {/* Title */}
     <h2 className="font-bold text-2xl mb-1 text-center">{title}</h2>
@@ -37,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <div
           className="absolute top-0 left-0 h-3 rounded-full"
           style={{
-            width: `${progress}%`,
+            width: `${progress}%`, // Correct template string for width
             backgroundColor: endDateColor, // Progress bar sesuai warna badge
           }}
         ></div>
@@ -60,7 +60,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         ))}
         <div
-          className={`flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2`}
+          className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2"
         >
           +
         </div>
@@ -68,7 +68,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* End Date Status */}
       <div
-        className={`text-white font-bold rounded-full px-4 py-2`}
+        className="text-white font-bold rounded-full px-4 py-2"
         style={{ backgroundColor: endDateColor }}
       >
         {endDateStatus}
