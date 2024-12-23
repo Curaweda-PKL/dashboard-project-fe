@@ -51,7 +51,7 @@ const LoginPage: React.FC = () => {
         <div className="text-center">
           <button
             type="submit"
-            className="w-full bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
+            className="w-full bg-[#02CCFF] text-white font-bold py-2 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
           >
             LOGIN
           </button>
