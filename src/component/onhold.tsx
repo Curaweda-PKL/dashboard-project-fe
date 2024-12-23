@@ -3,30 +3,38 @@ import React from "react";
 // ProjectCard Component
 interface ProjectCardProps {
   title: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
   duration: string;
+  endDateStatus: string;
+  endDateColor: string;
   members: string[];
+  reason: string; // Reason prop
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
-  startDate,
-  endDate,
-  reason,
   duration,
+  endDateStatus,
+  endDateColor,
   members,
+  reason, // Destructure reason prop
 }) => (
-  <div className="card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 w-full sm:w-80 border mx-2">
-    <p className="text-lg text-black mb-2 text-center">{`${startDate} - ${endDate}`}</p>
-    <h2 className="font-bold text-2xl mb-2 text-center">{title}</h2>
-    <p className="text-xl text-black mb-4 text-left">
+  <div className="card w-full sm:w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl">
+    {/* Duration */}
+    <p className="text-lg text-black mb-3 text-center">{duration}</p>
+
+    {/* Title */}
+    <h2 className="font-bold text-2xl mb-3 text-center">{title}</h2>
+
+    {/* Reason for Hold */}
+    <p className="text-xl text-black mb-3 text-left">
       <span className="font-bold">Reason for Hold:</span> {reason}
     </p>
+
+    {/* Members and Status */}
     <div className="flex items-center justify-between">
+      {/* Members */}
       <div className="flex">
-        {members.map((member, index) => (
+        {members.slice(0, 2).map((member, index) => (
           <img
             key={index}
             src={member}
@@ -34,43 +42,53 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             className="w-10 h-10 rounded-full -ml-2 border-2 border-white"
           />
         ))}
-        <div className="flex items-center justify-center w-10 h-10 bg-purple-500 text-white rounded-full ml-2">
-          +
-        </div>
+      
+          <div
+            className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2"
+          >
+           +
+          </div>
+      
       </div>
-      <div className="bg-purple-500 text-white text- font-bold rounded-full px-4 py-2">
-        {duration}
+
+      {/* End Date Status */}
+      <div
+        className="text-white font-bold rounded-full px-4 py-2"
+        style={{ backgroundColor: endDateColor }}
+      >
+        {endDateStatus}
       </div>
     </div>
   </div>
 );
 
+// Main Component
 const Onhold = () => {
   const projects = [
     {
-      title: "Web Development",
-      startDate: "January 10, 2024",
-      endDate: "July 30, 2024",
-      reason:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      duration: "On Hold for 5 Days",
+      title: "TourO Web Development",
+      duration: "January 10, 2024 - July 30,2024",
+      endDateStatus: "On Hold For 5 Days",
+      endDateColor: "#E53935", // Red
       members: [
         "https://randomuser.me/api/portraits/men/1.jpg",
         "https://randomuser.me/api/portraits/women/2.jpg",
       ],
+      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", // Reason for hold
     },
     {
       title: "Dashboard Portal",
-      startDate: "February 12, 2024",
-      endDate: "August 12, 2024",
-      reason:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      duration: "On Hold for 1 Week",
+      duration: "February 12, 2024 - August 12,2024 ",
+      endDateStatus: "On Hold For 1 Weeks",
+      endDateColor: "#FB8C00", // Orange
       members: [
-        "https://randomuser.me/api/portraits/women/3.jpg",
-        "https://randomuser.me/api/portraits/men/4.jpg",
+        "https://randomuser.me/api/portraits/men/3.jpg",
+        "https://randomuser.me/api/portraits/women/4.jpg",
+        
       ],
+      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", // Reason for hold
     },
+
   ];
 
   return (
@@ -85,4 +103,4 @@ const Onhold = () => {
   );
 };
 
-export default Onhold;
+export default Onhold ;
