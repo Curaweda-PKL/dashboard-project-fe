@@ -32,7 +32,7 @@ const Setting: React.FC = () => {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <div className="w-1/4 bg-gray-300 p-4">
+      <div className="w-1/4 bg-[#D9D9D9] p-4">
         {/* Search bar */}
         <div className="relative mb-4">
           <FaSearch className="absolute left-3 top-2 text-gray-500 w-5 h-5" />
@@ -69,7 +69,7 @@ const Setting: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 bg-gray-100 p-8">
+      <div className="flex-1 bg-[#F5F5F5] p-8">
         <Outlet />
         {isLogOutPopupVisible && <LogOut onClose={() => navigate("/settings")} />} {/* Pass prop */}
       </div>

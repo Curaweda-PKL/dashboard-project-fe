@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import LayoutProject from "../layout/layoutProject";
 import UpcomingProjects from "../component/upcomming";
 import Onhold from "../component/onhold";

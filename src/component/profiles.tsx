@@ -129,7 +129,7 @@ const Profiles: React.FC = () => {
               {/* Area Upload */}
               <label
                 htmlFor="file-upload"
-                className="flex items-center justify-center w-[300px] h-[300px] bg-gray-300 rounded-lg mx-auto cursor-pointer hover:bg-gray-400 relative"
+                className="flex items-center justify-center w-[300px] h-[300px] bg-[#D9D9D9] rounded-lg mx-auto cursor-pointer hover:bg-gray-400 relative"
               >
                 <CiImageOn className="h-32 w-32 text-gray-500" />
 
@@ -152,7 +152,7 @@ const Profiles: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-4">
                 <button
                   onClick={() => setIsPopupVisible(false)}
-                  className="px-9 py-3 bg-gray-300 hover:bg-gray-400 text-black rounded-full text-lg"
+                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full text-lg"
                 >
                   Cancel
                 </button>
