@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./layout/header";
 import Dashboard from "./pages/dashboard";
 import TeamTable from "./pages/Team";
+import Messages from "./pages/Messages";
+import MessagesDetail from "./component/messagesDetail";
 import LoginPage from "./pages/auth/loginPage";
 import LoginLayout from "./layout/layoutLogin";
 import NotFound from "./pages/notFound";
@@ -24,6 +26,10 @@ const App: React.FC = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/team" element={<TeamTable />} />
+
+          {/* Route Messages */}
+          <Route path="/messages" element={<Messages />} />
+           <Route path="/messages/:id" element={<MessagesDetail />} /> {/* Route Messages Detail */}
 
           {/* Route Settings dengan Nested Routes */}
           <Route path="/settings" element={<Setting />}>

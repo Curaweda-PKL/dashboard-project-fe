@@ -33,7 +33,7 @@ const LogOut: React.FC<LogOutProps> = ({ onClose }) => {
           <div className="flex justify-center space-x-20 mb-6">
             <button
               onClick={onClose} // Menutup popup saat Cancel
-              className="px-10 py-3 bg-gray-300 hover:bg-gray-400 text-black rounded-full text-lg"
+              className="px-10 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full text-lg"
             >
               Cancel
             </button>

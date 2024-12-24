@@ -137,7 +137,7 @@ const MyAccount: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsEmailPopupVisible(false)}
-                  className="px-9 py-3 bg-gray-300 hover:bg-gray-400 text-black rounded-full"
+                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full"
                 >
                   Cancel
                 </button>
@@ -191,7 +191,7 @@ const MyAccount: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsPasswordPopupVisible(false)}
-                  className="px-9 py-3 bg-gray-300 hover:bg-gray-400 text-black rounded-full"
+                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full"
                 >
                   Cancel
                 </button>
