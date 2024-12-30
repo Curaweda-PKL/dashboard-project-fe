@@ -7,8 +7,9 @@ interface LoginLayoutProps {
 
 const LoginLayout: React.FC<LoginLayoutProps> = ({ children }) => {
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div className="flex h-screen w-screen bg-white overflow-hidden">
+      {/* Wrapper untuk konten layout */}
+      <div className="flex w-full h-full">
         {children || <Outlet />}
       </div>
     </div>
