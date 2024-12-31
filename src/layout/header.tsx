@@ -1,7 +1,7 @@
 import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
@@ -20,6 +20,16 @@ import sidebarLinks from "../layout/sidebar.json";
 const Layout = () => {
   const location = useLocation();
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setOpenSubmenus((prevState) => ({
+        ...prevState,
+        [location.pathname.split("/")[1]]: true,
+      }));
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [location.pathname]);
 
   const toggleSubmenu = useCallback((name: string) => {
     setOpenSubmenus((prevState) => ({
@@ -55,7 +65,7 @@ const Layout = () => {
 
           {link.children && (
             <MdExpandMore
-              className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`transition-transform duration-0 ${isOpen ? "rotate-180" : ""}`}
             />
           )}
         </div>
@@ -170,7 +180,7 @@ const Layout = () => {
       </div>
 
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
-        <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
+        
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
           <li className="text-center font-bold text-xl mb-10"></li>
           {sidebarLinks.map(renderSubLinks)}
@@ -181,4 +191,6 @@ const Layout = () => {
 };
 
 export default Layout;
+
+
 

@@ -6,7 +6,8 @@
       "style": {
         "backgroundColor": "green",
         "color": "white"
-      }
+      },
+      "instant": true
     },
     {
       "name": "Team",
@@ -15,7 +16,8 @@
       "style": {
         "backgroundColor": "green",
         "color": "white"
-      }
+      },
+      "instant": true
     },
     {
       "name": "Messages",
@@ -24,7 +26,8 @@
       "style": {
         "backgroundColor": "green",
         "color": "white"
-      }
+      },
+      "instant": true
     },
     {
       "name": "Calendar",
@@ -33,7 +36,8 @@
       "style": {
         "backgroundColor": "green",
         "color": "white"
-      }
+      },
+      "instant": true
     },
     {
       "name": "Settings",
@@ -42,7 +46,8 @@
       "style": {
         "backgroundColor": "green",
         "color": "white"
-      }
+      },
+      "instant": true
     }
   ]
-  
+
