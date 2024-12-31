@@ -29,7 +29,7 @@ const App: React.FC = () => {
 
           {/* Route Messages */}
           <Route path="/messages" element={<Messages />} />
-           <Route path="/messages/:id" element={<MessagesDetail />} /> {/* Route Messages Detail */}
+           <Route path="/messages" element={<MessagesDetail />} /> {/* Route Messages Detail */}
 
           {/* Route Settings dengan Nested Routes */}
           <Route path="/settings" element={<Setting />}>
