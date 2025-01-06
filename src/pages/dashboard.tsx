@@ -6,6 +6,32 @@ import InProgress from "../component/inprogress";
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRemoveMode, setIsRemoveMode] = useState(false);
+  const [selectedProjects, setSelectedProjects] = useState<{ [key: string]: string[] }>({
+    inProgress: [],
+    upcoming: [],
+    onHold: [],
+  });
+
+  const handleProjectSelect = (section: string, projectId: string) => {
+    setSelectedProjects((prev) => ({
+      ...prev,
+      [section]: prev[section].includes(projectId)
+        ? prev[section].filter((id) => id !== projectId)
+        : [...prev[section], projectId],
+    }));
+  };
+
+  const handleRemoveProjects = () => {
+    console.log("Removing selected projects:", selectedProjects);
+    setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
+    setIsRemoveMode(false);
+  };
+
+  const handleCancelRemove = () => {
+    setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
+    setIsRemoveMode(false);
+  };
 
   const projectData = [
     { count: 6, label: "In Progress" },
@@ -16,17 +42,13 @@ const Dashboard = () => {
 
   return (
     <LayoutProject>
-      {/* Dashboard Section */}
-      <div className="bg-gray-100 shadow-md  rounded-lg p-6 border border-gray-300 mb-8 sticky top-0 z-10">
-        {/* Header */}
+      <div className="bg-gray-100 shadow-md rounded-lg p-6 border border-gray-300 mb-8 sticky top-0 z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-4xl font-bold">Projects</h2>
           <span className="text-black font-bold text-2xl">22 July 2024</span>
         </div>
 
-        {/* Project Summary with Buttons */}
         <div className="flex items-center justify-between">
-          {/* Project Data */}
           <div className="grid grid-cols-4 gap-40 mb-4">
             {projectData.map((item, index) => (
               <div
@@ -41,41 +63,55 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Buttons Section */}
           <div className="flex flex-col items-end gap-4 ml-8">
             <button
-              className="bg-green-500 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#02CCFF] hover:bg-blue-500 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => setIsModalOpen(true)}
             >
               Add Project
             </button>
-            <button className="bg-teal-700 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full">
-              Remove Project
+            <button
+              className="bg-[#FF0000] hover:bg-red-700 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              onClick={() => {
+                setIsRemoveMode((prev) => !prev);
+                if (isRemoveMode) {
+                  handleCancelRemove(); // Reset state when toggling to remove mode
+                }
+              }}
+            >
+              {isRemoveMode ? "Cancel" : "Remove Project"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* ProjectList Section */}
       <div className="bg-white shadow-md rounded-lg">
-        {/* Removed border-l-2 from this section */}
-        <InProgress />
+        <InProgress
+          isRemoveMode={isRemoveMode}
+          onProjectSelect={(id) => handleProjectSelect("inProgress", id)}
+          selectedProjects={selectedProjects.inProgress}
+        />
       </div>
       <div className="bg-white shadow-md rounded-lg">
-        <UpcomingProjects />
+        <UpcomingProjects
+          isRemoveMode={isRemoveMode}
+          onProjectSelect={(id) => handleProjectSelect("upcoming", id)}
+          selectedProjects={selectedProjects.upcoming}
+        />
       </div>
       <div className="bg-white shadow-md rounded-lg">
-        <Onhold />
+        <Onhold
+          isRemoveMode={isRemoveMode}
+          onProjectSelect={(id) => handleProjectSelect("onHold", id)}
+          selectedProjects={selectedProjects.onHold}
+        />
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex-1 flex justify-center">
-                <h3 className="text-2xl font-bold">Add Project</h3>
-              </div>
+              <h3 className="text-2xl font-bold">Add Project</h3>
               <button
                 className="text-gray-600 hover:text-gray-900"
                 onClick={() => setIsModalOpen(false)}
@@ -123,6 +159,21 @@ const Dashboard = () => {
               </button>
             </form>
           </div>
+        </div>
+      )}
+
+      {isRemoveMode && (
+        <div
+          className="fixed bottom-20 left-1/2 transform -translate-x-1/2"
+          style={{ transition: "transform 0.3s ease-in-out" }}
+        >
+          <button
+            onClick={handleRemoveProjects}
+            className="bg-[#FF0000] hover:bg-red-700 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+            style={{ animation: "slideUp 0.5s ease-out" }}
+          >
+            Remove Project
+          </button>
         </div>
       )}
     </LayoutProject>
