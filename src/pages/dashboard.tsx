@@ -3,6 +3,7 @@ import LayoutProject from "../layout/layoutProject";
 import UpcomingProjects from "../component/upcomming";
 import Onhold from "../component/onhold";
 import InProgress from "../component/inprogress";
+import Swal from "sweetalert2";
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +27,25 @@ const Dashboard = () => {
     console.log("Removing selected projects:", selectedProjects);
     setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
     setIsRemoveMode(false);
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+
+    Toast.fire({
+      icon: "success",
+      title: "Project has been removed",
+      background: "rgb(0, 208, 255)", // Warna biru untuk background
+      color: "#000000", // Warna teks agar terlihat jelas
+    });
   };
 
   const handleCancelRemove = () => {
@@ -39,6 +59,22 @@ const Dashboard = () => {
     { count: 2, label: "On Hold" },
     { count: 16, label: "Total Projects" },
   ];
+
+  const handleConfirmRemove = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#02CCFF",
+      cancelButtonColor: "#6A6A6A",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleRemoveProjects(); // Hapus project setelah konfirmasi
+      }
+    });
+  };
 
   return (
     <LayoutProject>
@@ -65,13 +101,13 @@ const Dashboard = () => {
 
           <div className="flex flex-col items-end gap-4 ml-8">
             <button
-              className="bg-[#02CCFF] hover:bg-blue-500 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#02CCFF] hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => setIsModalOpen(true)}
             >
               Add Project
             </button>
             <button
-              className="bg-[#FF0000] hover:bg-red-700 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#FF0000] hover:bg-red-700 text-white  font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => {
                 setIsRemoveMode((prev) => !prev);
                 if (isRemoveMode) {
@@ -168,8 +204,8 @@ const Dashboard = () => {
           style={{ transition: "transform 0.3s ease-in-out" }}
         >
           <button
-            onClick={handleRemoveProjects}
-            className="bg-[#FF0000] hover:bg-red-700 text-black font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+            onClick={handleConfirmRemove}
+            className="bg-[#FF0000] hover:bg-red-700 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
             style={{ animation: "slideUp 0.5s ease-out" }}
           >
             Remove Project
