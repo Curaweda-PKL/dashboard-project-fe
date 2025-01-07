@@ -12,6 +12,7 @@ import Setting from "./pages/Setting";
 import MyAccount from "./component/myAccount";
 import Profiles from "./component/profiles";
 import LogOut from "./component/logOut";
+import TaskList from "./component/detailproject/tasklist";  // Import TaskList component
 
 const App: React.FC = () => {
   return (
@@ -29,7 +30,7 @@ const App: React.FC = () => {
 
           {/* Route Messages */}
           <Route path="/messages" element={<Messages />} />
-           <Route path="/messages" element={<MessagesDetail />} /> {/* Route Messages Detail */}
+          <Route path="/messages/detail" element={<MessagesDetail />} /> {/* Updated path for detail */}
 
           {/* Route Settings dengan Nested Routes */}
           <Route path="/settings" element={<Setting />}>
@@ -37,6 +38,9 @@ const App: React.FC = () => {
             <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
             <Route path="logOut" element={<LogOut onClose={() => window.history.back()} />} /> {/* Menutup Pop Up dan Kembali */}
           </Route>
+
+          {/* Route for Task List */}
+          <Route path="/task" element={<TaskList />} />  {/* New route for TaskList */}
         </Route>
 
         {/* Route Not Found */}
