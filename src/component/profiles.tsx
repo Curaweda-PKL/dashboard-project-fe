@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { CiImageOn } from "react-icons/ci"; // Ikon gambar dari React Icons
+import { CiImageOn } from "react-icons/ci";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const Profiles: React.FC = () => {
   const location = useLocation();
@@ -22,13 +23,63 @@ const Profiles: React.FC = () => {
   };
 
   const handleSaveUsername = () => {
-    console.log("Username saved:", username);
-    setHasChanges(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#02CCFF",
+      cancelButtonColor: "#6A6A6A",
+      confirmButtonText: "Save",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log("Username saved:", username);
+        setHasChanges(false);
+
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          },
+        });
+
+        Toast.fire({
+          icon: "success",
+          title: "Username changed successfully",
+          background: "rgb(0, 208, 255)", // Warna biru untuk background
+          color: "#000000", // Warna teks agar terlihat jelas
+        });
+      }
+    });
   };
 
   const handleSaveImage = () => {
     if (selectedImage) {
       console.log("Image saved:", selectedImage.name);
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+  
+      Toast.fire({
+        icon: "success",
+        title: "Profile changed successfully",
+        background: "rgb(0, 208, 255)", // Warna biru untuk background
+        color: "#000000", // Warna teks agar terlihat jelas
+      });
     }
     setIsPopupVisible(false);
   };
@@ -36,12 +87,9 @@ const Profiles: React.FC = () => {
   return (
     <div className="relative">
       <div className={`relative ${isPopupVisible ? "pointer-events-none" : ""}`}>
-        {/* Judul di kiri atas */}
         <h1 className="absolute top-0 left-0 text-2xl font-bold text-gray-800">
           Profiles
         </h1>
-
-        {/* Background Card */}
         <div
           className="absolute bg-[#02CCFF] rounded-lg shadow-lg"
           style={{
@@ -53,8 +101,6 @@ const Profiles: React.FC = () => {
             zIndex: 0,
           }}
         ></div>
-
-        {/* Main Card */}
         <div
           className="relative z-10 bg-[#0285A3] p-6 rounded-lg shadow-lg"
           style={{
@@ -64,9 +110,7 @@ const Profiles: React.FC = () => {
             top: "140px",
           }}
         >
-          {/* Card Content */}
           <div className="text-white">
-            {/* Foto Profil */}
             <div className="mb-6 text-center">
               <div className="w-24 h-24 mx-auto rounded-full bg-gray-400">
                 {selectedImage && (
@@ -84,8 +128,6 @@ const Profiles: React.FC = () => {
                 Edit Profile
               </button>
             </div>
-
-            {/* Form Edit Username */}
             <div className="mb-6">
               <label className="block text-white font-bold mb-2">Username</label>
               <input
@@ -97,8 +139,6 @@ const Profiles: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Tombol Save Username */}
         {hasChanges && (
           <div
             className="fixed bottom-20 left-1/2 transform -translate-x-1/2"
@@ -106,7 +146,7 @@ const Profiles: React.FC = () => {
           >
             <button
               onClick={handleSaveUsername}
-              className="bg-[#02CCFF] hover:bg-blue-500 text-black px-10 py-5 rounded-full"
+              className="bg-[#02CCFF] hover:bg-blue-500 text-white px-10 py-5 rounded-full"
               style={{ animation: "slideUp 0.5s ease-out" }}
             >
               Save Username
@@ -114,26 +154,19 @@ const Profiles: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Popup */}
       {isPopupVisible && (
         <>
           <div className="fixed inset-0 bg-black bg-opacity-50 z-20"></div>
           <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
             <div className="bg-white p-8 rounded-lg shadow-lg w-[600px] h-[600px] flex flex-col justify-between">
-              {/* Judul */}
               <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
                 Select an Image
               </h2>
-
-              {/* Area Upload */}
               <label
                 htmlFor="file-upload"
                 className="flex items-center justify-center w-[300px] h-[300px] bg-[#D9D9D9] rounded-lg mx-auto cursor-pointer hover:bg-gray-400 relative"
               >
                 <CiImageOn className="h-32 w-32 text-gray-500" />
-
-                {/* Teks "Upload Image" di bawah tengah */}
                 <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center text-gray-600 font-semibold">
                   Upload Image
                 </p>
@@ -147,18 +180,16 @@ const Profiles: React.FC = () => {
                 }
                 className="hidden"
               />
-
-              {/* Tombol Save dan Cancel */}
               <div className="flex justify-center space-x-20 mt-4">
                 <button
                   onClick={() => setIsPopupVisible(false)}
-                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full text-lg"
+                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full text-lg"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveImage}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-black rounded-full text-lg"
+                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full text-lg"
                 >
                   Save
                 </button>

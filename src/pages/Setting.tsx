@@ -29,6 +29,16 @@ const Setting: React.FC = () => {
     tab.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleTabClick = (tab: string) => {
+    if (tab === "logout") {
+      // Jangan mengubah tab langsung, tetap di logout
+      navigate("/settings/logout");
+    } else {
+      setActiveTab(tab);
+      navigate(tab === "myaccount" ? "/settings" : `/settings/${tab}`);
+    }
+  };
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
@@ -55,10 +65,7 @@ const Setting: React.FC = () => {
                   ? "bg-white text-black shadow-md"
                   : "bg-transparent text-gray-700"
               }`}
-              onClick={() => {
-                setActiveTab(tab);
-                navigate(tab === "myaccount" ? "/settings" : `/settings/${tab}`);
-              }}
+              onClick={() => handleTabClick(tab)} // Ubah di sini
             >
               {tab === "myaccount" && "My Account"}
               {tab === "profiles" && "Profiles"}
@@ -71,7 +78,7 @@ const Setting: React.FC = () => {
       {/* Content */}
       <div className="flex-1 bg-[#F5F5F5] p-8">
         <Outlet />
-        {isLogOutPopupVisible && <LogOut onClose={() => navigate("/settings")} />} {/* Pass prop */}
+        {isLogOutPopupVisible && <LogOut />} {/* Tidak perlu pass onClose */}
       </div>
     </div>
   );

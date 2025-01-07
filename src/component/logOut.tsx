@@ -1,53 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate untuk navigasi
+import Swal from "sweetalert2"; // Import SweetAlert2
 
-interface LogOutProps {
-  onClose: () => void; // Prop untuk menutup popup
-}
-
-const LogOut: React.FC<LogOutProps> = ({ onClose }) => {
+const LogOut: React.FC = () => {
   const navigate = useNavigate(); // Inisialisasi navigator
 
-  const handleLogOut = () => {
-    // Logika logout di sini
-    console.log("Logged out!");
-    onClose(); // Menutup popup setelah logout
-    navigate("/auth/login"); // Arahkan ke halaman login
-  };
+  useEffect(() => {
+    // Menampilkan pop-up peringatan SweetAlert2 saat halaman pertama kali dimuat
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#FF0000",
+      cancelButtonColor: "#6A6A6A",
+      confirmButtonText: "Log Out",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Jika pengguna mengonfirmasi logout
+        console.log("Logged out!");
+        navigate("/auth/login"); // Arahkan ke halaman login
+      } else {
+        // Jika tombol Cancel ditekan, kembali ke halaman "My Account"
+        console.log("Canceled logout");
+        navigate("/settings"); // Arahkan ke halaman My Account (Home settings)
+      }
+    });
+  }, [navigate]);
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
-      <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
-        <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] h-[500px] flex flex-col justify-between">
-          {/* Judul Popup */}
-          <h2 className="text-3xl font-bold text-gray-800 text-center mt-6 mb-6">
-            Log Out
-          </h2>
-
-          {/* Keterangan */}
-          <p className="text-center text-gray-600 mb-8 flex-grow">
-            Are you sure you want to Logout?
-          </p>
-
-          {/* Tombol Save dan Cancel */}
-          <div className="flex justify-center space-x-20 mb-6">
-            <button
-              onClick={onClose} // Menutup popup saat Cancel
-              className="px-10 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full text-lg"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleLogOut} // Navigasi ke halaman login
-              className="px-9 py-3 bg-[#FF0000] hover:bg-red-700 text-black rounded-full text-lg"
-            >
-              Log Out
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null; // Tidak ada UI yang ditampilkan, SweetAlert2 langsung muncul
 };
 
 export default LogOut;

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const MyAccount: React.FC = () => {
   const [username] = useState("User Name");
@@ -25,12 +26,51 @@ const MyAccount: React.FC = () => {
   const handleSaveEmail = () => {
     setEmail(newEmail);
     setIsEmailPopupVisible(false);
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+
+    Toast.fire({
+      icon: "success",
+      title: "Email changed successfully",
+      background: "rgb(0, 208, 255)", // Warna biru untuk background
+      color: "#000000", // Warna teks agar terlihat jelas
+    });
   };
 
   const handleSavePassword = () => {
     if (newPassword === confirmNewPassword) {
       setPassword(newPassword);
       setIsPasswordPopupVisible(false);
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+
+      Toast.fire({
+        icon: "success",
+        title: "Password changed successfully",
+        background: "rgb(0, 208, 255)", // Warna biru untuk background
+        color: "#000000", // Warna teks agar terlihat jelas
+      });
+
     } else {
       alert("Passwords do not match.");
     }
@@ -137,13 +177,13 @@ const MyAccount: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsEmailPopupVisible(false)}
-                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full"
+                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveEmail}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-black rounded-full"
+                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full"
                 >
                   Save
                 </button>
@@ -191,13 +231,13 @@ const MyAccount: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsPasswordPopupVisible(false)}
-                  className="px-9 py-3 bg-[#D9D9D9] hover:bg-gray-400 text-black rounded-full"
+                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSavePassword}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-black rounded-full"
+                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full"
                 >
                   Save
                 </button>
