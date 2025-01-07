@@ -1,5 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";  // Import useNavigate
 
+// Komponen Popup
+interface PopupProps {
+  title: string;
+  duration: string;
+  onClose: () => void;
+  onDetail: () => void;
+  onHold: () => void;
+}
+
+const Popup: React.FC<PopupProps> = ({ title, duration, onClose, onDetail, onHold }) => {
+  const navigate = useNavigate();  // Initialize navigate
+
+  const handleDetail = () => {
+    // Navigate to the Task page when the Detail button is clicked
+    navigate("/task");  
+    onDetail();  // Optionally keep any existing onDetail logic
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg p-20 relative">
+        <button
+          className="absolute top-2 right-2 text-black text-xl font-bold"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <h2 className="text-2xl font-bold text-center mb-4">In Progress</h2>
+        <h1 className="text-lg font-semibold text-center mb-2">{title}</h1>
+        <p className="text-sm text-center text-gray-700 mb-4">{duration}</p>
+        <div className="flex flex-col items-center gap-4">
+          <button
+            className="bg-[#02CCFF] text-black font-semibold w-full py-2 rounded-lg hover:bg-[#02CCFF]"
+            onClick={handleDetail}  // Use handleDetail function here
+          >
+            Detail
+          </button>
+          <button
+            className="bg-[#148B84] text-black font-semibold w-full py-2 rounded-lg hover:bg-[#106B66]"
+            onClick={onHold}
+          >
+            Hold
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Komponen ProjectCard
 interface ProjectCardProps {
   id: string;
   title: string;
@@ -12,6 +63,7 @@ interface ProjectCardProps {
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
+  onCardClick: (id: string) => void; // Fungsi untuk klik card
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -26,10 +78,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   isRemoveMode,
   onProjectSelect,
   selectedProjects,
+  onCardClick,
 }) => {
   const isSelected = selectedProjects.includes(id);
 
-  // Mengatur warna progress secara dinamis berdasarkan nilai progress
   let progressColor = "#F44336"; // Warna merah untuk progress rendah
   if (progress >= 80) {
     progressColor = "#4CAF50"; // Warna hijau untuk progress tinggi
@@ -42,6 +94,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       className={`card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl relative ${
         isSelected ? "border-2 border-[#FF0000]" : ""
       }`}
+      onClick={() => onCardClick(id)}
     >
       {isRemoveMode && (
         <input
@@ -63,8 +116,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <div
             className="absolute top-0 left-0 h-3 rounded-full"
             style={{
-              width: `${progress}%`,        // Progress berdasarkan persen
-              backgroundColor: progressColor, // Warna dinamis berdasarkan progress
+              width: `${progress}%`,
+              backgroundColor: progressColor,
             }}
           ></div>
         </div>
@@ -82,9 +135,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className="w-10 h-10 rounded-full -ml-2 border-2 border-white"
             />
           ))}
-          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2">+</div>
+          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2">
+            +
+          </div>
         </div>
-        <div className="text-white font-bold rounded-full px-4 py-2" style={{ backgroundColor: endDateColor }}>
+        <div
+          className="text-white font-bold rounded-full px-4 py-2"
+          style={{ backgroundColor: endDateColor }}
+        >
           {endDateStatus}
         </div>
       </div>
@@ -92,18 +150,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   );
 };
 
+// Komponen InProgress
 const InProgress: React.FC<{
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
 }> = ({ isRemoveMode, onProjectSelect, selectedProjects }) => {
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+
+  const handleDetail = () => {
+    ; // Logika Detail
+  };
+
+  const handleHold = () => {
+   ; // Logika Hold
+  };
+
   const projects = [
     {
       id: "1",
       title: "TourO Web Development",
       duration: "January 10, 2024 - July 30, 2024",
       phase: "Prototyping",
-      progress: 70, // Progress yang sedang berjalan
+      progress: 70,
       endDateStatus: "2 Days Left",
       endDateColor: "#B20000",
       members: [
@@ -146,8 +215,8 @@ const InProgress: React.FC<{
       endDateStatus: "12 Months Left",
       endDateColor: "#0AB239",
       members: [
-        "https://randomuser.me/api/portraits/men/7.jpg",
-        "https://randomuser.me/api/portraits/women/8.jpg",
+        "https://randomuser.me/api/portraits/men/5.jpg",
+        "https://randomuser.me/api/portraits/women/6.jpg",
       ],
     },
   ];
@@ -162,10 +231,26 @@ const InProgress: React.FC<{
             {...project}
             isRemoveMode={isRemoveMode}
             onProjectSelect={onProjectSelect}
+            onCardClick={(id) => {
+              if (!isRemoveMode) {
+                // Hanya buka popup jika mode remove tidak aktif
+                setSelectedProject(projects.find((p) => p.id === id));
+              }
+            }}
             selectedProjects={selectedProjects}
           />
         ))}
       </div>
+
+      {!isRemoveMode && selectedProject && (
+        <Popup
+          title={selectedProject.title}
+          duration={selectedProject.duration}
+          onClose={() => setSelectedProject(null)}
+          onDetail={handleDetail}
+          onHold={handleHold}
+        />
+      )}
     </div>
   );
 };
