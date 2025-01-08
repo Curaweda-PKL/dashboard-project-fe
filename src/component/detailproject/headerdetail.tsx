@@ -7,7 +7,7 @@ interface HeaderDetailProps {
 
 const HeaderDetail: React.FC<HeaderDetailProps> = ({ onClick }) => {
   return (
-    <div className="flex gap-4 mb-6">
+    <div className="flex gap-4 mb-14">
       <button
         className="py-2 px-5 bg-[#02CCFF] text-black font-bold rounded-full shadow-md"
         onClick={() => onClick('Task')}
