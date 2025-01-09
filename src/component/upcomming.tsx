@@ -1,4 +1,5 @@
 import React from "react";
+import Swal from "sweetalert2";
 
 interface ProjectCardProps {
   id: string;
@@ -11,6 +12,7 @@ interface ProjectCardProps {
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
+  onCardClick: () => void; // Add this prop
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -24,11 +26,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   isRemoveMode,
   onProjectSelect,
   selectedProjects,
+  onCardClick, // Receive onCardClick as a prop
 }) => {
   const isSelected = selectedProjects.includes(id);
 
   return (
     <div
+      onClick={onCardClick} // Call the onCardClick function when the card is clicked
       className={`card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl relative ${
         isSelected ? "border-2 border-[#FF0000]" : ""
       }`}
@@ -47,7 +51,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       <p className="text-lg text-black mb-2 text-center">{duration}</p>
       <h2 className="font-bold text-2xl mb-1 text-center">{title}</h2>
       <p className="text-xl text-black mb-3 text-left">
-        <span className="font-bold">Definition of Project: </span>{reason}</p>
+        <span className="font-bold">Definition of Project: </span>{reason}
+      </p>
       <div className="flex items-center justify-between">
         <div className="flex">
           {members.map((member, index) => (
@@ -124,6 +129,58 @@ const UpcomingProjects: React.FC<{
     },
   ];
 
+  const handleCardClick = (_id: string, title: string, duration: string) => {
+    if (!isRemoveMode) {
+      Swal.fire({
+        title: `<span style="font-size: 24px; font-weight: bold; color: #000000;">"${title}"</span>`,
+        html: `
+          <p style="font-size: 18px; color: #000000;"><span color: #000000;">${duration}</span>.</p>
+          <button
+            style="font-size: 24px; position: absolute; top: 10px; right: 10px; border: none; background: transparent; color: #000000; cursor: pointer;"
+            onclick="Swal.close()"
+          >
+            ✕
+          </button>
+        `,
+        icon: "warning",
+        confirmButtonColor: "#02CCFF",
+        confirmButtonText: '<span class="text-white font-bold w-full py-2 rounded-full">In Progress</span>',
+        customClass: {
+          confirmButton: 'swal-custom-button',
+        },
+        didOpen: () => {
+          const closeButton = document.querySelector('button[onclick="Swal.close()"]');
+          if (closeButton) {
+            closeButton.addEventListener('click', () => {
+              Swal.close();
+            });
+          }
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+
+          Toast.fire({
+            icon: "success",
+            title: "Project Now In Progress",
+            background: "rgb(0, 208, 255)", // Blue background color
+            color: "#000000", // Black text color
+          });
+        }
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-4xl font-bold mb-8 text-left">Upcoming</h1>
@@ -135,6 +192,7 @@ const UpcomingProjects: React.FC<{
             isRemoveMode={isRemoveMode}
             onProjectSelect={onProjectSelect}
             selectedProjects={selectedProjects}
+            onCardClick={() => handleCardClick(project.id, project.title, project.duration)} // Pass the click handler
           />
         ))}
       </div>

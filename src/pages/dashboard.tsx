@@ -22,6 +22,30 @@ const Dashboard = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
+  const handleAddProjectSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Mencegah halaman reload
+    setIsModalOpen(false); // Menutup modal
+  
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+  
+    Toast.fire({
+      icon: "success",
+      title: "Project has been added",
+      background: "rgb(0, 208, 255)", // Warna biru untuk background
+      color: "#000000", // Warna teks agar terlihat jelas
+    });
+  };
+
   const handleProjectSelect = (section: string, projectId: string) => {
     setSelectedProjects((prev) => ({
       ...prev,
@@ -163,7 +187,7 @@ const Dashboard = () => {
                 ✕
               </button>
             </div>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleAddProjectSubmit}>
               <div>
                 <label className="block font-semibold mb-2">Project Name</label>
                 <input

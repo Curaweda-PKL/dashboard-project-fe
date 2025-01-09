@@ -33,13 +33,13 @@ const Popup: React.FC<PopupProps> = ({ title, duration, onClose, onDetail, onHol
         <p className="text-sm text-center text-gray-700 mb-4">{duration}</p>
         <div className="flex flex-col items-center gap-4">
           <button
-            className="bg-[#02CCFF] text-black font-semibold w-full py-2 rounded-full hover:bg-[#02CCFF]"
+            className="bg-[#02CCFF] text-white font-semibold w-full py-2 rounded-full hover:bg-[#02CCFF]"
             onClick={handleDetail}  // Use handleDetail function here
           >
             Detail
           </button>
           <button
-            className="bg-[#148B84] text-black font-semibold w-full py-2 rounded-full hover:bg-[#106B66]"
+            className="bg-[#148B84] text-white font-semibold w-full py-2 rounded-full hover:bg-[#106B66]"
             onClick={onHold}
           >
             Hold

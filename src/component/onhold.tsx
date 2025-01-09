@@ -1,4 +1,5 @@
 import React from "react";
+import Swal from "sweetalert2";
 
 interface ProjectCardProps {
   id: string;
@@ -27,9 +28,67 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const isSelected = selectedProjects.includes(id);
 
+  const handleCardClick = () => {
+    if (!isRemoveMode) {
+      Swal.fire({
+        title: `<span style="font-size: 24px; font-weight: bold; color: #000000;">"${title}"</span>`,
+        html: `
+          <p style="font-size: 18px; color: #000000;"><span color: #000000;">${duration}</span>.</p>
+          <button
+            style="font-size: 24px; position: absolute; top: 10px; right: 10px; border: none; background: transparent; color: #000000; cursor: pointer;"
+            onclick="Swal.close()"
+          >
+            ✕
+          </button>
+        `,
+        icon: "warning",
+        confirmButtonColor: "#02CCFF",
+        confirmButtonText: '<span class="text-white font-bold w-full py-2 rounded-full">In Progress</span>',
+        customClass: {
+          confirmButton: 'swal-custom-button',
+        },
+        didOpen: () => {
+          const closeButton = document.querySelector('button[onclick="Swal.close()"]');
+          if (closeButton) {
+            closeButton.addEventListener('click', () => {
+              Swal.close();
+            });
+          }
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+
+          Toast.fire({
+            icon: "success",
+            title: "Project Now In Progress",
+            background: "rgb(0, 208, 255)", // Blue background color
+            color: "#000000", // Black text color
+          });
+        }
+      });
+    }
+  };
+
+  const handleCheckboxChange = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click event
+    onProjectSelect(id);
+  };
+
   return (
     <div
-      className={`card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl relative ${
+      onClick={handleCardClick} // Trigger popup only if not in remove mode
+      className={`card w-72 lg:w-96 bg-white shadow-md rounded-lg p-6 border mx-2 transform transition hover:scale-105 hover:shadow-2xl relative cursor-pointer ${
         isSelected ? "border-2 border-[#FF0000]" : ""
       }`}
     >
@@ -38,7 +97,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           type="checkbox"
           className="absolute top-2 right-2 w-6 h-6 rounded-full border-2 border-[#FF0000]"
           checked={isSelected}
-          onChange={() => onProjectSelect(id)}
+          onClick={handleCheckboxChange} // Prevent popup from showing
           style={{
             backgroundColor: isSelected ? "red" : "transparent",
           }}
@@ -49,7 +108,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       <p className="text-xl text-black mb-3 text-left">
         <span className="font-bold">Reason for Hold:</span> {reason}
       </p>
-      <p className="text-md text-black mb-4 text-center">On Hold</p>
       <div className="flex items-center justify-between">
         <div className="flex">
           {members.map((member, index) => (
@@ -60,9 +118,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className="w-10 h-10 rounded-full -ml-2 border-2 border-white"
             />
           ))}
-          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2">+</div>
+          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2">
+            +
+          </div>
         </div>
-        <div className="text-white font-bold rounded-full px-4 py-2" style={{ backgroundColor: endDateColor }}>
+        <div
+          className="text-white font-bold rounded-full px-4 py-2"
+          style={{ backgroundColor: endDateColor }}
+        >
           {endDateStatus}
         </div>
       </div>
@@ -86,19 +149,21 @@ const Onhold: React.FC<{
         "https://randomuser.me/api/portraits/men/5.jpg",
         "https://randomuser.me/api/portraits/women/6.jpg",
       ],
-      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      reason:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
     {
       id: "2",
       title: "Dashboard Portal",
       duration: "February 12, 2024 - August 12, 2024",
       endDateStatus: "On Hold for 1 Week",
-      endDateColor: "#9C27B0",  // New color added
+      endDateColor: "#9C27B0",
       members: [
         "https://randomuser.me/api/portraits/men/11.jpg",
         "https://randomuser.me/api/portraits/women/12.jpg",
       ],
-      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      reason:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
   ];
 

@@ -9,7 +9,7 @@ const HeaderDetail: React.FC = () => {
       <Link
         to="/task"
         className={`py-2 px-5 font-bold rounded-full shadow-md ${
-          location.pathname === "/task" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+          location.pathname === "/task" ? "bg-[#02CCFF] text-white" : "bg-[#6A6A6A] text-white"
         }`}
       >
         Task
@@ -17,7 +17,7 @@ const HeaderDetail: React.FC = () => {
       <Link
         to="/timeline"
         className={`py-2 px-5 font-bold rounded-full ${
-          location.pathname === "/timeline" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+          location.pathname === "/timeline" ? "bg-[#02CCFF] text-white" : "bg-[#6A6A6A] text-white"
         }`}
       >
         Timeline
@@ -25,7 +25,7 @@ const HeaderDetail: React.FC = () => {
       <Link
         to="/summary"
         className={`py-2 px-5 font-bold rounded-full ${
-          location.pathname === "/summary" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+          location.pathname === "/summary" ? "bg-[#02CCFF] text-white" : "bg-[#6A6A6A] text-white"
         }`}
       >
         Summary
