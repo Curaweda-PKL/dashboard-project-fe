@@ -1,17 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "./layout/header"; // Header layout utama
-import Dashboard from "./pages/dashboard"; // Halaman Dashboard
-import TeamTable from "./pages/Team"; // Halaman Tim
-import Messages from "./pages/Messages"; // Halaman Messages
-import MessagesDetail from "./component/messagesDetail"; // Detail pesan
-import LoginPage from "./pages/auth/loginPage"; // Halaman Login
-import LoginLayout from "./layout/layoutLogin"; // Layout khusus untuk Login
-import NotFound from "./pages/notFound"; // Halaman Not Found
-import Setting from "./pages/Setting"; // Halaman Setting
-import MyAccount from "./component/myAccount"; // Komponen Akun Saya
-import Profiles from "./component/profiles"; // Komponen Profil
-import LogOut from "./component/logOut"; // Komponen LogOut
+import Layout from "./layout/header";
+import Dashboard from "./pages/dashboard";
+import TeamTable from "./pages/Team";
+import LoginPage from "./pages/auth/loginPage";
+import LoginLayout from "./layout/layoutLogin";
+import NotFound from "./pages/notFound";
+import Setting from "./pages/Setting";
+import MyAccount from "./component/myAccount";
+import Profiles from "./component/profiles";
+import LogOut from "./component/logOut";
 import TaskList from "./component/detailproject/tasklist"; // Daftar Tugas
 import Summary from "./component/detailproject/summary"; // Komponen Summary
 
@@ -29,15 +27,11 @@ const App: React.FC = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/team" element={<TeamTable />} />
 
-          {/* Route Messages */}
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/messages/detail" element={<MessagesDetail />} />
-
           {/* Route Settings dengan Nested Routes */}
           <Route path="/settings" element={<Setting />}>
             <Route path="" element={<MyAccount />} /> {/* Default ke MyAccount */}
-            <Route path="profiles" element={<Profiles />} /> {/* Profiles */}
-            <Route path="logOut" element={<LogOut onClose={() => window.history.back()} />} />
+            <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
+            <Route path="logOut" element={<LogOut />} /> {/* Menutup Pop Up dan Kembali */}
           </Route>
 
           {/* Route Task List */}

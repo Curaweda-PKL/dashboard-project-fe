@@ -1,10 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LoginLayout from "../../layout/layoutLogin";
 import loginImage from "../../assets/Tampilan Login.png";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("axyz@gmail");
   const [password, setPassword] = useState("password123");
+
+  // Gunakan useEffect untuk menampilkan notifikasi setelah halaman login dimuat
+  useEffect(() => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Logout successfully',
+      background: 'rgb(0, 208, 255)',
+      color: '#000000',
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      toast: true,
+      timerProgressBar: true,
+    });
+  }, []); // Menjalankan sekali ketika halaman login dimuat
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +83,7 @@ const LoginPage: React.FC = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="w-1/2 bg-[#02CCFF] text-black font-bold py-3 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                className="w-1/2 bg-[#02CCFF] text-white font-bold py-3 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
               >
                 LOGIN
               </button>

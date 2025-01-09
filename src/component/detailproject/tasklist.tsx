@@ -121,7 +121,7 @@ const TaskList: React.FC = () => {
           ) : (
             <>
               <button
-                className="bg-gray-400 text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-gray-500 transition duration-200"
+                className="bg-[#6A6A6A] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-gray-500 transition duration-200"
                 onClick={toggleEditingMode}
               >
                 Cancel

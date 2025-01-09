@@ -20,16 +20,6 @@
       "instant": true
     },
     {
-      "name": "Messages",
-      "path": "/messages",
-      "icon": "FaCommentDots",
-      "style": {
-        "backgroundColor": "green",
-        "color": "white"
-      },
-      "instant": true
-    },
-    {
       "name": "Calendar",
       "path": "/calendar",
       "icon": "FaCalendarAlt",
