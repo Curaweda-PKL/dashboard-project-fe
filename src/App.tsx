@@ -10,6 +10,8 @@ import Setting from "./pages/Setting";
 import MyAccount from "./component/myAccount";
 import Profiles from "./component/profiles";
 import LogOut from "./component/logOut";
+import TaskList from "./component/detailproject/tasklist"; // Daftar Tugas
+import Summary from "./component/detailproject/summary"; // Komponen Summary
 
 const App: React.FC = () => {
   return (
@@ -31,6 +33,12 @@ const App: React.FC = () => {
             <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
             <Route path="logOut" element={<LogOut />} /> {/* Menutup Pop Up dan Kembali */}
           </Route>
+
+          {/* Route Task List */}
+          <Route path="/task" element={<TaskList />} />
+
+          {/* Route Summary */}
+          <Route path="/summary" element={<Summary />} />
         </Route>
 
         {/* Route Not Found */}
