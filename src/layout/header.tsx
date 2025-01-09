@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from "react";
 import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
-import { HiMail } from "react-icons/hi";
+import NotificationsPopup from "../component/notificationsPopup";
 
 interface SidebarLink {
   name: string;
@@ -20,6 +20,7 @@ import sidebarLinks from "../layout/sidebar.json";
 const Layout = () => {
   const location = useLocation();
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -133,18 +134,9 @@ const Layout = () => {
             <div className="ml-auto">
               <div className="flex items-center justify-center">
                 <div className="indicator mr-8">
-                  <button>
+                  <button onClick={() => setShowNotifications(true)}>
                     <IoNotificationsSharp size={30} className="text-2xl font-bold" />
                     <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
-                      99+
-                    </span>
-                  </button>
-                </div>
-
-                <div className="indicator mr-8">
-                  <button>
-                    <HiMail size={30} className="text-2xl font-bold" />
-                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-amber-600">
                       99+
                     </span>
                   </button>
@@ -186,6 +178,9 @@ const Layout = () => {
           {sidebarLinks.map(renderSubLinks)}
         </ul>
       </div>
+
+      {/* Conditionally render NotificationsPopup */}
+      {showNotifications && <NotificationsPopup onClose={() => setShowNotifications(false)} />}
     </div>
   );
 };
