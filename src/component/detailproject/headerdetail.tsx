@@ -1,31 +1,35 @@
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
-import React from 'react';
+const HeaderDetail: React.FC = () => {
+  const location = useLocation();
 
-interface HeaderDetailProps {
-  onClick: (page: string) => void;
-}
-
-const HeaderDetail: React.FC<HeaderDetailProps> = ({ onClick }) => {
   return (
     <div className="flex gap-4 mb-14">
-      <button
-        className="py-2 px-5 bg-[#02CCFF] text-black font-bold rounded-full shadow-md"
-        onClick={() => onClick('Task')}
+      <Link
+        to="/task"
+        className={`py-2 px-5 font-bold rounded-full shadow-md ${
+          location.pathname === "/task" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+        }`}
       >
         Task
-      </button>
-      <button
-        className="py-2 px-5 bg-gray-200 text-black font-bold rounded-full"
-        onClick={() => onClick('Timeline')}
+      </Link>
+      <Link
+        to="/timeline"
+        className={`py-2 px-5 font-bold rounded-full ${
+          location.pathname === "/timeline" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+        }`}
       >
         Timeline
-      </button>
-      <button
-        className="py-2 px-5 bg-gray-200 text-black font-bold rounded-full"
-        onClick={() => onClick('Summary')}
+      </Link>
+      <Link
+        to="/summary"
+        className={`py-2 px-5 font-bold rounded-full ${
+          location.pathname === "/summary" ? "bg-[#02CCFF] text-black" : "bg-gray-200 text-black"
+        }`}
       >
         Summary
-      </button>
+      </Link>
     </div>
   );
 };
