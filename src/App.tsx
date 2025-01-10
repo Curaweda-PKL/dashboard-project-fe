@@ -12,6 +12,8 @@ import Profiles from "./component/profiles";
 import LogOut from "./component/logOut";
 import TaskList from "./component/detailproject/tasklist"; // Daftar Tugas
 import Summary from "./component/detailproject/summary"; // Komponen Summary
+import Demo from "./pages/calendar/calendar";
+
 
 const App: React.FC = () => {
   return (
@@ -26,6 +28,7 @@ const App: React.FC = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/team" element={<TeamTable />} />
+          <Route path="/calendar" element={<Demo />} />
 
           {/* Route Settings dengan Nested Routes */}
           <Route path="/settings" element={<Setting />}>
