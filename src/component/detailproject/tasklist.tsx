@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 import HeaderDetail from './headerdetail';
 
 interface Task {
@@ -47,9 +48,41 @@ const TaskList: React.FC = () => {
   };
 
   const handleRemoveTask = () => {
-    setTasks(tasks.filter((_, index) => !selectedTasks.includes(index)));
-    setSelectedTasks([]);
-    setIsEditing(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#02CCFF",
+      cancelButtonColor: "#6A6A6A",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setTasks(tasks.filter((_, index) => !selectedTasks.includes(index)));
+        setSelectedTasks([]);
+        setIsEditing(false);
+
+        // Display success toast notification
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          },
+        });
+
+        Toast.fire({
+          icon: "success",
+          title: "Tasks has been removed",
+          background: "rgb(0, 208, 255)", // Blue background
+          color: "#000000", // Black text for clarity
+        });
+      }
+    });
   };
 
   const handleCheckboxChange = (index: number) => {
