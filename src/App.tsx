@@ -12,6 +12,7 @@ import Profiles from "./component/profiles";
 import LogOut from "./component/logOut";
 import TaskList from "./component/detailproject/tasklist"; // Daftar Tugas
 import Summary from "./component/detailproject/summary"; // Komponen Summary
+import AddTeamProject from "./component/addTeamProject";
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,9 @@ const App: React.FC = () => {
 
           {/* Route Summary */}
           <Route path="/summary" element={<Summary />} />
+
+          {/* Route Add Team Project */}
+          <Route path="/addTeamProject" element={<AddTeamProject />} />
         </Route>
 
         {/* Route Not Found */}
