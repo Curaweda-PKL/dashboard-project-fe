@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 interface ProjectCardProps {
@@ -28,6 +29,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   selectedProjects,
   onCardClick, // Receive onCardClick as a prop
 }) => {
+  const navigate = useNavigate();
   const isSelected = selectedProjects.includes(id);
 
   return (
@@ -63,7 +65,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className="w-10 h-10 rounded-full -ml-2 border-2 border-white"
             />
           ))}
-          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2">+</div>
+          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2 cursor-pointer"
+               style={{ backgroundColor: endDateColor }}
+               onClick={(e) => {
+                e.stopPropagation(); // Mencegah trigger onCardClick
+                navigate("/addTeamProject", { state: { members } });
+              }}
+          >
+            +
+          </div>
         </div>
         <div className="text-white font-bold rounded-full px-4 py-2" style={{ backgroundColor: endDateColor }}>
           {endDateStatus}

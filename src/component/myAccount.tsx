@@ -98,7 +98,7 @@ const MyAccount: React.FC = () => {
 
       {/* Main Card */}
       <div
-        className="relative z-10 bg-[#0285A3] p-6 rounded-lg shadow-lg"
+        className="relative z-10 bg-[#00ABD6] p-6 rounded-lg drop-shadow-lg"
         style={{
           width: "50%",
           maxWidth: "400px",
