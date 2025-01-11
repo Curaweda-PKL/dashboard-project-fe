@@ -8,6 +8,7 @@ export default {
         "primary-dark": "#76A8D8",
         "primary-darker": "#495AFF",
         secondary: "#5E92C4",
+        curawedaColor: "#02CCFF",
       },
     },
   },

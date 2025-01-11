@@ -1,111 +1,114 @@
 import { useState } from "react";
 import LayoutProject from "../layout/layoutProject";
-import { RiArrowDropDownLine } from "react-icons/ri";
-import RoleDropdown from "../component/dropdownRole";
-import StatusDropdown from "../component/dropdownStatus";
+import { RiPencilFill, RiDeleteBinFill } from "react-icons/ri";
+import EditTeamModal from "../component/editteam";
+import RemoveTeamModal from "../component/removeTeam"; // Import komponen RemoveTeamModal
+
+interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  status: string;
+}
 
 const TeamTable = () => {
   const [showCheckboxes, setShowCheckboxes] = useState(false);
-  const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [showStatusDropdown, setShowStatusDropdown] = useState<boolean>(false);
-
-  const handleSubmit = (role: string) => {
-    setShowDropdown(false);
-    alert(`Role selected: ${role}`);
-  };
-
-  const handleStatusSubmit = (status: string) => {
-    setShowStatusDropdown(false);
-    alert(`Status selected: ${status}`);
-  };
-
-  const statuses = ["Incubation", "PKL", "Employee"];
-
-  const handleRemoveClick = () => {
-    setShowCheckboxes(true);
-  };
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showRemoveModal, setShowRemoveModal] = useState(false); // State untuk modal penghapusan
+  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null); // Menyimpan member yang akan dihapus
 
   const handleCancelClick = () => {
     setShowCheckboxes(false);
   };
 
-  const teamMembers = [
-    { id: 1, name: "Mochammad Faith", role: "FrontEnd Developer", status: "PKL" },
+  const handleEditClick = (member: TeamMember) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingMember(null);
+  };
+
+  const handleRemoveClick = (member: TeamMember) => {
+    setMemberToRemove(member); // Set member yang akan dihapus
+    setShowRemoveModal(true); // Tampilkan modal penghapusan
+  };
+
+  const teamMembers: TeamMember[] = [
+    { id: 1, name: "Gustavo Bergson", role: "FrontEnd Developer", status: "PKL" },
     { id: 2, name: "Kaylynn Baptista", role: "BackEnd Developer", status: "Incubation" },
-    { id: 3, name: "Dimas Bintang", role: "FrontEnd Developer", status: "PKL" },
-    { id: 4, name: "Sultan Arya", role: "UI/UX Designer", status: "PKL" },
+    { id: 3, name: "Alfredo Lipshutz", role: "FrontEnd Developer", status: "Employee" },
+    { id: 4, name: "Alena Passaquinidci Arcand", role: "UI/UX Designer", status: "PKL" },
   ];
 
   return (
     <LayoutProject>
       <div className="p-4 flex flex-col">
-        {/* Table */}
-        <table className="w-full border-collapse shadow-md">
-          <thead>
-            <tr className="bg-gray-900 text-white">
-              {showCheckboxes && <th className="p-2"></th>}
-              <th className="p-2">NAME</th>
-              <th className="p-2">ROLE</th>
-              <th className="p-2">STATUS</th>
+        <table className="text-center w-full rounded-lg overflow-hidden">
+          <thead className="bg-curawedaColor text-white">
+            <tr>
+              <th className="p-4 text-left">NAME</th>
+              <th className="p-4 text-left">ROLE</th>
+              <th className="p-4 text-left">STATUS</th>
+              <th className="p-4 text-right">&nbsp;</th>
             </tr>
           </thead>
           <tbody>
             {teamMembers.map((member) => (
               <tr key={member.id} className="border-b hover:bg-gray-100">
-                {showCheckboxes && (
-                  <td className="p-2 text-center">
-                    <input type="checkbox" className="w-4 h-4" />
-                  </td>
-                )}
-                <td className="p-2 text-center">{member.name}</td>
-                <td className="p-2 text-center font-semibold">
-                  {member.role} <button onClick={() => setShowDropdown(true)}><RiArrowDropDownLine className="inline-block float-right" /></button>
-                  {showDropdown && (
-                    <RoleDropdown
-                      roles={["FrontEnd Developer", "BackEnd Developer", "UI/UX Designer"]}
-                      onSubmit={handleSubmit}
-                      onClose={() => setShowDropdown(false)}
-                    />
-                  )}
-                </td>
-                <td className="p-2 text-center">
-                  {member.status} <button onClick={() => setShowStatusDropdown(true)}><RiArrowDropDownLine className="inline-block float-right" /></button>
-                  {showStatusDropdown && (
-                    <StatusDropdown
-                      statuses={statuses}
-                      onSubmit={handleStatusSubmit}
-                      onClose={() => setShowStatusDropdown(false)}
-                    />
-                  )}
+                <td className="p-4 text-left font-medium">{member.name}</td>
+                <td className="p-4 text-left font-medium">{member.role}</td>
+                <td className="p-4 text-left font-medium">{member.status}</td>
+                <td className="p-4 text-right">
+                  <button
+                    className="text-green-500 hover:text-green-600 mr-2"
+                    onClick={() => handleEditClick(member)}
+                  >
+                    <RiPencilFill size={20} />
+                  </button>
+                  <button
+                    className="text-red-500 hover:text-red-600"
+                    onClick={() => handleRemoveClick(member)} // Menangani klik tombol remove
+                  >
+                    <RiDeleteBinFill size={20} />
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Buttons */}
-        <div className="flex justify-between mt-4 space-x-2">
-          <td className="font-bold text-gray-300">
-          <button>
-            Add more team...
-          </button>
-          </td>
-          <div className="flex space-x-2">
+        {showEditModal && editingMember && (
+          <EditTeamModal
+            member={editingMember}
+            onClose={handleCloseEditModal}
+          />
+        )}
+
+        {showRemoveModal && memberToRemove && (
+          <RemoveTeamModal
+            member={memberToRemove}
+            onClose={() => setShowRemoveModal(false)} // Menutup modal penghapusan
+            onRemove={() => {
+              // Logika penghapusan member
+              console.log("Removing member:", memberToRemove);
+              setShowRemoveModal(false); // Menutup modal setelah penghapusan
+            }}
+          />
+        )}
+
+        <div className="flex justify-end mt-4">
+          {showCheckboxes && (
             <button
-              onClick={handleRemoveClick}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              onClick={handleCancelClick}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
             >
-              Remove
+              Cancel
             </button>
-            {showCheckboxes && (
-              <button
-                onClick={handleCancelClick}
-                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </LayoutProject>
@@ -113,5 +116,3 @@ const TeamTable = () => {
 };
 
 export default TeamTable;
-
-
