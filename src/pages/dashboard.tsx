@@ -133,7 +133,7 @@ const Dashboard = () => {
 
           <div className="flex flex-col items-end gap-4 ml-8">
             <button
-              className="bg-[#02CCFF] hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => setIsModalOpen(true)}
             >
               Add Project
@@ -247,7 +247,7 @@ const Dashboard = () => {
                           />
                         </div>
                         <button
-                          className="mt-4 bg-[#02CCFF] hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-full w-full"
+                          className="mt-4 bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
                           onClick={() => setIsDropdownOpen(false)}
                           type="button"
                         >
@@ -266,7 +266,7 @@ const Dashboard = () => {
               </div>
               <button
                 type="submit"
-                className="bg-[#02CCFF] hover:bg-blue-500 text-white font-bold px-6 py-2 rounded-full w-full"
+                className="bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-6 py-2 rounded-full w-full"
               >
                 Submit
               </button>
