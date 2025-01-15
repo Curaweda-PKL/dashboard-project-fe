@@ -51,7 +51,7 @@ const Setting: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
-            className="p-2 pl-10 w-full border rounded-full"
+            className="bg-white p-2 pl-10 w-full border rounded-full"
           />
         </div>
 
