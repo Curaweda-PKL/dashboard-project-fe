@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginLayout from "../../layout/layoutLogin";
 import loginImage from "../../assets/Tampilan Login.png";
 import Swal from "sweetalert2"; // Import SweetAlert2
@@ -6,6 +7,7 @@ import Swal from "sweetalert2"; // Import SweetAlert2
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("axyz@gmail");
   const [password, setPassword] = useState("password123");
+  const navigate = useNavigate();
 
   // Gunakan useEffect untuk menampilkan notifikasi setelah halaman login dimuat
   useEffect(() => {
@@ -24,9 +26,21 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
-    // Tambahkan logika autentikasi di sini
+    if (email === "axyz@gmail" && password === "password123") {
+      navigate("/");
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Email or Password is incorrect',
+        background: 'rgb(255, 72, 66)',
+        color: '#000000',
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        toast: true,
+        timerProgressBar: true,
+      });
+    }
   };
 
   return (
@@ -96,3 +110,4 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
