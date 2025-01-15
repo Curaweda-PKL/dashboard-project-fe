@@ -27,6 +27,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === "axyz@gmail" && password === "password123") {
+      localStorage.setItem("isLoggedIn", "true");
       navigate("/");
     } else {
       Swal.fire({

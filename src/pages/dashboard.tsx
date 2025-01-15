@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LayoutProject from "../layout/layoutProject";
 import UpcomingProjects from "../component/upcomming";
 import Onhold from "../component/onhold";
@@ -17,6 +17,23 @@ const Dashboard = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      localStorage.removeItem("isLoggedIn"); // Hapus status login
+      Swal.fire({
+        icon: "success",
+        title: "Login successfully",
+        background: "rgb(0, 208, 255)", 
+        color: "#000000", 
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        toast: true,
+        timerProgressBar: true,
+      });
+    }
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
