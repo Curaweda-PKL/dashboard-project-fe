@@ -1,4 +1,4 @@
-import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
+import { Outlet, Link, NavLink, useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
 import { useState, useCallback, useEffect } from "react";
@@ -19,6 +19,7 @@ import sidebarLinks from "../layout/sidebar.json";
 
 const Layout = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // Hook untuk navigasi
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -39,63 +40,66 @@ const Layout = () => {
     }));
   }, []);
 
-  const renderSubLinks = useCallback((link: SidebarLink) => {
-    const isOpen = !!openSubmenus[link.name];
-    const IconComponent = iconMap[link.icon];
+  const renderSubLinks = useCallback(
+    (link: SidebarLink) => {
+      const isOpen = !!openSubmenus[link.name];
+      const IconComponent = iconMap[link.icon];
 
-    return (
-      <li key={link.name} className="flex flex-col text-lg">
-        <div
-          className={`flex items-center justify-between cursor-pointer p-2 rounded ${
-            isOpen ? "bg-white text-black shadow-md" : ""
-          }`}
-          onClick={() => link.children && toggleSubmenu(link.name)}
-        >
-          <div className="flex items-center">
-            {IconComponent && <IconComponent className="mr-2" />}
-            {link.name === "Team" && <FaUser className="mr-2" />}
-            {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
-            {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
-            {link.name === "Settings" && <IoMdSettings className="mr-2" />}
-            {link.path ? (
-              <Link to={link.path}>{link.name}</Link>
-            ) : (
-              <span>{link.name}</span>
+      return (
+        <li key={link.name} className="flex flex-col text-lg">
+          <div
+            className={`flex items-center justify-between cursor-pointer p-2 rounded ${
+              isOpen ? "bg-white text-black shadow-md" : ""
+            }`}
+            onClick={() => link.children && toggleSubmenu(link.name)}
+          >
+            <div className="flex items-center">
+              {IconComponent && <IconComponent className="mr-2" />}
+              {link.name === "Team" && <FaUser className="mr-2" />}
+              {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
+              {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
+              {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+              {link.path ? (
+                <Link to={link.path}>{link.name}</Link>
+              ) : (
+                <span>{link.name}</span>
+              )}
+            </div>
+
+            {link.children && (
+              <MdExpandMore
+                className={`transition-transform duration-0 ${isOpen ? "rotate-180" : ""}`}
+              />
             )}
           </div>
 
-          {link.children && (
-            <MdExpandMore
-              className={`transition-transform duration-0 ${isOpen ? "rotate-180" : ""}`}
-            />
+          {link.children && isOpen && (
+            <ul className="ml-4 mt-2">
+              {link.children
+                .filter((subLink) => location.pathname.includes(subLink.path || ""))
+                .map((subLink) => (
+                  <li key={subLink.path} className="my-1">
+                    <NavLink
+                      to={subLink.path || ""}
+                      className={({ isActive }) =>
+                        `block p-1 rounded ${
+                          isActive
+                            ? "text-[#76A8D8BF] font-semibold bg-green-700"
+                            : "text-black hover:bg-green-600"
+                        }`
+                      }
+                    >
+                      {subLink.name}
+                    </NavLink>
+                  </li>
+                ))}
+            </ul>
           )}
-        </div>
-
-        {link.children && isOpen && (
-          <ul className="ml-4 mt-2">
-            {link.children
-              .filter((subLink) => location.pathname.includes(subLink.path || ""))
-              .map((subLink) => (
-                <li key={subLink.path} className="my-1">
-                  <NavLink
-                    to={subLink.path || ""}
-                    className={({ isActive }) =>
-                      `block p-1 rounded ${
-                        isActive
-                          ? "text-[#76A8D8BF] font-semibold bg-green-700"
-                          : "text-black hover:bg-green-600"
-                      }`
-                    }
-                  >
-                    {subLink.name}
-                  </NavLink>
-                </li>
-              ))}
-          </ul>
-        )}
-      </li>
-    );
-  }, [openSubmenus, toggleSubmenu, location.pathname]);
+        </li>
+      );
+    },
+    [openSubmenus, toggleSubmenu, location.pathname]
+  );
 
   return (
     <div className="h-screen drawer lg:drawer-open">
@@ -103,7 +107,7 @@ const Layout = () => {
 
       <div className="drawer-content flex flex-col bg-white h-screen">
         <div className="mx-4 mt-4">
-        <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
+          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
             {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
@@ -143,7 +147,10 @@ const Layout = () => {
                 </div>
 
                 <details className="dropdown dropdown-end">
-                  <summary className="btn btn-ghost hover:bg-transparent">
+                  <summary
+                    className="btn btn-ghost border border-black "
+                    onClick={() => navigate("/settings")} // Navigasi ke halaman Settings
+                  >
                     <div className="avatar">
                       <div className="w-8 border border-black rounded-full">
                         <img
@@ -172,9 +179,10 @@ const Layout = () => {
       </div>
 
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
-        
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
-          <li className="text-center font-bold text-xl mb-10"></li>
+          <li>
+          <img src="/src/assets/curaweda.png" className="mx-auto w-24 h-20" alt="Curaweda" />
+          </li>
           {sidebarLinks.map(renderSubLinks)}
         </ul>
       </div>
@@ -186,6 +194,4 @@ const Layout = () => {
 };
 
 export default Layout;
-
-
 
