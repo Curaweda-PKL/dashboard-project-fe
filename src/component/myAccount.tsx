@@ -171,7 +171,7 @@ const MyAccount: React.FC = () => {
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black mx-auto"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black mx-auto"
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
@@ -207,7 +207,7 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="mb-4">
@@ -216,7 +216,7 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="mb-6">
@@ -225,7 +225,7 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import LayoutProject from "../layout/layoutProject";
-import { RiPencilFill, RiDeleteBinFill } from "react-icons/ri";
-import EditTeamModal from "../component/editteam";
-import RemoveTeamModal from "../component/removeTeam"; // Import komponen RemoveTeamModal
+import { RiPencilFill, RiDeleteBinFill, RiArrowDownSLine } from "react-icons/ri";
+import DropdownRole from "../component/dropdownRole"; // Import komponen dropdownRole
+import DropdownStatus from "../component/dropdownStatus"; // Import komponen dropdownStatus
+import RemoveTeamModal from "../component/removeTeam";
+import Swal from "sweetalert2";
 
 interface TeamMember {
   id: number;
@@ -12,29 +14,53 @@ interface TeamMember {
 }
 
 const TeamTable = () => {
-  const [showCheckboxes, setShowCheckboxes] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-  const [showRemoveModal, setShowRemoveModal] = useState(false); // State untuk modal penghapusan
-  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null); // Menyimpan member yang akan dihapus
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
 
-  const handleCancelClick = () => {
-    setShowCheckboxes(false);
-  };
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleEditClick = (member: TeamMember) => {
     setEditingMember(member);
     setShowEditModal(true);
+    setActiveDropdown(null); // Pastikan semua dropdown tertutup
   };
 
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditingMember(null);
+    setActiveDropdown(null); // Pastikan semua dropdown tertutup
   };
 
   const handleRemoveClick = (member: TeamMember) => {
-    setMemberToRemove(member); // Set member yang akan dihapus
-    setShowRemoveModal(true); // Tampilkan modal penghapusan
+    setMemberToRemove(member);
+    setShowRemoveModal(true);
+  };
+
+  const handleDropdownToggle = (dropdownType: string) => {
+    setActiveDropdown((prev) => (prev === dropdownType ? null : dropdownType));
+  };
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    },
+  });
+
+  const showSuccessToast = () => {
+    Toast.fire({
+      icon: "success",
+      title: "Team has been changed",
+      background: "rgb(0, 208, 255)", // Warna biru untuk background
+      color: "#000000", // Warna teks agar terlihat jelas
+    });
   };
 
   const teamMembers: TeamMember[] = [
@@ -71,7 +97,7 @@ const TeamTable = () => {
                   </button>
                   <button
                     className="text-red-500 hover:text-red-600"
-                    onClick={() => handleRemoveClick(member)} // Menangani klik tombol remove
+                    onClick={() => handleRemoveClick(member)}
                   >
                     <RiDeleteBinFill size={20} />
                   </button>
@@ -82,34 +108,94 @@ const TeamTable = () => {
         </table>
 
         {showEditModal && editingMember && (
-          <EditTeamModal
-            member={editingMember}
-            onClose={handleCloseEditModal}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+              {/* Tombol X untuk menutup modal */}
+              <button
+                onClick={handleCloseEditModal}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-center text-2xl font-bold mb-4">Edit Team</h2>
+              <div className="mb-4">
+                <label className="block text-bold font-bold mb-2">Name</label>
+                <input
+                  type="text"
+                  value={editingMember.name}
+                  onChange={(e) =>
+                    setEditingMember({ ...editingMember, name: e.target.value })
+                  }
+                  className="w-full border border-black  rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div className="mb-4 relative">
+                <label className="block text-bold font-bold mb-2">Role</label>
+                <div
+                  onClick={() => handleDropdownToggle("role")}
+                  className="border border-black p-2 rounded-full cursor-pointer flex justify-between items-center"
+                >
+                  {editingMember.role || "Select Role"}
+                  <RiArrowDownSLine size={25} className="ml-2" />
+                </div>
+                {activeDropdown === "role" && (
+                  <DropdownRole
+                    roles={["FrontEnd Developer", "BackEnd Developer", "UI/UX Designer"]}
+                    onSubmit={(selectedRole) => {
+                      setEditingMember({ ...editingMember, role: selectedRole });
+                      setActiveDropdown(null); // Tutup dropdown setelah memilih
+                    }}
+                    onClose={() => setActiveDropdown(null)}
+                  />
+                )}
+              </div>
+              <div className="mb-4 relative">
+                <label className="block text-bold font-bold mb-2">Status</label>
+                <div
+                  onClick={() => handleDropdownToggle("status")}
+                  className="border border-black p-2 rounded-full cursor-pointer flex justify-between items-center"
+                >
+                  {editingMember.status || "Select Status"}
+                  <RiArrowDownSLine size={25} className="ml-2" />
+                </div>
+                {activeDropdown === "status" && (
+                  <DropdownStatus
+                    roles={["PKL", "Employee", "Incubation"]}
+                    onSubmit={(selectedStatus) => {
+                      setEditingMember({ ...editingMember, status: selectedStatus });
+                      setActiveDropdown(null); // Tutup dropdown setelah memilih
+                    }}
+                    onClose={() => setActiveDropdown(null)}
+                  />
+                )}
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => {
+                    console.log("Updated Member:", editingMember);
+                    handleCloseEditModal(); // Tutup modal setelah submit
+                    showSuccessToast(); // Tampilkan notifikasi sukses
+                  }}
+                  className="bg-[#02CCFF] text-white font-bold px-4 py-2 rounded-full w-full hover:bg-[#029FCC]"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {showRemoveModal && memberToRemove && (
           <RemoveTeamModal
             member={memberToRemove}
-            onClose={() => setShowRemoveModal(false)} // Menutup modal penghapusan
+            onClose={() => setShowRemoveModal(false)}
             onRemove={() => {
-              // Logika penghapusan member
               console.log("Removing member:", memberToRemove);
-              setShowRemoveModal(false); // Menutup modal setelah penghapusan
+              setShowRemoveModal(false);
             }}
           />
         )}
-
-        <div className="flex justify-end mt-4">
-          {showCheckboxes && (
-            <button
-              onClick={handleCancelClick}
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
       </div>
     </LayoutProject>
   );
