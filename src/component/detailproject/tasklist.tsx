@@ -3,43 +3,52 @@ import HeaderDetail from './headerdetail';
 
 interface Task {
   module: string;
-  feature: string;
-  task: string;
   weight: number;
+  totalWeight: number;
   percent: number;
-  status: string;
+  assignees: string;
+  deadline: string;
 }
 
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([
     {
       module: "Pembelian",
-      feature: "Button “Remove”",
-      task: "List Pembelian",
       weight: 2.0,
+      totalWeight: 5.0,
       percent: 75,
-      status: "DONE",
+      assignees: "Gustavo Bergson",
+      deadline: "2024-12-10",
     },
     {
       module: "Penjualan",
-      feature: "Button “Submit”",
-      task: "List Penjualan",
       weight: 4.0,
+      totalWeight: 8.0,
       percent: 15,
-      status: "ON PROGRESS",
+      assignees: "Roger Franci",
+      deadline: "2024-12-12",
     },
     {
       module: "Penerimaan",
-      feature: "Button “Login”",
-      task: "List Penjualan",
       weight: 3.0,
+      totalWeight: 7.0,
       percent: 15,
-      status: "ON PROGRESS",
+      assignees: "Anna Smith",
+      deadline: "2024-12-15",
     },
   ]);
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [newTask, setNewTask] = useState<Task>({
+    module: "",
+    weight: 0,
+    totalWeight: 0,
+    percent: 0,
+    assignees: "",
+    deadline: "",
+  });
 
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
@@ -58,6 +67,19 @@ const TaskList: React.FC = () => {
     );
   };
 
+  const handleAddTask = () => {
+    setTasks([...tasks, newTask]);
+    setNewTask({
+      module: "",
+      weight: 0,
+      totalWeight: 0,
+      percent: 0,
+      assignees: "",
+      deadline: "",
+    });
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="p-6">
       <HeaderDetail />
@@ -73,11 +95,11 @@ const TaskList: React.FC = () => {
           <tr className="bg-[#02CCFF] text-white">
             {isEditing && <th className="p-4 border-b-4 border-white"></th>}
             <th className="p-4 rounded-tl-lg border-b-4 border-white">MODULE</th>
-            <th className="p-4 border-b-4 border-white">FEATURE</th>
-            <th className="p-4 border-b-4 border-white">TASK</th>
             <th className="p-4 border-b-4 border-white">WEIGHT</th>
+            <th className="p-4 border-b-4 border-white">TOTAL WEIGHT</th>
             <th className="p-4 border-b-4 border-white">PERCENT</th>
-            <th className="p-4 rounded-tr-lg border-b-4 border-white">STATUS</th>
+            <th className="p-4 border-b-4 border-white">ASSIGNEES</th>
+            <th className="p-4 rounded-tr-lg border-b-4 border-white">DEADLINE</th>
           </tr>
         </thead>
         <tbody className="bg-white">
@@ -96,11 +118,11 @@ const TaskList: React.FC = () => {
                 </td>
               )}
               <td className="p-4">{task.module}</td>
-              <td className="p-4">{task.feature}</td>
-              <td className="p-4">{task.task}</td>
               <td className="p-4">{task.weight.toFixed(2)}</td>
+              <td className="p-4">{task.totalWeight.toFixed(2)}</td>
               <td className="p-4">{task.percent}%</td>
-              <td className="p-4">{task.status}</td>
+              <td className="p-4">{task.assignees}</td>
+              <td className="p-4">{task.deadline}</td>
             </tr>
           ))}
         </tbody>
@@ -108,9 +130,14 @@ const TaskList: React.FC = () => {
 
       <div className="flex justify-between mt-6">
         <div className="font-bold text-gray-500">
-          <button>Add more task...</button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="text-gray-500 transition duration-200"
+          >
+            Add more task...
+          </button>
         </div>
-        <div className="flex gap-4">
+        <div className="fixed bottom-10 right-10 flex gap-4">
           {!isEditing ? (
             <button
               className="bg-[#FF0000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-600 transition duration-200"
@@ -136,6 +163,134 @@ const TaskList: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Medium Pop-up Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl text-black font-bold mb-4 text-center">Add Task</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddTask();
+              }}
+              className="flex flex-col gap-4"
+            >
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Module Name</label>
+                <input
+                  type="text"
+                  value={newTask.module}
+                  onChange={(e) => setNewTask({ ...newTask, module: e.target.value })}
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Project Name</label>
+                <input
+                  type="text"
+                  value={newTask.module}
+                  onChange={(e) => setNewTask({ ...newTask, module: e.target.value })}
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Weight</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newTask.weight}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, weight: parseFloat(e.target.value) })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Total Weight</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newTask.totalWeight}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, totalWeight: parseFloat(e.target.value) })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Percentage</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newTask.percent}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, percent: parseFloat(e.target.value) })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Assignees</label>
+                <input
+                  type="text"
+                  value={newTask.assignees}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, assignees: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">Deadline</label>
+                <input
+                  type="date"
+                  value={newTask.deadline}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, deadline: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";  // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 // Komponen Popup
 interface PopupProps {
@@ -10,13 +11,32 @@ interface PopupProps {
   onHold: () => void;
 }
 
-const Popup: React.FC<PopupProps> = ({ title, duration, onClose, onDetail, onHold }) => {
-  const navigate = useNavigate();  // Initialize navigate
+const Popup: React.FC<PopupProps> = ({ title, duration, onClose, onDetail, }) => {
+  const navigate = useNavigate();
 
   const handleDetail = () => {
-    // Navigate to the Task page when the Detail button is clicked
-    navigate("/task");  
-    onDetail();  // Optionally keep any existing onDetail logic
+    navigate("/task");
+    onDetail();
+  };
+
+  const handleHold = () => {
+    // Tampilkan notifikasi dan tutup pop-up
+    Swal.fire({
+      icon: "success",
+      title: "Project has been on hold",
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      background: "rgb(0, 208, 255)",
+      color: "#000000",
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+    onClose(); // Tutup pop-up
   };
 
   return (
@@ -34,13 +54,13 @@ const Popup: React.FC<PopupProps> = ({ title, duration, onClose, onDetail, onHol
         <div className="flex flex-col items-center gap-4">
           <button
             className="bg-[#02CCFF] text-white font-semibold w-full py-2 rounded-full hover:bg-[#02CCFF]"
-            onClick={handleDetail}  // Use handleDetail function here
+            onClick={handleDetail}
           >
             Detail
           </button>
           <button
             className="bg-[#148B84] text-white font-semibold w-full py-2 rounded-full hover:bg-[#106B66]"
-            onClick={onHold}
+            onClick={handleHold}
           >
             Hold
           </button>
@@ -63,7 +83,7 @@ interface ProjectCardProps {
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
-  onCardClick: (id: string) => void; // Fungsi untuk klik card
+  onCardClick: (id: string) => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -83,11 +103,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const navigate = useNavigate();
   const isSelected = selectedProjects.includes(id);
 
-  let progressColor = "#F44336"; // Warna merah untuk progress rendah
+  let progressColor = "#F44336";
   if (progress >= 80) {
-    progressColor = "#4CAF50"; // Warna hijau untuk progress tinggi
+    progressColor = "#4CAF50";
   } else if (progress >= 50) {
-    progressColor = "#FFEB3B"; // Warna kuning untuk progress sedang
+    progressColor = "#FFEB3B";
   }
 
   return (
@@ -136,12 +156,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className="w-10 h-10 rounded-full -ml-2 border-2 border-white"
             />
           ))}
-          <div className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2 cursor-pointer"
-               style={{ backgroundColor: endDateColor }}
-               onClick={(e) => {
-                e.stopPropagation(); // Mencegah trigger onCardClick
-                navigate("/addTeamProject", { state: { members } });
-              }}
+          <div
+            className="flex items-center justify-center w-10 h-10 bg-gray-300 text-white rounded-full ml-2 cursor-pointer"
+            style={{ backgroundColor: endDateColor }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/addTeamProject", { state: { members } });
+            }}
           >
             +
           </div>
@@ -166,11 +187,11 @@ const InProgress: React.FC<{
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   const handleDetail = () => {
-    ; // Logika Detail
+    console.log("Detail clicked");
   };
 
   const handleHold = () => {
-   ; // Logika Hold
+    console.log("Hold clicked");
   };
 
   const projects = [
@@ -240,7 +261,6 @@ const InProgress: React.FC<{
             onProjectSelect={onProjectSelect}
             onCardClick={(id) => {
               if (!isRemoveMode) {
-                // Hanya buka popup jika mode remove tidak aktif
                 setSelectedProject(projects.find((p) => p.id === id));
               }
             }}

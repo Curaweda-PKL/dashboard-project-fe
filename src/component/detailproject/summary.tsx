@@ -58,8 +58,8 @@ const Summary: React.FC = () => {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center">
-        <span className="font-bold text-gray-500">Add more summary....</span>
+      <div className="mt-4 font-bold text-gray-500 flex items-center">
+         <button>Add more summary...</button>
       </div>
     </div>
   );
