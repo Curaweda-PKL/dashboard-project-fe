@@ -134,7 +134,7 @@ const Profiles: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={handleUsernameChange}
-                className="p-3 rounded-full w-full text-black"
+                className="bg-white p-3 rounded-full w-full text-black"
               />
             </div>
           </div>
