@@ -162,7 +162,7 @@ const Layout = () => {
                     </div>
                     <div className="text-right mr-4">
                       <p className="text-sm font-semibold lg:text-base">
-                        Mochammad Faith
+                        Username
                       </p>
                       <p className="text-xs">axyz@gmail</p>
                     </div>
