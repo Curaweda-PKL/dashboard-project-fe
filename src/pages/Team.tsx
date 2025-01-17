@@ -127,7 +127,7 @@ const TeamTable = () => {
                   onChange={(e) =>
                     setEditingMember({ ...editingMember, name: e.target.value })
                   }
-                  className="w-full border border-black  rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-black bg-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
               <div className="mb-4 relative">

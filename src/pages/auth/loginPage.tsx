@@ -1,32 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginLayout from "../../layout/layoutLogin";
 import loginImage from "../../assets/Tampilan Login.png";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState("axyz@gmail");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   // Gunakan useEffect untuk menampilkan notifikasi setelah halaman login dimuat
-  useEffect(() => {
-    Swal.fire({
-      icon: 'success',
-      title: 'Logout successfully',
-      background: 'rgb(0, 208, 255)',
-      color: '#000000',
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000,
-      toast: true,
-      timerProgressBar: true,
-    });
-  }, []); // Menjalankan sekali ketika halaman login dimuat
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === "axyz@gmail" && password === "password123") {
+    if (email === "axyz@gmail" && password === "curaweda123") {
       localStorage.setItem("isLoggedIn", "true");
       navigate("/");
     } else {
