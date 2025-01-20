@@ -132,7 +132,7 @@ const AddTeamProject: React.FC = () => {
                         />
                       )
                     ) : (
-                      member.isAdded && <FiUser className="text-[#02CCFF]" />
+                      member.isAdded && <FiUser className="text-curawedaColor" />
                     )}
                   </div>
                   {/* Name part */}
@@ -152,7 +152,7 @@ const AddTeamProject: React.FC = () => {
       {isEditMode && (
         <div className="fixed bottom-10 right-10 flex gap-4">
           <button
-            className="bg-[#6A6A6A] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#494949] transition"
+            className="bg-[#6D6D6D] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#494949] transition"
             onClick={handleBack}
           >
             Back
@@ -160,13 +160,13 @@ const AddTeamProject: React.FC = () => {
           {isChanged && (
             <>
               <button
-                className="bg-[#FF0000] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-red-700 transition"
+                className="bg-[#B20000] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-red-900 transition"
                 onClick={handleCancel}
               >
                 Cancel
               </button>
               <button
-                className="bg-[#02CCFF] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#029FCC] transition"
+                className="bg-curawedaColor text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#029FCC] transition"
                 onClick={handleSubmit}
               >
                 Submit
@@ -178,7 +178,7 @@ const AddTeamProject: React.FC = () => {
 
       {!isEditMode && !isChanged && (
         <button
-          className="fixed bottom-10 right-10 bg-[#02CCFF] text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#029FCC] transition"
+          className="fixed bottom-10 right-10 bg-curawedaColor text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#029FCC] transition"
           onClick={handleEditMode}
         >
           Edit Team

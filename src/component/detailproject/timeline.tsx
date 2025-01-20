@@ -59,7 +59,7 @@ const Timeline: React.FC = () => {
                       {numbers.map((number) => (
                         <span
                           key={number}
-                          className="text-black rounded-full w-5 h-5 flex items-center justify-center border border-[#02CCFF]"
+                          className="text-black rounded-full w-5 h-5 flex items-center justify-center border border-curawedaColor"
                         >
                           {number}
                         </span>
@@ -101,7 +101,7 @@ const Timeline: React.FC = () => {
                             DONE
                           </button>
                           <button
-                            className="py-2 px-4 text-black font-bold bg-[#ECA6A6] rounded-full hover:bg-opacity-90"
+                            className="py-2 px-4 text-white font-bold bg-[#ECA6A6] rounded-full hover:bg-opacity-90"
                             onClick={() => handleStatusChange(index, "ON PROGRESS")}
                           >
                             ON PROGRESS

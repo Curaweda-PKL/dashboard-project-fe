@@ -134,7 +134,7 @@ const TaskList: React.FC = () => {
                       type="checkbox"
                       checked={selectedTasks.includes(index)}
                       onChange={() => handleCheckboxChange(index)}
-                      className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-[#02CCFF] checked:border-[#02CCFF] transition duration-200 cursor-pointer"
+                      className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
                     />
                   </label>
                 </td>
@@ -162,7 +162,7 @@ const TaskList: React.FC = () => {
         <div className="fixed bottom-10 right-10 flex gap-4">
           {!isEditing ? (
             <button
-              className="bg-[#FF0000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-600 transition duration-200"
+              className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
               onClick={toggleEditingMode}
             >
               Remove
@@ -170,13 +170,13 @@ const TaskList: React.FC = () => {
           ) : (
             <>
               <button
-                className="bg-[#6A6A6A] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-gray-500 transition duration-200"
+                className="bg-[#6D6D6D] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
                 onClick={toggleEditingMode}
               >
                 Cancel
               </button>
               <button
-                className="bg-[#FF0000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-600 transition duration-200"
+                className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
                 onClick={handleRemoveTask}
               >
                 Remove
@@ -286,7 +286,7 @@ const TaskList: React.FC = () => {
                             type="checkbox"
                             checked={newTask.assignees.includes(assignee)}
                             onChange={() => toggleAssignee(assignee)}
-                            className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-[#02CCFF] checked:border-[#02CCFF] transition duration-200 cursor-pointer"
+                            className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
                           />
                           {assignee}
                         </label>
@@ -296,7 +296,7 @@ const TaskList: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleSubmitAssignees}
-                          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600"
+                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
                         >
                           Submit
                         </button>
@@ -323,13 +323,13 @@ const TaskList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600"
+                  className="bg-[#6D6D6D] text-white font-bold py-2 px-4 rounded-md hover:bg-[#494949]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600"
+                  className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
                 >
                   Submit
                 </button>

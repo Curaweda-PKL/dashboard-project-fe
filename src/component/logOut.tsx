@@ -12,8 +12,8 @@ const LogOut: React.FC = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#FF0000",
-      cancelButtonColor: "#6A6A6A",
+      confirmButtonColor: "#B20000",
+      cancelButtonColor: "##6D6D6D",
       confirmButtonText: "Log Out",
       cancelButtonText: "Cancel",
     }).then((result) => {
