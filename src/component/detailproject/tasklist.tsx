@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import HeaderDetail from './headerdetail';
+import { FaChevronDown } from "react-icons/fa"; // Impor ikon
 
 interface Task {
   module: string;
   weight: number;
   totalWeight: number;
   percent: number;
-  assignees: string;
+  assignees: string[];
   deadline: string;
+  showAssigneesDropdown?: boolean; // Menambahkan properti untuk mengontrol tampilan dropdown
 }
 
 const TaskList: React.FC = () => {
@@ -17,7 +19,7 @@ const TaskList: React.FC = () => {
       weight: 2.0,
       totalWeight: 5.0,
       percent: 75,
-      assignees: "Gustavo Bergson",
+      assignees: ["Gustavo Bergson"],
       deadline: "2024-12-10",
     },
     {
@@ -25,7 +27,7 @@ const TaskList: React.FC = () => {
       weight: 4.0,
       totalWeight: 8.0,
       percent: 15,
-      assignees: "Roger Franci",
+      assignees: ["Roger Franci"],
       deadline: "2024-12-12",
     },
     {
@@ -33,7 +35,7 @@ const TaskList: React.FC = () => {
       weight: 3.0,
       totalWeight: 7.0,
       percent: 15,
-      assignees: "Anna Smith",
+      assignees: ["Anna Smith"],
       deadline: "2024-12-15",
     },
   ]);
@@ -46,9 +48,12 @@ const TaskList: React.FC = () => {
     weight: 0,
     totalWeight: 0,
     percent: 0,
-    assignees: "",
+    assignees: [],
     deadline: "",
+    showAssigneesDropdown: false, // Reset dropdown state
   });
+
+  const assigneesList = ["Gustavo Bergson", "Roger Franci", "Wilson Press"];
 
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
@@ -74,14 +79,31 @@ const TaskList: React.FC = () => {
       weight: 0,
       totalWeight: 0,
       percent: 0,
-      assignees: "",
+      assignees: [],
       deadline: "",
+      showAssigneesDropdown: false, // Reset dropdown state
     });
     setIsModalOpen(false);
   };
 
+  const toggleAssignee = (assignee: string) => {
+    setNewTask((prevTask) => {
+      const updatedAssignees = prevTask.assignees.includes(assignee)
+        ? prevTask.assignees.filter((a) => a !== assignee)
+        : [...prevTask.assignees, assignee];
+      return { ...prevTask, assignees: updatedAssignees };
+    });
+  };
+
+  const handleSubmitAssignees = () => {
+    setNewTask({
+      ...newTask,
+      showAssigneesDropdown: false, // Menutup dropdown setelah submit
+    });
+  };
+
   return (
-    <div className="p-6">
+    <div className="">
       <HeaderDetail />
 
       <div className="mb-6 text-black font-bold">
@@ -121,7 +143,7 @@ const TaskList: React.FC = () => {
               <td className="p-4">{task.weight.toFixed(2)}</td>
               <td className="p-4">{task.totalWeight.toFixed(2)}</td>
               <td className="p-4">{task.percent}%</td>
-              <td className="p-4">{task.assignees}</td>
+              <td className="p-4">{task.assignees.join(", ")}</td>
               <td className="p-4">{task.deadline}</td>
             </tr>
           ))}
@@ -194,17 +216,6 @@ const TaskList: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">Project Name</label>
-                <input
-                  type="text"
-                  value={newTask.module}
-                  onChange={(e) => setNewTask({ ...newTask, module: e.target.value })}
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                />
-              </div>
-
-              <div>
                 <label className="block text-lg text-black font-semibold mb-1">Weight</label>
                 <input
                   type="number"
@@ -248,15 +259,51 @@ const TaskList: React.FC = () => {
 
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">Assignees</label>
-                <input
-                  type="text"
-                  value={newTask.assignees}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, assignees: e.target.value })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                />
+                <div className="relative">
+                  <div
+                    className="border rounded-md p-2 bg-white cursor-pointer relative flex justify-between items-center"
+                    onClick={() => setNewTask({ ...newTask, showAssigneesDropdown: !newTask.showAssigneesDropdown })}
+                  >
+                    <span>
+                      {newTask.assignees.length > 0
+                        ? newTask.assignees.join(", ")
+                        : "Select Assignees"}
+                    </span>
+                    <FaChevronDown
+                      className={`transition duration-200 ${newTask.showAssigneesDropdown ? "rotate-180" : ""}`}
+                    />
+                  </div>
+
+                  {/* Dropdown */}
+                  {newTask.showAssigneesDropdown && (
+                    <div className="absolute top-full left-0 w-full bg-white shadow-md rounded-md mt-1 z-10">
+                      {assigneesList.map((assignee) => (
+                        <label
+                          key={assignee}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={newTask.assignees.includes(assignee)}
+                            onChange={() => toggleAssignee(assignee)}
+                            className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-[#02CCFF] checked:border-[#02CCFF] transition duration-200 cursor-pointer"
+                          />
+                          {assignee}
+                        </label>
+                      ))}
+                      {/* Submit Button */}
+                      <div className="p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={handleSubmitAssignees}
+                          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600"
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>

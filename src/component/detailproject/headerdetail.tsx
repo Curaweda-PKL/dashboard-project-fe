@@ -5,7 +5,7 @@ const HeaderDetail: React.FC = () => {
   const location = useLocation();
 
   return (
-    <div className="flex gap-4 mb-14">
+    <div className="flex gap-4 mb-5">
       <Link
         to="/task"
         className={`py-2 px-5 font-bold rounded-full shadow-md ${

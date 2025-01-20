@@ -16,7 +16,7 @@ const Summary: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div className="">
       <HeaderDetail />
 
       <div className="overflow-x-auto">
