@@ -55,7 +55,7 @@ const NotificationsPopup = ({ onClose }: { onClose: () => void }) => {
         <div className="flex justify-center mt-4">
           <button
             onClick={onClose}
-            className="bg-[#6A6A6A] text-white font-bold px-10 py-2 rounded-full hover:bg-[#494949]"
+            className="bg-[#6D6D6D] text-white font-bold px-10 py-2 rounded-full hover:bg-[#494949]"
           >
             OK
           </button>

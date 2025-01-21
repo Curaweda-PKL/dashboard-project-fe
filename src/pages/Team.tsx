@@ -74,7 +74,7 @@ const TeamTable = () => {
     <LayoutProject>
       <div className="p-4 flex flex-col">
         <table className="text-center w-full rounded-lg overflow-hidden">
-          <thead className="bg-curawedaColor text-white">
+          <thead className="bg-[#02CCFF] text-white">
             <tr>
               <th className="p-4 text-left">NAME</th>
               <th className="p-4 text-left">ROLE</th>
@@ -177,7 +177,7 @@ const TeamTable = () => {
                     handleCloseEditModal(); // Tutup modal setelah submit
                     showSuccessToast(); // Tampilkan notifikasi sukses
                   }}
-                  className="bg-[#02CCFF] text-white font-bold px-4 py-2 rounded-full w-full hover:bg-[#029FCC]"
+                  className="bg-curawedaColor text-white font-bold px-4 py-2 rounded-full w-full hover:bg-[#029FCC]"
                 >
                   Submit
                 </button>

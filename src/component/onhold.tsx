@@ -44,7 +44,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </button>
         `,
         icon: "warning",
-        confirmButtonColor: "#02CCFF",
+        confirmButtonColor: "#09abca",
         confirmButtonText: '<span class="text-white font-bold w-full py-2 rounded-full">In Progress</span>',
         customClass: {
           confirmButton: 'swal-custom-button',

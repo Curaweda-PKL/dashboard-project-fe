@@ -115,8 +115,8 @@ const Dashboard = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#02CCFF",
-      cancelButtonColor: "#6A6A6A",
+      confirmButtonColor: "#09abca",
+      cancelButtonColor: "#6D6D6D",
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
@@ -150,13 +150,13 @@ const Dashboard = () => {
 
           <div className="flex flex-col items-end gap-4 ml-8">
             <button
-              className="bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => setIsModalOpen(true)}
             >
               Add Project
             </button>
             <button
-              className="bg-[#FF0000] hover:bg-red-700 text-white  font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#B20000] hover:bg-red-900 text-white  font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => {
                 setIsRemoveMode((prev) => !prev);
                 if (isRemoveMode) {
@@ -264,7 +264,7 @@ const Dashboard = () => {
                           />
                         </div>
                         <button
-                          className="mt-4 bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
+                          className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
                           onClick={() => setIsDropdownOpen(false)}
                           type="button"
                         >
@@ -283,7 +283,7 @@ const Dashboard = () => {
               </div>
               <button
                 type="submit"
-                className="bg-[#02CCFF] hover:bg-[#029FCC] text-white font-bold px-6 py-2 rounded-full w-full"
+                className="bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-6 py-2 rounded-full w-full"
               >
                 Submit
               </button>
@@ -299,7 +299,7 @@ const Dashboard = () => {
         >
           <button
             onClick={handleConfirmRemove}
-            className="bg-[#FF0000] hover:bg-red-700 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+            className="bg-[#B20000] hover:bg-red-900 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
             style={{ animation: "slideUp 0.5s ease-out" }}
           >
             Remove Project
