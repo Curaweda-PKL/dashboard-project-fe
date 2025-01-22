@@ -18,6 +18,13 @@ const Summary: React.FC = () => {
   return (
     <div className="">
       <HeaderDetail />
+      
+      <div className="mb-6 text-black font-bold">
+        <p><strong>Project :</strong> TourO Web Development</p>
+        <p><strong>PM :</strong> Gustavo Bergson</p>
+        <p><strong>Date :</strong> 12/12/2024</p>
+        <p><strong>Client :</strong> Mr.Lorem</p>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="text-center w-full rounded-lg overflow-hidden">
