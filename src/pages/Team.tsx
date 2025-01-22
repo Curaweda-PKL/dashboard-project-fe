@@ -2,7 +2,7 @@ import { useState } from "react";
 import LayoutProject from "../layout/layoutProject";
 import { RiPencilFill, RiDeleteBinFill, RiArrowDownSLine } from "react-icons/ri";
 import DropdownRole from "../component/dropdownRole"; // Import komponen dropdownRole
-import DropdownStatus from "../component/dropdownStatus"; // Import komponen dropdownStatus
+import DropdownAssigned from "../component/dropdownAssigned"; // Import komponen dropdownAssigned
 import RemoveTeamModal from "../component/removeTeam";
 import Swal from "sweetalert2";
 
@@ -10,7 +10,7 @@ interface TeamMember {
   id: number;
   name: string;
   role: string;
-  status: string;
+  assigned: string;
 }
 
 const TeamTable = () => {
@@ -64,10 +64,10 @@ const TeamTable = () => {
   };
 
   const teamMembers: TeamMember[] = [
-    { id: 1, name: "Gustavo Bergson", role: "FrontEnd Developer", status: "PKL" },
-    { id: 2, name: "Kaylynn Baptista", role: "BackEnd Developer", status: "Incubation" },
-    { id: 3, name: "Alfredo Lipshutz", role: "FrontEnd Developer", status: "Employee" },
-    { id: 4, name: "Alena Passaquinidci Arcand", role: "UI/UX Designer", status: "PKL" },
+    { id: 1, name: "Gustavo Bergson", role: "FrontEnd Developer", assigned: "TourO Web development" },
+    { id: 2, name: "Kaylynn Baptista", role: "BackEnd Developer", assigned: "Dashboard Portal" },
+    { id: 3, name: "Alfredo Lipshutz", role: "FrontEnd Developer", assigned: "Designing" },
+    { id: 4, name: "Alena Passaquinidci Arcand", role: "UI/UX Designer", assigned: "Project" },
   ];
 
   return (
@@ -78,7 +78,7 @@ const TeamTable = () => {
             <tr>
               <th className="p-4 text-left">NAME</th>
               <th className="p-4 text-left">ROLE</th>
-              <th className="p-4 text-left">STATUS</th>
+              <th className="p-4 text-left">ASSIGNED</th>
               <th className="p-4 text-right">&nbsp;</th>
             </tr>
           </thead>
@@ -87,7 +87,7 @@ const TeamTable = () => {
               <tr key={member.id} className="border-b hover:bg-gray-100">
                 <td className="p-4 text-left font-medium">{member.name}</td>
                 <td className="p-4 text-left font-medium">{member.role}</td>
-                <td className="p-4 text-left font-medium">{member.status}</td>
+                <td className="p-4 text-left font-medium">{member.assigned}</td>
                 <td className="p-4 text-right">
                   <button
                     className="text-green-500 hover:text-green-600 mr-2"
@@ -151,19 +151,19 @@ const TeamTable = () => {
                 )}
               </div>
               <div className="mb-4 relative">
-                <label className="block text-bold font-bold mb-2">Status</label>
+                <label className="block text-bold font-bold mb-2">Assigned</label>
                 <div
-                  onClick={() => handleDropdownToggle("status")}
+                  onClick={() => handleDropdownToggle("assigned")}
                   className="border border-black p-2 rounded-full cursor-pointer flex justify-between items-center"
                 >
-                  {editingMember.status || "Select Status"}
+                  {editingMember.assigned || "Select Assigned"}
                   <RiArrowDownSLine size={25} className="ml-2" />
                 </div>
-                {activeDropdown === "status" && (
-                  <DropdownStatus
-                    roles={["PKL", "Employee", "Incubation"]}
-                    onSubmit={(selectedStatus) => {
-                      setEditingMember({ ...editingMember, status: selectedStatus });
+                {activeDropdown === "assigned" && (
+                  <DropdownAssigned
+                    roles={["TourO Web development", "Dashboard Portal", "Designing", "Project"]}
+                    onSubmit={(selectedAssigned) => {
+                      setEditingMember({ ...editingMember, assigned: selectedAssigned });
                       setActiveDropdown(null); // Tutup dropdown setelah memilih
                     }}
                     onClose={() => setActiveDropdown(null)}

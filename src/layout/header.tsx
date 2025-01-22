@@ -22,6 +22,34 @@ const Layout = () => {
   const navigate = useNavigate(); // Hook untuk navigasi
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [showNotifications, setShowNotifications] = useState(false);
+  const [pageTitle, setPageTitle] = useState("Dashboard");
+
+  // Rekursif mencari judul halaman
+  const getPageTitle = (links: SidebarLink[], path: string): string => {
+
+    // Cek apakah path berada di dalam /settings
+  if (path.includes("/settings")) {
+    return "Settings"; // Jika di dalam /settings, tampilkan judul Settings
+  }
+
+    // Lanjutkan dengan pencarian judul di sidebar
+    for (const link of links) {
+      if (link.path === path) {
+        return link.name;
+      }
+      if (link.children) {
+        const title = getPageTitle(link.children, path);
+        if (title) return title;
+      }
+    }
+    return "Dashboard"; // Default title
+  };
+
+  // Update judul halaman berdasarkan lokasi
+  useEffect(() => {
+    const currentTitle = getPageTitle(sidebarLinks, location.pathname);
+    setPageTitle(currentTitle);
+  }, [location.pathname]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -107,7 +135,7 @@ const Layout = () => {
 
       <div className="drawer-content flex flex-col bg-white h-screen">
         <div className="mx-4 mt-4">
-          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
+          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800">
             {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
@@ -132,12 +160,12 @@ const Layout = () => {
             </div>
 
             <div className="flex items-center justify-start">
-              <div className="text-5xl font-bold mr-8">Dashboard</div>
+              <div className="text-5xl font-bold mr-8">{pageTitle}</div>
             </div>
 
             <div className="ml-auto">
               <div className="flex items-center justify-center">
-                <div className="indicator mr-8">
+                <div className="indicator mr-10">
                   <button onClick={() => setShowNotifications(true)}>
                     <IoNotificationsSharp size={30} className="text-2xl font-bold" />
                     <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
@@ -146,13 +174,16 @@ const Layout = () => {
                   </button>
                 </div>
 
+                {/* Garis Pemisah */}
+                <div className="border-l-2 h-12 mx-4 border-gray-300"></div> {/* Garis vertikal */}
+
                 <details className="dropdown dropdown-end">
                   <summary
-                    className="btn btn-ghost border border-black "
+                    className="btn btn-ghost border "
                     onClick={() => navigate("/settings")} // Navigasi ke halaman Settings
                   >
                     <div className="avatar">
-                      <div className="w-8 border border-black rounded-full">
+                      <div className="w-12 border border-black rounded-full">
                         <img
                           src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
                           alt="Profile"
@@ -161,10 +192,10 @@ const Layout = () => {
                       </div>
                     </div>
                     <div className="text-right mr-4">
-                      <p className="text-sm font-semibold lg:text-base">
+                      <p className="text-lg font-semibold lg:text-xl">
                         Username
                       </p>
-                      <p className="text-xs">axyz@gmail</p>
+                      <p className="text-sm">axyz@gmail</p>
                     </div>
                   </summary>
                 </details>

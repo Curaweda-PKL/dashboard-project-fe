@@ -275,6 +275,27 @@ const Dashboard = () => {
                   </div>
                 </div>
               <div>
+                <label className="block font-semibold mb-2">Contract Number</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-2">No ERD</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-2">Client Name</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                />
+              </div>
+              <div>
                 <label className="block font-semibold mb-2">Description</label>
                 <textarea
                   rows={3}

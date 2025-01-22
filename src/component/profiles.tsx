@@ -91,7 +91,7 @@ const Profiles: React.FC = () => {
           Profiles
         </h1>
         <div
-          className="absolute bg-[#02CCFF] rounded-lg shadow-lg"
+          className="absolute bg-[#D9D9D9] rounded-lg shadow-lg"
           style={{
             width: "40%",
             height: "450px",
@@ -102,7 +102,7 @@ const Profiles: React.FC = () => {
           }}
         ></div>
         <div
-          className="relative z-10 bg-[#00ABD6] p-6 rounded-lg drop-shadow-lg"
+          className="relative z-10 bg-[#B9B9B9] p-6 rounded-lg drop-shadow-lg"
           style={{
             width: "50%",
             maxWidth: "400px",
