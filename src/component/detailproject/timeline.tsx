@@ -59,7 +59,7 @@ const Timeline: React.FC = () => {
                       {numbers.map((number) => (
                         <span
                           key={number}
-                          className="text-black rounded-full w-5 h-5 flex items-center justify-center border border-curawedaColor"
+                          className="text-black rounded-full w-5 h-5 flex items-center justify-center border-curawedaColor"
                         >
                           {number}
                         </span>
@@ -131,6 +131,12 @@ const Timeline: React.FC = () => {
   return (
     <div>
       <HeaderDetail />
+      <div className="mb-6 text-black font-bold">
+        <p><strong>Project :</strong> TourO Web Development</p>
+        <p><strong>PM :</strong> Gustavo Bergson</p>
+        <p><strong>Date :</strong> 12/12/2024</p>
+        <p><strong>Client :</strong> Mr.Lorem</p>
+      </div>
       <div className="w-full">{renderCombinedTable()}</div>
     </div>
   );
