@@ -1,4 +1,4 @@
-import { Outlet, Link, NavLink, useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
 import { useState, useCallback, useEffect } from "react";
@@ -26,11 +26,10 @@ const Layout = () => {
 
   // Rekursif mencari judul halaman
   const getPageTitle = (links: SidebarLink[], path: string): string => {
-
     // Cek apakah path berada di dalam /settings
-  if (path.includes("/settings")) {
-    return "Settings"; // Jika di dalam /settings, tampilkan judul Settings
-  }
+    if (path.includes("/settings")) {
+      return "Settings"; // Jika di dalam /settings, tampilkan judul Settings
+    }
 
     // Lanjutkan dengan pencarian judul di sidebar
     for (const link of links) {
@@ -74,29 +73,43 @@ const Layout = () => {
       const IconComponent = iconMap[link.icon];
 
       return (
-        <li key={link.name} className="flex flex-col text-lg">
+        <li key={link.name} className="flex flex-col text-xl">
           <div
-            className={`flex items-center justify-between cursor-pointer p-2 rounded ${
+            className={`flex items-center justify-between cursor-pointer p-2 rounded-full ${
               isOpen ? "bg-white text-black shadow-md" : ""
             }`}
             onClick={() => link.children && toggleSubmenu(link.name)}
           >
-            <div className="flex items-center">
-              {IconComponent && <IconComponent className="mr-2" />}
-              {link.name === "Team" && <FaUser className="mr-2" />}
-              {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
-              {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
-              {link.name === "Settings" && <IoMdSettings className="mr-2" />}
-              {link.path ? (
-                <Link to={link.path}>{link.name}</Link>
-              ) : (
-                <span>{link.name}</span>
-              )}
-            </div>
+            <div className="flex items-center w-full">
+            {link.path ? (
+              <NavLink
+                to={link.path}
+                className={({ isActive }) =>
+                  `flex items-center p-2 rounded-full w-full ${
+                    isActive
+                      ? "bg-[#02CCFF] text-black font-semibold"
+                      : "text-black hover:bg-blue-200"
+                  }`
+                }
+              >
+                {IconComponent && <IconComponent className="mr-2" />}
+                {link.name === "Team" && <FaUser className="mr-2" />}
+                {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
+                {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
+                {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+                {link.name}
+              </NavLink>
+            ) : (
+              <span className="flex items-center">
+                {IconComponent && <IconComponent className="mr-2" />}
+                {link.name}
+              </span>
+            )}
+          </div>
 
             {link.children && (
               <MdExpandMore
-                className={`transition-transform duration-0 ${isOpen ? "rotate-180" : ""}`}
+                className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
               />
             )}
           </div>
@@ -110,10 +123,10 @@ const Layout = () => {
                     <NavLink
                       to={subLink.path || ""}
                       className={({ isActive }) =>
-                        `block p-1 rounded ${
+                        `block p-1 rounded-full ${
                           isActive
-                            ? "text-[#76A8D8BF] font-semibold bg-green-700"
-                            : "text-black hover:bg-green-600"
+                            ? "text-[#76A8D8BF] font-semibold bg-[#02CCFF]"
+                            : "text-black hover:bg-blue-200"
                         }`
                       }
                     >
@@ -212,7 +225,7 @@ const Layout = () => {
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
           <li>
-          <img src="/src/assets/curaweda.png" className="mx-auto w-24 h-20" alt="Curaweda" />
+            <img src="/src/assets/curaweda.png" className="mx-auto w-24 h-20" alt="Curaweda" />
           </li>
           {sidebarLinks.map(renderSubLinks)}
         </ul>
@@ -225,4 +238,3 @@ const Layout = () => {
 };
 
 export default Layout;
-

@@ -140,8 +140,8 @@ const Dashboard = () => {
                 key={index}
                 className="flex flex-col items-start text-start pl-3 border-l-2 border-black"
               >
-                <p className="text-2xl font-bold mb-2">{item.count}</p>
-                <p className="text-black text-lg font-semibold whitespace-nowrap">
+                <p className="text-3xl font-bold mb-2">{item.count}</p>
+                <p className="text-black text-[20px] font-semibold whitespace-nowrap">
                   {item.label}
                 </p>
               </div>
