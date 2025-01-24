@@ -18,7 +18,7 @@ const TaskList: React.FC = () => {
       module: "Pembelian",
       weight: 2.0,
       totalWeight: 5.0,
-      percent: 75,
+      percent: 40,
       assignees: ["Gustavo Bergson"],
       deadline: "2024-12-10",
     },
@@ -26,7 +26,7 @@ const TaskList: React.FC = () => {
       module: "Penjualan",
       weight: 4.0,
       totalWeight: 8.0,
-      percent: 15,
+      percent: 50,
       assignees: ["Roger Franci"],
       deadline: "2024-12-12",
     },
@@ -34,7 +34,7 @@ const TaskList: React.FC = () => {
       module: "Penerimaan",
       weight: 3.0,
       totalWeight: 7.0,
-      percent: 15,
+      percent: 42.86,
       assignees: ["Anna Smith"],
       deadline: "2024-12-15",
     },
@@ -50,7 +50,7 @@ const TaskList: React.FC = () => {
     percent: 0,
     assignees: [],
     deadline: "",
-    showAssigneesDropdown: false, // Reset dropdown state
+    showAssigneesDropdown: false,
   });
 
   const assigneesList = ["Gustavo Bergson", "Roger Franci", "Wilson Press"];
@@ -81,7 +81,7 @@ const TaskList: React.FC = () => {
       percent: 0,
       assignees: [],
       deadline: "",
-      showAssigneesDropdown: false, // Reset dropdown state
+      showAssigneesDropdown: false,
     });
     setIsModalOpen(false);
   };
@@ -98,12 +98,17 @@ const TaskList: React.FC = () => {
   const handleSubmitAssignees = () => {
     setNewTask({
       ...newTask,
-      showAssigneesDropdown: false, // Menutup dropdown setelah submit
+      showAssigneesDropdown: false,
     });
   };
 
+  // Fungsi untuk menghitung persentase
+  const calculatePercentage = (weight: number, totalWeight: number) => {
+    return totalWeight !== 0 ? (weight / totalWeight) * 100 : 0;
+  };
+
   return (
-    <div className="">
+    <div>
       <HeaderDetail />
 
       <div className="mb-6 text-black font-bold">
@@ -143,7 +148,7 @@ const TaskList: React.FC = () => {
               <td className="p-4">{task.module}</td>
               <td className="p-4">{task.weight.toFixed(2)}</td>
               <td className="p-4">{task.totalWeight.toFixed(2)}</td>
-              <td className="p-4">{task.percent}%</td>
+              <td className="p-4">{task.percent.toFixed(2)}%</td>
               <td className="p-4">{task.assignees.join(", ")}</td>
               <td className="p-4">{task.deadline}</td>
             </tr>
@@ -152,14 +157,12 @@ const TaskList: React.FC = () => {
       </table>
 
       <div className="flex justify-between mt-6">
-        <div className="font-bold text-gray-500">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-gray-500 transition duration-200"
-          >
-            Add more task...
-          </button>
-        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="text-gray-500 font-bold transition duration-200"
+        >
+          Add more task...
+        </button>
         <div className="fixed bottom-10 right-10 flex gap-4">
           {!isEditing ? (
             <button
@@ -187,7 +190,6 @@ const TaskList: React.FC = () => {
         </div>
       </div>
 
-      {/* Medium Pop-up Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
@@ -222,9 +224,14 @@ const TaskList: React.FC = () => {
                   type="number"
                   step="0.01"
                   value={newTask.weight}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, weight: parseFloat(e.target.value) })
-                  }
+                  onChange={(e) => {
+                    const weight = parseFloat(e.target.value);
+                    setNewTask({
+                      ...newTask,
+                      weight,
+                      percent: calculatePercentage(weight, newTask.totalWeight),
+                    });
+                  }}
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
@@ -236,9 +243,14 @@ const TaskList: React.FC = () => {
                   type="number"
                   step="0.01"
                   value={newTask.totalWeight}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, totalWeight: parseFloat(e.target.value) })
-                  }
+                  onChange={(e) => {
+                    const totalWeight = parseFloat(e.target.value);
+                    setNewTask({
+                      ...newTask,
+                      totalWeight,
+                      percent: calculatePercentage(newTask.weight, totalWeight),
+                    });
+                  }}
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
@@ -249,12 +261,9 @@ const TaskList: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
-                  value={newTask.percent}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, percent: parseFloat(e.target.value) })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
+                  value={newTask.percent.toFixed(2)}
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
                 />
               </div>
 
@@ -263,7 +272,9 @@ const TaskList: React.FC = () => {
                 <div className="relative">
                   <div
                     className="border rounded-md p-2 bg-white cursor-pointer relative flex justify-between items-center"
-                    onClick={() => setNewTask({ ...newTask, showAssigneesDropdown: !newTask.showAssigneesDropdown })}
+                    onClick={() =>
+                      setNewTask({ ...newTask, showAssigneesDropdown: !newTask.showAssigneesDropdown })
+                    }
                   >
                     <span>
                       {newTask.assignees.length > 0
@@ -271,11 +282,11 @@ const TaskList: React.FC = () => {
                         : "Select Assignees"}
                     </span>
                     <FaChevronDown
-                      className={`transition duration-200 ${newTask.showAssigneesDropdown ? "rotate-180" : ""}`}
+                      className={`transition duration-200 ${
+                        newTask.showAssigneesDropdown ? "rotate-180" : ""
+                      }`}
                     />
                   </div>
-
-                  {/* Dropdown */}
                   {newTask.showAssigneesDropdown && (
                     <div className="absolute top-full left-0 w-full bg-white shadow-md rounded-md mt-1 z-10">
                       {assigneesList.map((assignee) => (
@@ -292,7 +303,6 @@ const TaskList: React.FC = () => {
                           {assignee}
                         </label>
                       ))}
-                      {/* Submit Button */}
                       <div className="p-2 text-center">
                         <button
                           type="button"
