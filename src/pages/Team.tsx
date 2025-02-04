@@ -74,7 +74,7 @@ const TeamTable = () => {
     <LayoutProject>
       <div className="p-4 flex flex-col">
         <table className="text-center w-full rounded-lg overflow-hidden">
-          <thead className="bg-[#02CCFF] text-white">
+          <thead className="bg-curawedaColor text-white">
             <tr>
               <th className="p-4 text-left">NAME</th>
               <th className="p-4 text-left">ROLE</th>
