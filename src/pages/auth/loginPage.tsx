@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginLayout from "../../layout/layoutLogin";
 import loginImage from "../../assets/Tampilan Login.png";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2"; 
+
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -28,6 +29,10 @@ const LoginPage: React.FC = () => {
         timerProgressBar: true,
       });
     }
+  };
+
+  const handleForgetPassword = () => {
+    navigate("/forget-password");
   };
 
   return (
@@ -78,6 +83,9 @@ const LoginPage: React.FC = () => {
                 className="bg-white w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
+              <div className="text-sm text-gray-600 mt-1">
+                <a href="#" onClick={handleForgetPassword} className="text-blue-600 underline">Forget Password?</a>
+              </div>
             </div>
 
             {/* Submit Button */}
