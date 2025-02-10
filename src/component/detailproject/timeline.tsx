@@ -37,96 +37,107 @@ const Timeline: React.FC = () => {
   };
 
   const renderCombinedTable = () => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const numbers = [1, 2, 3, 4];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const numbers = [1, 2, 3, 4];
 
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-center border-collapse rounded-lg mb-8">
-          {/* Header Tabel */}
-          <thead className="sticky top-0 bg-[#02CCFF]">
-            <tr>
-              <th className="p-4 text-white min-w-[200px]">MODULE</th>
-              <th className="p-4 text-white min-w-[150px]">START DATE</th>
-              <th className="p-4 text-white min-w-[150px]">END DATE</th>
-              <th className="p-4 text-white min-w-[150px]">DURATION</th>
-              <th className="p-4 text-white min-w-[200px]">STATUS</th>
-              {months.map((month) => (
-                <th key={month} className="p-4 text-white min-w-[120px]">
-                  <div className="flex flex-col items-center">
-                    <span>{month}</span>
-                    <div className="flex space-x-1 mt-1">
-                      {numbers.map((number) => (
-                        <span
-                          key={number}
-                          className="text-black rounded-full w-5 h-5 flex items-center justify-center border-curawedaColor"
-                        >
-                          {number}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-max text-center border-collapse rounded-lg mb-8">
+        {/* Header Tabel */}
+        <thead className="sticky top-0 bg-[#02CCFF]">
+          <tr>
+            <th className="p-4 text-white min-w-[200px]">MODULE</th>
+            <th className="p-4 text-white min-w-[150px]">START DATE</th>
+            <th className="p-4 text-white min-w-[150px]">END DATE</th>
+            <th className="p-4 text-white min-w-[150px]">DURATION</th>
+            <th className="p-4 text-white min-w-[200px]">STATUS</th>
 
-          {/* Body Tabel */}
-          <tbody className="bg-white text-black font-bold">
-            {modules.map((module, index) => (
-              <tr key={index} className="hover:bg-gray-100 transition duration-200">
-                <td className="p-4 border border-black min-w-[200px]">{module.name}</td>
-                <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.startDate}</td>
-                <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.endDate}</td>
-                <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.duration}</td>
-                <td className="p-4 border border-black relative text-center min-w-[200px]">
-                  <div className="relative">
-                    <button
-                      className={`rounded-full px-4 py-2 text-white font-bold ${module.color} flex items-center justify-between w-full`}
-                      onClick={() =>
-                        setOpenDropdownIndex(openDropdownIndex === index ? null : index)
-                      }
+            {/* Bagian Scrollable */}
+            {months.map((month, monthIndex) => (
+              <th key={monthIndex} className="p-4 text-white min-w-[120px] border-l border-black relative">
+              <div className="flex flex-col items-center">
+                <span>{month}</span>
+                <div className="grid grid-cols-4 w-full h-full relative">
+                  {numbers.map((number, index) => (
+                    <div key={index} className={`flex justify-center relative top-[8px] ${
+                      index === 0 ? "left-[-11px]" : 
+                      index === 1 ? "left-[-3px]" : 
+                      index === 2 ? "left-[5px]" : 
+                      "left-[12px]"
+                    }`}
                     >
-                      {module.status}
-                      <span className="ml-2">&#9662;</span>
-                    </button>
-                    {openDropdownIndex === index && (
-                      <div className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-56 p-4 z-10 border border-gray-300">
-                        <p className="text-center font-bold mb-4">Edit Status</p>
+                      {number}</div>
+                    ))}
+                </div>
+              </div>
+              </th>
+              ))}
+          </tr>
+        </thead>
+
+        {/* Body Tabel */}
+        <tbody className="bg-white text-black font-bold">
+          {modules.map((module, rowIndex) => (
+          <tr key={rowIndex} className="hover:bg-gray-100 transition duration-200 relative">
+            <td className="p-4 border border-black min-w-[200px]">{module.name}</td>
+            <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.startDate}</td>
+            <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.endDate}</td>
+            <td className="p-4 border border-black font-bold text-[#6A6A6A] text-center min-w-[150px]">{module.duration}</td>
+            <td className="p-4 border border-black relative text-center min-w-[200px]">
+              <div className="relative">
+                <button
+                  className={`rounded-full px-4 py-2 text-white font-bold ${module.color} flex items-center justify-between w-full`}
+                  onClick={() =>
+                    setOpenDropdownIndex(openDropdownIndex === rowIndex ? null : rowIndex)
+                  }
+                >
+                  {module.status}
+                    <span className="ml-2">&#9662;</span>
+                </button>
+                  {openDropdownIndex === rowIndex && (
+                    <div className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-56 p-4 z-10 border border-gray-300">
+                      <p className="text-center font-bold mb-4">Edit Status</p>
                         <div className="flex flex-col space-y-2">
                           <button
                             className="py-2 px-4 text-white font-bold bg-[#1C148B] rounded-full hover:bg-opacity-90"
-                            onClick={() => handleStatusChange(index, "DONE")}
+                            onClick={() => handleStatusChange(rowIndex, "DONE")}
                           >
                             DONE
                           </button>
                           <button
                             className="py-2 px-4 text-white font-bold bg-[#ECA6A6] rounded-full hover:bg-opacity-90"
-                            onClick={() => handleStatusChange(index, "ON PROGRESS")}
+                            onClick={() => handleStatusChange(rowIndex, "ON PROGRESS")}
                           >
                             ON PROGRESS
                           </button>
                           <button
                             className="py-2 px-4 text-white font-bold bg-[#B20000] rounded-full hover:bg-opacity-90"
-                            onClick={() => handleStatusChange(index, "PENDING")}
+                            onClick={() => handleStatusChange(rowIndex, "PENDING")}
                           >
                             PENDING
                           </button>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </td>
-                {months.map((_, monthIndex) => (
-                  <td key={monthIndex} className="p-9 border border-black min-w-[120px]"></td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+                    </div>
+                )}
+              </div>
+            </td>
+
+            {/* Bagian Scrollable */}
+            {months.map((_, monthIndex) => (
+              <td key={monthIndex} className="p-0 border border-black relative">
+              {/* Garis vertikal yang memanjang ke atas agar terlihat menyatu dengan header */}
+              <div className="absolute top-[-30px] left-1/4 w-[1px] bg-black h-[calc(100%+30px)]"></div>
+              <div className="absolute top-[-30px] left-2/4 w-[1px] bg-black h-[calc(100%+30px)]"></div>
+              <div className="absolute top-[-30px] left-3/4 w-[1px] bg-black h-[calc(100%+30px)]"></div>
+              </td>
+              ))}
+          </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
   return (
     <div>

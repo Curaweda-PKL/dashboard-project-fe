@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import LayoutProject from "../layout/layoutProject";
-import UpcomingProjects from "../component/upcomming";
-import Onhold from "../component/onhold";
-import InProgress from "../component/inprogress";
+import { InProgress, UpcomingProjects, OnHold } from "../component/project"; // Ganti dengan nama file yang sesuai
 import Swal from "sweetalert2";
 
 const Dashboard = () => {
@@ -185,7 +183,7 @@ const Dashboard = () => {
         />
       </div>
       <div className="bg-white shadow-md rounded-lg">
-        <Onhold
+        <OnHold
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("onHold", id)}
           selectedProjects={selectedProjects.onHold}
