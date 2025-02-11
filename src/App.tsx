@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./layout/header";
 import Dashboard from "./pages/dashboard";
 import TeamTable from "./pages/Team";
-import LoginPage from "./pages/auth/loginPage";
+import LoginPage from "./pages/Auth/loginPage";
 import LoginLayout from "./layout/layoutLogin";
 import NotFound from "./pages/notFound";
 import Setting from "./pages/Setting";
@@ -15,8 +15,8 @@ import Summary from "./component/detailproject/summary"; // Komponen Summary
 import AddTeamProject from "./component/addTeamProject";
 import Timeline from "./component/detailproject/timeline";
 import Demo from "./pages/calendar/calendar";
-import ForgetPage from "./pages/auth/ForgetPassword";
-import InputNewPassword from "./pages/auth/InputNewPassword";
+import ForgetPage from "./pages/Auth/ForgetPassword";
+import InputNewPassword from "./pages/Auth/InputNewPassword";
 
 
 const App: React.FC = () => {
