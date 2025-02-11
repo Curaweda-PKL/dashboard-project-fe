@@ -16,6 +16,7 @@ import AddTeamProject from "./component/addTeamProject";
 import Timeline from "./component/detailproject/timeline";
 import Demo from "./pages/calendar/calendar";
 import ForgetPage from "./pages/Auth/ForgetPassword";
+import InputNewPassword from "./pages/Auth/InputNewPassword";
 
 
 const App: React.FC = () => {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
         <Route element={<LoginLayout />}>
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/forget-password" element={<ForgetPage />} />
+          <Route path="/auth/input-new-password" element={<InputNewPassword />} />
 
         </Route>
 
