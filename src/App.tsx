@@ -19,41 +19,41 @@ import ForgetPage from "./pages/Auth/ForgetPassword";
 import InputNewPassword from "./pages/Auth/InputNewPassword";
 
 
+
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
         {/* Route untuk Halaman Login */}
-        <Route element={<LoginLayout />}>
-          <Route path="/auth/login" element={<LoginPage />} />
-          <Route path="/forget-password" element={<ForgetPage />} />
-          <Route path="/auth/input-new-password" element={<InputNewPassword />} />
-
-        </Route>
+        <Route path="/auth/login" element={<LoginLayout><LoginPage /></LoginLayout>} />
+        <Route path="/forget-password" element={<LoginLayout><ForgetPage /></LoginLayout>} />
+        <Route path="/auth/input-new-password" element={<LoginLayout><InputNewPassword /></LoginLayout>} />
 
         {/* Route dengan Layout Utama */}
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/team" element={<TeamTable />} />
-          <Route path="/calendar" element={<Demo />} />
+        
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/team" element={<TeamTable />} />
+            <Route path="/calendar" element={<Demo />} />
 
-          {/* Route Settings dengan Nested Routes */}
-          <Route path="/settings" element={<Setting />}>
-            <Route path="" element={<MyAccount />} /> {/* Default ke MyAccount */}
-            <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
-            <Route path="logOut" element={<LogOut />} /> {/* Menutup Pop Up dan Kembali */}
+            {/* Route Settings dengan Nested Routes */}
+            <Route path="/settings" element={<Setting />}>
+              <Route path="" element={<MyAccount />} /> {/* Default ke MyAccount */}
+              <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
+              <Route path="logOut" element={<LogOut />} /> {/* Menutup Pop Up dan Kembali */}
+            </Route>
+
+            {/* Route Task List */}
+            <Route path="/task" element={<TaskList />} />
+
+            {/* Route Summary */}
+            <Route path="/summary" element={<Summary />} />
+
+            {/* Route Add Team Project */}
+            <Route path="/addTeamProject" element={<AddTeamProject />} />
+            <Route path="/timeline" element={<Timeline />} />
           </Route>
-
-          {/* Route Task List */}
-          <Route path="/task" element={<TaskList />} />
-
-          {/* Route Summary */}
-          <Route path="/summary" element={<Summary />} />
-
-          {/* Route Add Team Project */}
-          <Route path="/addTeamProject" element={<AddTeamProject />} />
-          <Route path="/timeline" element={<Timeline />} />
-        </Route>
+        
 
         {/* Route Not Found */}
         <Route path="*" element={<NotFound />} />
@@ -63,3 +63,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

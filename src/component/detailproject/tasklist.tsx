@@ -1,53 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail";
 import { FaChevronDown } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
 import Swal from "sweetalert2";
+import projectTaskApi, { Task as ApiTask } from "../api/projectTaskApi";
 
-// Definisi tipe Task
-interface Task {
-  module: string;
-  weight: number;
-  totalWeight: number;
-  percent: number;
-  assignees: string[];
-  deadline: string;
+// Definisi tipe Task untuk tampilan (bisa di-extend dari API Task)
+interface Task extends ApiTask {
   showAssigneesDropdown?: boolean;
 }
 
 const TaskList: React.FC = () => {
-  // Data awal untuk tasks
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      module: "Pembelian",
-      weight: 2.0,
-      totalWeight: 5.0,
-      percent: 40,
-      assignees: ["Gustavo Bergson"],
-      deadline: "2024-12-10",
-    },
-    {
-      module: "Penjualan",
-      weight: 4.0,
-      totalWeight: 8.0,
-      percent: 50,
-      assignees: ["Roger Franci"],
-      deadline: "2024-12-12",
-    },
-    {
-      module: "Penerimaan",
-      weight: 3.0,
-      totalWeight: 7.0,
-      percent: 42.86,
-      assignees: ["Anna Smith"],
-      deadline: "2024-12-15",
-    },
-  ]);
-
-  // State untuk mode hapus (untuk memilih task yang akan dihapus)
+  // State tasks diambil dari API (awalnya kosong)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  // State untuk mode hapus
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
-
   // State modal untuk menambahkan task baru
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newTask, setNewTask] = useState<Task>({
@@ -60,7 +28,7 @@ const TaskList: React.FC = () => {
     showAssigneesDropdown: false,
   });
 
-  // State modal untuk mengedit task (pop-up edit)
+  // State modal untuk mengedit task
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editTaskIndex, setEditTaskIndex] = useState<number | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
@@ -72,13 +40,42 @@ const TaskList: React.FC = () => {
     return totalWeight !== 0 ? (weight / totalWeight) * 100 : 0;
   };
 
+  // --- Fetch Data dari API ---
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const data = await projectTaskApi.getAllProjectTasks();
+        console.log("Fetched tasks:", data);
+        // Pastikan data berupa array
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          console.error("Data fetched is not an array:", data);
+          setTasks([]);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch tasks:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Failed to load tasks",
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
   // Fungsi untuk mengaktifkan mode hapus
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
     setSelectedTasks([]);
   };
 
-  // Fungsi untuk menghapus task yang dipilih
+  // Fungsi untuk menghapus task yang dipilih (operasi lokal)
   const handleRemoveTask = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -93,7 +90,6 @@ const TaskList: React.FC = () => {
         setTasks(tasks.filter((_, index) => !selectedTasks.includes(index)));
         setSelectedTasks([]);
         setIsEditing(false);
-
         Swal.fire({
           icon: "success",
           title: "Task has been removed",
@@ -113,7 +109,7 @@ const TaskList: React.FC = () => {
     );
   };
 
-  // Fungsi untuk menambahkan task baru
+  // Fungsi untuk menambahkan task baru (operasi lokal; bisa integrasikan API createTask)
   const handleAddTask = () => {
     setTasks([...tasks, newTask]);
     Swal.fire({
@@ -158,7 +154,7 @@ const TaskList: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  // Fungsi untuk menyimpan perubahan dari modal edit
+  // Fungsi untuk menyimpan perubahan dari modal edit (operasi lokal; bisa integrasikan API updateTask)
   const handleSaveEdit = () => {
     if (editTaskIndex !== null && editTask !== null) {
       const updatedTasks = [...tasks];
@@ -222,11 +218,10 @@ const TaskList: React.FC = () => {
                   </td>
                 )}
                 <td className="p-4">{task.module}</td>
-                <td className="p-4">{task.weight.toFixed(2)}</td>
-                <td className="p-4">{task.totalWeight.toFixed(2)}</td>
-                <td className="p-4">{task.percent.toFixed(2)}%</td>
+                <td className="p-4">{Number(task.weight).toFixed(2)}</td>
+                <td className="p-4">{Number(task.totalWeight).toFixed(2)}</td>
+                <td className="p-4">{Number(task.percent).toFixed(2)}%</td>
                 <td className="p-4">{task.assignees.join(", ")}</td>
-                {/* Kolom Deadline: teks deadline di tengah dan tombol edit di paling kanan */}
                 <td className="p-4 relative">
                   <span className="block text-center">{task.deadline}</span>
                   <button
@@ -313,6 +308,7 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Contoh field Project Name (sama dengan Module Name untuk contoh ini) */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
@@ -501,6 +497,7 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Untuk contoh, field Project Name sama dengan Module Name */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
@@ -522,7 +519,7 @@ const TaskList: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
-                  value={editTask.weight}
+                  value={Number(editTask.weight).toString()}
                   onChange={(e) => {
                     const weight = parseFloat(e.target.value);
                     setEditTask({
@@ -542,7 +539,7 @@ const TaskList: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
-                  value={editTask.totalWeight}
+                  value={Number(editTask.totalWeight).toString()}
                   onChange={(e) => {
                     const totalWeight = parseFloat(e.target.value);
                     setEditTask({
