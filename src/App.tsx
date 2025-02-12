@@ -19,7 +19,6 @@ import ForgetPage from "./pages/Auth/ForgetPassword";
 import InputNewPassword from "./pages/Auth/InputNewPassword";
 
 
-
 const App: React.FC = () => {
   return (
     <Router>
