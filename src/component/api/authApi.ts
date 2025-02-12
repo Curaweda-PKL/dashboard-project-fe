@@ -1,22 +1,19 @@
 const authApi = (() => {
     const BASE_URL = "http://localhost:8080/api";
   
-    async function _fetchWithAuth(url: string, options: RequestInit = {}) {
-      const token = getAccessToken();
-      if (!token) {
-        throw new Error("tidak ada token");
-      }
-      const headers = {
-        ...options.headers,
-        Authorization: token ? `Bearer ${token}` : "",
-      };
-  
-      const response = await fetch(url, { ...options, headers });
-  
+    async function _fetchWithAuth(url: string, options?: RequestInit) {
+      const token = localStorage.getItem("token"); // contoh mendapatkan token
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options?.headers || {}),
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
-        throw new Error(`Request failed with status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
       return response.json();
     }
   
