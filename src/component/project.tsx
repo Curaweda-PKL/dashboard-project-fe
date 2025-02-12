@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Project } from "../component/api/projectApi"; // Pastikan path sesuai
+
 
 // Komponen Popup untuk InProgress (versi asli)
 interface PopupProps {
@@ -234,6 +236,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
 // Komponen InProgress (tetap sama)
 const InProgress: React.FC<{
+  projects: Project[];
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
@@ -338,6 +341,7 @@ const InProgress: React.FC<{
 
 // Komponen UpcomingProjects dengan PopupInProgress
 const UpcomingProjects: React.FC<{
+  projects: Project[];
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
@@ -415,6 +419,7 @@ const UpcomingProjects: React.FC<{
 
 // Komponen OnHold dengan PopupInProgress
 const OnHold: React.FC<{
+  projects: Project[];
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];

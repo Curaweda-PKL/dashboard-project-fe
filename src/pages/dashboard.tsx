@@ -1,9 +1,12 @@
+// src/pages/dashboard.tsx
 import { useState, useEffect } from "react";
 import LayoutProject from "../layout/layoutProject";
-import { InProgress, UpcomingProjects, OnHold } from "../component/project"; // Ganti dengan nama file yang sesuai
+import { InProgress, UpcomingProjects, OnHold } from "../component/project";
 import Swal from "sweetalert2";
+import projectApi, { Project } from "../component/api/projectApi";
 
 const Dashboard = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRemoveMode, setIsRemoveMode] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<{ [key: string]: string[] }>({
@@ -11,19 +14,34 @@ const Dashboard = () => {
     upcoming: [],
     onHold: [],
   });
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Ambil data proyek dari backend saat komponen Dashboard dimount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await projectApi.getAllProjects();
+        console.log("Data proyek:", data); // Lihat apakah data sesuai ekspektasi
+        setProjects(data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        Swal.fire({ icon: "error", title: "Failed to fetch projects" });
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  // Tampilkan notifikasi login (jika diperlukan)
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "true") {
-      localStorage.removeItem("isLoggedIn"); // Hapus status login
+      localStorage.removeItem("isLoggedIn");
       Swal.fire({
         icon: "success",
         title: "Login successfully",
-        background: "rgb(0, 208, 255)", 
-        color: "#000000", 
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
         position: "top-end",
         showConfirmButton: false,
         timer: 3000,
@@ -37,28 +55,40 @@ const Dashboard = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
-  const handleAddProjectSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Mencegah halaman reload
-    setIsModalOpen(false); // Menutup modal
-  
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-      },
-    });
-  
-    Toast.fire({
-      icon: "success",
-      title: "Project has been added",
-      background: "rgb(0, 208, 255)", // Warna biru untuk background
-      color: "#000000", // Warna teks agar terlihat jelas
-    });
+  // Handler untuk menambah proyek
+  const handleAddProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Ambil data dari form (Anda bisa menambahkan state untuk form input)
+    const newProjectData = {
+      title: "New Project", // Contoh, ganti dengan data dari form
+      start_date: new Date(startDate),
+      end_date: new Date(endDate),
+      description: "Description here",
+      status: "upcoming", // Misalnya default status adalah upcoming
+      pic_id: 1,
+    };
+
+    try {
+      await projectApi.createProject(newProjectData);
+      Swal.fire({
+        icon: "success",
+        title: "Project has been added",
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      setIsModalOpen(false);
+      // Setelah menambah proyek, refresh data
+      const data = await projectApi.getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error(error);
+      Swal.fire({ icon: "error", title: "Failed to add project" });
+    }
   };
 
   const handleProjectSelect = (section: string, projectId: string) => {
@@ -74,24 +104,16 @@ const Dashboard = () => {
     console.log("Removing selected projects:", selectedProjects);
     setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
     setIsRemoveMode(false);
-
-    const Toast = Swal.mixin({
+    Swal.fire({
+      icon: "success",
+      title: "Project has been removed",
+      background: "rgb(0, 208, 255)",
+      color: "#000000",
       toast: true,
       position: "top-end",
       showConfirmButton: false,
       timer: 3000,
       timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-      },
-    });
-
-    Toast.fire({
-      icon: "success",
-      title: "Project has been removed",
-      background: "rgb(0, 208, 255)", // Warna biru untuk background
-      color: "#000000", // Warna teks agar terlihat jelas
     });
   };
 
@@ -100,12 +122,24 @@ const Dashboard = () => {
     setIsRemoveMode(false);
   };
 
+  // Data untuk statistik proyek (bisa juga dihitung dari state 'projects')
   const projectData = [
-    { count: 6, label: "In Progress" },
-    { count: 8, label: "Upcoming" },
-    { count: 2, label: "On Hold" },
-    { count: 16, label: "Total Projects" },
+    { count: projects.filter(p => p.status.toLowerCase() === "in progress" || p.status.toLowerCase() === "in-progress").length, label: "In Progress" },
+    { count: projects.filter(p => p.status.toLowerCase() === "upcoming").length, label: "Upcoming" },
+    { count: projects.filter(p => p.status.toLowerCase() === "on hold" || p.status.toLowerCase() === "on-hold").length, label: "On Hold" },
+    { count: projects.length, label: "Total Projects" },
   ];
+
+  // Filter proyek berdasarkan status untuk dikirim ke masing-masing komponen
+  const inProgressProjects = projects.filter(
+    (p) => p.status.toLowerCase() === "in progress" || p.status.toLowerCase() === "in-progress"
+  );
+  const upcomingProjects = projects.filter(
+    (p) => p.status.toLowerCase() === "upcoming"
+  );
+  const onHoldProjects = projects.filter(
+    (p) => p.status.toLowerCase() === "on hold" || p.status.toLowerCase() === "on-hold"
+  );
 
   const handleConfirmRemove = () => {
     Swal.fire({
@@ -118,7 +152,7 @@ const Dashboard = () => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        handleRemoveProjects(); // Hapus project setelah konfirmasi
+        handleRemoveProjects();
       }
     });
   };
@@ -132,7 +166,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="grid grid-cols-4 gap-40 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
             {projectData.map((item, index) => (
               <div
                 key={index}
@@ -154,11 +188,11 @@ const Dashboard = () => {
               Add Project
             </button>
             <button
-              className="bg-[#B20000] hover:bg-red-900 text-white  font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#B20000] hover:bg-red-900 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => {
                 setIsRemoveMode((prev) => !prev);
                 if (isRemoveMode) {
-                  handleCancelRemove(); // Reset state when toggling to remove mode
+                  handleCancelRemove();
                 }
               }}
             >
@@ -170,6 +204,7 @@ const Dashboard = () => {
 
       <div className="bg-white shadow-md rounded-lg">
         <InProgress
+          projects={inProgressProjects}
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("inProgress", id)}
           selectedProjects={selectedProjects.inProgress}
@@ -177,6 +212,7 @@ const Dashboard = () => {
       </div>
       <div className="bg-white shadow-md rounded-lg">
         <UpcomingProjects
+          projects={upcomingProjects}
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("upcoming", id)}
           selectedProjects={selectedProjects.upcoming}
@@ -184,6 +220,7 @@ const Dashboard = () => {
       </div>
       <div className="bg-white shadow-md rounded-lg">
         <OnHold
+          projects={onHoldProjects}
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("onHold", id)}
           selectedProjects={selectedProjects.onHold}
@@ -194,7 +231,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
             <div className="flex flex-col items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text center">Add Project</h3>
+              <h3 className="text-2xl font-bold text-center">Add Project</h3>
               <button
                 className="text-gray-600 hover:text-gray-900 self-end"
                 onClick={() => setIsModalOpen(false)}
@@ -211,67 +248,63 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                  <label className="block font-semibold mb-2">Periode</label>
-                  <div className="relative">
-                    <div
-                      className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
-                      onClick={toggleDropdown}
+                <label className="block font-semibold mb-2">Periode</label>
+                <div className="relative">
+                  <div
+                    className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
+                    onClick={toggleDropdown}
+                  >
+                    <span className={`${startDate && endDate ? "text-black" : "text-gray-500"}`}>
+                      {startDate && endDate
+                        ? `${startDate} to ${endDate}`
+                        : "Select Periode"}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
                     >
-                      <span
-                        className={`${
-                          startDate && endDate ? "text-black" : "text-gray-500"
-                        }`}
-                    >
-                        {startDate && endDate
-                          ? `${startDate} to ${endDate}`
-                          : "Select Periode"}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-
-                    {isDropdownOpen && (
-                      <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg p-4">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="date"
-                            className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                            placeholder="Start Date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                          />
-                          <span className="font-semibold">to</span>
-                          <input
-                            type="date"
-                            className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                            placeholder="End Date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                          />
-                        </div>
-                        <button
-                          className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
-                          onClick={() => setIsDropdownOpen(false)}
-                          type="button"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    )}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
+
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg p-4">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="date"
+                          className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                          placeholder="Start Date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        />
+                        <span className="font-semibold">to</span>
+                        <input
+                          type="date"
+                          className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                          placeholder="End Date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </div>
+                      <button
+                        className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
+                        onClick={() => setIsDropdownOpen(false)}
+                        type="button"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  )}
                 </div>
+              </div>
               <div>
                 <label className="block font-semibold mb-2">Contract Number</label>
                 <input
