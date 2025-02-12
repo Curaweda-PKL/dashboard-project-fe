@@ -14,8 +14,8 @@ const RemoveTeamModal: React.FC<RemoveTeamModalProps> = ({ member, onClose, onRe
       text: `You are about to delete ${member.name}`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#02CCFF",
-      cancelButtonColor: "#6A6A6A",
+      confirmButtonColor: "#09abca",
+      cancelButtonColor: "#6D6D6D",
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {

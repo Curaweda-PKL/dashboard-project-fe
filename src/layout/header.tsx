@@ -1,4 +1,4 @@
-import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
 import { useState, useCallback, useEffect } from "react";
@@ -19,8 +19,36 @@ import sidebarLinks from "../layout/sidebar.json";
 
 const Layout = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // Hook untuk navigasi
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [showNotifications, setShowNotifications] = useState(false);
+  const [pageTitle, setPageTitle] = useState("Dashboard");
+
+  // Rekursif mencari judul halaman
+  const getPageTitle = (links: SidebarLink[], path: string): string => {
+    // Cek apakah path berada di dalam /settings
+    if (path.includes("/settings")) {
+      return "Settings"; // Jika di dalam /settings, tampilkan judul Settings
+    }
+
+    // Lanjutkan dengan pencarian judul di sidebar
+    for (const link of links) {
+      if (link.path === path) {
+        return link.name;
+      }
+      if (link.children) {
+        const title = getPageTitle(link.children, path);
+        if (title) return title;
+      }
+    }
+    return "Dashboard"; // Default title
+  };
+
+  // Update judul halaman berdasarkan lokasi
+  useEffect(() => {
+    const currentTitle = getPageTitle(sidebarLinks, location.pathname);
+    setPageTitle(currentTitle);
+  }, [location.pathname]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -39,63 +67,80 @@ const Layout = () => {
     }));
   }, []);
 
-  const renderSubLinks = useCallback((link: SidebarLink) => {
-    const isOpen = !!openSubmenus[link.name];
-    const IconComponent = iconMap[link.icon];
+  const renderSubLinks = useCallback(
+    (link: SidebarLink) => {
+      const isOpen = !!openSubmenus[link.name];
+      const IconComponent = iconMap[link.icon];
 
-    return (
-      <li key={link.name} className="flex flex-col text-lg">
-        <div
-          className={`flex items-center justify-between cursor-pointer p-2 rounded ${
-            isOpen ? "bg-white text-black shadow-md" : ""
-          }`}
-          onClick={() => link.children && toggleSubmenu(link.name)}
-        >
-          <div className="flex items-center">
-            {IconComponent && <IconComponent className="mr-2" />}
-            {link.name === "Team" && <FaUser className="mr-2" />}
-            {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
-            {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
-            {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+      return (
+        <li key={link.name} className="flex flex-col text-xl">
+          <div
+            className={`flex items-center justify-between cursor-pointer p-2 rounded-full ${
+              isOpen ? "bg-white text-black shadow-md" : ""
+            }`}
+            onClick={() => link.children && toggleSubmenu(link.name)}
+          >
+            <div className="flex items-center w-full">
             {link.path ? (
-              <Link to={link.path}>{link.name}</Link>
+              <NavLink
+                to={link.path}
+                className={({ isActive }) =>
+                  `flex items-center p-2 rounded-full w-full ${
+                    isActive
+                      ? "bg-[#02CCFF] text-black font-semibold"
+                      : "text-black hover:bg-blue-200"
+                  }`
+                }
+              >
+                {IconComponent && <IconComponent className="mr-2" />}
+                {link.name === "Team" && <FaUser className="mr-2" />}
+                {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
+                {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
+                {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+                {link.name}
+              </NavLink>
             ) : (
-              <span>{link.name}</span>
+              <span className="flex items-center">
+                {IconComponent && <IconComponent className="mr-2" />}
+                {link.name}
+              </span>
             )}
           </div>
 
-          {link.children && (
-            <MdExpandMore
-              className={`transition-transform duration-0 ${isOpen ? "rotate-180" : ""}`}
-            />
-          )}
-        </div>
+            {link.children && (
+              <MdExpandMore
+                className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+              />
+            )}
+          </div>
 
-        {link.children && isOpen && (
-          <ul className="ml-4 mt-2">
-            {link.children
-              .filter((subLink) => location.pathname.includes(subLink.path || ""))
-              .map((subLink) => (
-                <li key={subLink.path} className="my-1">
-                  <NavLink
-                    to={subLink.path || ""}
-                    className={({ isActive }) =>
-                      `block p-1 rounded ${
-                        isActive
-                          ? "text-[#76A8D8BF] font-semibold bg-green-700"
-                          : "text-black hover:bg-green-600"
-                      }`
-                    }
-                  >
-                    {subLink.name}
-                  </NavLink>
-                </li>
-              ))}
-          </ul>
-        )}
-      </li>
-    );
-  }, [openSubmenus, toggleSubmenu, location.pathname]);
+          {link.children && isOpen && (
+            <ul className="ml-4 mt-2">
+              {link.children
+                .filter((subLink) => location.pathname.includes(subLink.path || ""))
+                .map((subLink) => (
+                  <li key={subLink.path} className="my-1">
+                    <NavLink
+                      to={subLink.path || ""}
+                      className={({ isActive }) =>
+                        `block p-1 rounded-full ${
+                          isActive
+                            ? "text-[#76A8D8BF] font-semibold bg-[#02CCFF]"
+                            : "text-black hover:bg-blue-200"
+                        }`
+                      }
+                    >
+                      {subLink.name}
+                    </NavLink>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </li>
+      );
+    },
+    [openSubmenus, toggleSubmenu, location.pathname]
+  );
 
   return (
     <div className="h-screen drawer lg:drawer-open">
@@ -103,7 +148,7 @@ const Layout = () => {
 
       <div className="drawer-content flex flex-col bg-white h-screen">
         <div className="mx-4 mt-4">
-        <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800 border-b border-gray-300 shadow-md">
+          <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800">
             {/* Mobile Sidebar Toggle */}
             <div className="flex-none lg:hidden">
               <label
@@ -128,12 +173,12 @@ const Layout = () => {
             </div>
 
             <div className="flex items-center justify-start">
-              <div className="text-5xl font-bold mr-8">Dashboard</div>
+              <div className="text-5xl font-bold mr-8">{pageTitle}</div>
             </div>
 
             <div className="ml-auto">
               <div className="flex items-center justify-center">
-                <div className="indicator mr-8">
+                <div className="indicator mr-10">
                   <button onClick={() => setShowNotifications(true)}>
                     <IoNotificationsSharp size={30} className="text-2xl font-bold" />
                     <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
@@ -142,10 +187,16 @@ const Layout = () => {
                   </button>
                 </div>
 
+                {/* Garis Pemisah */}
+                <div className="border-l-2 h-12 mx-4 border-gray-300"></div> {/* Garis vertikal */}
+
                 <details className="dropdown dropdown-end">
-                  <summary className="btn btn-ghost hover:bg-transparent">
+                  <summary
+                    className="btn btn-ghost border "
+                    onClick={() => navigate("/settings")} // Navigasi ke halaman Settings
+                  >
                     <div className="avatar">
-                      <div className="w-8 border border-black rounded-full">
+                      <div className="w-12 border border-black rounded-full">
                         <img
                           src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
                           alt="Profile"
@@ -154,10 +205,10 @@ const Layout = () => {
                       </div>
                     </div>
                     <div className="text-right mr-4">
-                      <p className="text-sm font-semibold lg:text-base">
-                        Mochammad Faith
+                      <p className="text-lg font-semibold lg:text-xl">
+                        Username
                       </p>
-                      <p className="text-xs">axyz@gmail</p>
+                      <p className="text-sm">axyz@gmail</p>
                     </div>
                   </summary>
                 </details>
@@ -172,9 +223,10 @@ const Layout = () => {
       </div>
 
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
-        
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
-          <li className="text-center font-bold text-xl mb-10"></li>
+          <li>
+            <img src="/src/assets/curaweda.png" className="mx-auto w-24 h-20" alt="Curaweda" />
+          </li>
           {sidebarLinks.map(renderSubLinks)}
         </ul>
       </div>
@@ -186,6 +238,3 @@ const Layout = () => {
 };
 
 export default Layout;
-
-
-

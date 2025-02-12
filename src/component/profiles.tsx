@@ -28,8 +28,8 @@ const Profiles: React.FC = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#02CCFF",
-      cancelButtonColor: "#6A6A6A",
+      confirmButtonColor: "#09abca",
+      cancelButtonColor: "#6D6D6D",
       confirmButtonText: "Save",
     }).then((result) => {
       if (result.isConfirmed) {
@@ -91,7 +91,7 @@ const Profiles: React.FC = () => {
           Profiles
         </h1>
         <div
-          className="absolute bg-[#02CCFF] rounded-lg shadow-lg"
+          className="absolute bg-[#D9D9D9] rounded-lg shadow-lg"
           style={{
             width: "40%",
             height: "450px",
@@ -102,7 +102,7 @@ const Profiles: React.FC = () => {
           }}
         ></div>
         <div
-          className="relative z-10 bg-[#0285A3] p-6 rounded-lg shadow-lg"
+          className="relative z-10 bg-[#B9B9B9] p-6 rounded-lg drop-shadow-lg"
           style={{
             width: "50%",
             maxWidth: "400px",
@@ -134,7 +134,7 @@ const Profiles: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={handleUsernameChange}
-                className="p-3 rounded-full w-full text-black"
+                className="bg-white p-3 rounded-full w-full text-black"
               />
             </div>
           </div>
@@ -146,7 +146,7 @@ const Profiles: React.FC = () => {
           >
             <button
               onClick={handleSaveUsername}
-              className="bg-[#02CCFF] hover:bg-blue-500 text-white px-10 py-5 rounded-full"
+              className="bg-curawedaColor hover:bg-[#029FCC] text-white px-10 py-5 rounded-full"
               style={{ animation: "slideUp 0.5s ease-out" }}
             >
               Save Username
@@ -183,13 +183,13 @@ const Profiles: React.FC = () => {
               <div className="flex justify-center space-x-20 mt-4">
                 <button
                   onClick={() => setIsPopupVisible(false)}
-                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full text-lg"
+                  className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full text-lg"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveImage}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full text-lg"
+                  className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full text-lg"
                 >
                   Save
                 </button>

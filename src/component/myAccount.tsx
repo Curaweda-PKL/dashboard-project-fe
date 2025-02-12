@@ -1,19 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const MyAccount: React.FC = () => {
-  const [username] = useState("User Name");
+  const [phoneNumber, setPhoneNumber] = useState("081xxxxxxxxx");
   const [email, setEmail] = useState("axyz@gmail.com");
   const [password, setPassword] = useState("********");
+  const [isPhoneNumberPopupVisible, setIsPhoneNumberPopupVisible] = useState(false);
   const [isEmailPopupVisible, setIsEmailPopupVisible] = useState(false);
   const [isPasswordPopupVisible, setIsPasswordPopupVisible] = useState(false);
+  const [newPhoneNumber, setNewPhoneNumber] = useState(phoneNumber);
   const [newEmail, setNewEmail] = useState(email);
   const [currentPassword, setCurrentPassword] = useState(""); // Kosongkan input initial untuk current password
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  
-  const navigate = useNavigate();
+
+  const handleEditPhoneNumber = () => {
+    setIsPhoneNumberPopupVisible(true);
+  };
 
   const handleEditEmail = () => {
     setIsEmailPopupVisible(true);
@@ -21,6 +24,30 @@ const MyAccount: React.FC = () => {
 
   const handleEditPassword = () => {
     setIsPasswordPopupVisible(true);
+  };
+
+  const handleSavePhoneNumber = () => {
+    setPhoneNumber(newPhoneNumber);
+    setIsPhoneNumberPopupVisible(false);
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+
+    Toast.fire({
+      icon: "success",
+      title: "Phone Number changed successfully",
+      background: "rgb(0, 208, 255)", // Warna biru untuk background
+      color: "#000000", // Warna teks agar terlihat jelas
+    });
   };
 
   const handleSaveEmail = () => {
@@ -85,7 +112,7 @@ const MyAccount: React.FC = () => {
 
       {/* Background Card */}
       <div
-        className="absolute bg-[#02CCFF] rounded-lg shadow-lg"
+        className="absolute bg-[#D9D9D9] rounded-lg shadow-lg"
         style={{
           width: "60%",
           height: "400px",
@@ -98,7 +125,7 @@ const MyAccount: React.FC = () => {
 
       {/* Main Card */}
       <div
-        className="relative z-10 bg-[#0285A3] p-6 rounded-lg shadow-lg"
+        className="relative z-10 bg-[#B9B9B9] p-6 rounded-lg drop-shadow-lg"
         style={{
           width: "50%",
           maxWidth: "400px",
@@ -113,14 +140,14 @@ const MyAccount: React.FC = () => {
             <div className="w-20 h-20 mx-auto rounded-full bg-gray-400"></div>
           </div>
 
-          {/* Username */}
+          {/* Phone Number */}
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="font-bold text-white">Username</h3>
-              <p>{username}</p>
+              <h3 className="font-bold text-white">Phone Number</h3>
+              <p>{phoneNumber}</p>
             </div>
             <button
-              onClick={() => navigate("/settings/profiles", { state: { username } })}
+              onClick={handleEditPhoneNumber}
               className="bg-gray-800 hover:bg-gray-600 font-bold text-white px-4 py-1 rounded-full"
             >
               Edit
@@ -157,6 +184,42 @@ const MyAccount: React.FC = () => {
         </div>
       </div>
 
+      {/* Pop-up untuk Edit Phone Number */}
+      {isPhoneNumberPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
+          <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] h-[400px] flex flex-col">
+              <h2 className="text-3xl font-bold text-gray-800 text-center mb-20">
+                Edit Phone Number
+              </h2>
+              <div className="mb-6">
+                <label className="block text-gray-800 font-bold mb-2">New Phone Number</label>
+                <input
+                  type="phone number"
+                  value={newPhoneNumber}
+                  onChange={(e) => setNewPhoneNumber(e.target.value)}
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black mx-auto"
+                />
+              </div>
+              <div className="flex justify-center space-x-20 mt-auto mb-4">
+                <button
+                  onClick={() => setIsPhoneNumberPopupVisible(false)}
+                  className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSavePhoneNumber}
+                  className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pop-up untuk Edit Email */}
       {isEmailPopupVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
@@ -171,19 +234,19 @@ const MyAccount: React.FC = () => {
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black mx-auto"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black mx-auto"
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsEmailPopupVisible(false)}
-                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full"
+                  className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveEmail}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full"
+                  className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
                 >
                   Save
                 </button>
@@ -207,7 +270,7 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="mb-4">
@@ -216,7 +279,7 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="mb-6">
@@ -225,19 +288,19 @@ const MyAccount: React.FC = () => {
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="p-3 rounded-full border-2 border-black w-full text-black"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsPasswordPopupVisible(false)}
-                  className="px-9 py-3 bg-[#6A6A6A] hover:bg-gray-400 text-white rounded-full"
+                  className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSavePassword}
-                  className="px-10 py-3 bg-[#02CCFF] hover:bg-blue-500 text-white rounded-full"
+                  className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
                 >
                   Save
                 </button>
