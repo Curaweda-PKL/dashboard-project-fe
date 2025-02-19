@@ -21,11 +21,19 @@ const authApi = (() => {
   }
 
   function getAccessToken() {
-    return localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      console.log("token berhasil diambil:", token);
+    }
+    return token;
   }
 
   function getAccessRole() {
-    return localStorage.getItem("accessRole");
+    const role = localStorage.getItem("accessRole");
+    if (role) {
+      console.log("role berhasil diambil");
+    }
+    return role;
   }
 
   async function login({
@@ -67,3 +75,4 @@ const authApi = (() => {
 })();
 
 export default authApi;
+

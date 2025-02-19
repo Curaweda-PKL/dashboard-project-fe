@@ -73,7 +73,7 @@ const ForgetPage: React.FC = () => {
           <div className="flex justify-between">
             <button
               type="button"
-              onClick={() => navigate("/input-new-password")}
+              onClick={() => navigate("/auth/login")}
               className="w-1/3 bg-gray-600 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition duration-200"
             >
               BACK
@@ -81,7 +81,7 @@ const ForgetPage: React.FC = () => {
             {submitted ? (
               <button
                 type="button"
-                onClick={() => navigate("/auth/input-new-password")}
+                onClick={() => navigate("/auth/login")}
                 className="w-1/3 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition duration-200"
               >
                 NEXT
