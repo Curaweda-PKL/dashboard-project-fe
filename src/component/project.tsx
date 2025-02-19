@@ -3,11 +3,15 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Project } from "../component/api/projectApi"; // Pastikan path sesuai
 
-
-// Komponen Popup untuk InProgress (versi asli)
+// ============================================================
+// Komponen Popup untuk InProgress (dengan tambahan informasi)
+// ============================================================
 interface PopupProps {
   title: string;
   duration: string;
+  contactNumber: string;
+  noERD: string;
+  client: string;
   onClose: () => void;
   onDetail: () => void;
   onHold: () => void;
@@ -16,14 +20,18 @@ interface PopupProps {
 const Popup: React.FC<PopupProps> = ({
   title,
   duration,
+  contactNumber,
+  noERD,
+  client,
   onClose,
   onDetail,
-  
+  onHold,
 }) => {
   const navigate = useNavigate();
 
   const handleDetail = () => {
-    navigate("/task");
+    // Kirim nilai project name melalui route state ke halaman task list
+    navigate("/task", { state: { projectName: title } });
     onDetail();
   };
 
@@ -43,12 +51,12 @@ const Popup: React.FC<PopupProps> = ({
         toast.onmouseleave = Swal.resumeTimer;
       },
     });
-    onClose(); // Tutup pop-up
+    onHold();
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-20 relative">
+      <div className="bg-white rounded-lg p-10 relative w-96">
         <button
           className="absolute top-2 right-2 text-black text-xl font-bold"
           onClick={onClose}
@@ -58,7 +66,22 @@ const Popup: React.FC<PopupProps> = ({
         <h2 className="text-2xl font-bold text-center mb-4">Project Details</h2>
         <h1 className="text-lg font-semibold text-center mb-2">{title}</h1>
         <p className="text-sm text-center text-gray-700 mb-4">{duration}</p>
-        <div className="flex flex-col items-center gap-4">
+
+        {/* Informasi tambahan */}
+        <div className="text-left space-y-2 text-gray-800">
+          <p>
+            <span className="font-semibold">Client:</span> {client}
+          </p>
+          <p>
+            <span className="font-semibold">Contact Number:</span> {contactNumber}
+          </p>
+          <p>
+            <span className="font-semibold">No ERD:</span> {noERD}
+          </p>
+        </div>
+
+        {/* Tombol Detail & Hold */}
+        <div className="flex flex-col items-center gap-4 mt-6">
           <button
             className="bg-curawedaColor text-white font-semibold w-full py-2 rounded-full hover:bg-[#029FCC]"
             onClick={handleDetail}
@@ -77,8 +100,9 @@ const Popup: React.FC<PopupProps> = ({
   );
 };
 
-// --- Komponen PopupInProgress ---
-// Komponen popup baru yang hanya memiliki tombol "In Progress" untuk memindahkan status
+// ============================================================
+// Komponen PopupInProgress (untuk Upcoming & OnHold)
+// ============================================================
 interface PopupInProgressProps {
   title: string;
   duration: string;
@@ -117,7 +141,9 @@ const PopupInProgress: React.FC<PopupInProgressProps> = ({
   );
 };
 
-// Komponen ProjectCard (tetap sama)
+// ============================================================
+// Komponen ProjectCard
+// ============================================================
 interface ProjectCardProps {
   id: string;
   title: string;
@@ -234,7 +260,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   );
 };
 
-// Komponen InProgress (tetap sama)
+// ============================================================
+// Komponen InProgress
+// ============================================================
 const InProgress: React.FC<{
   projects: Project[];
   isRemoveMode: boolean;
@@ -251,6 +279,7 @@ const InProgress: React.FC<{
     console.log("Hold clicked");
   };
 
+  // Data proyek contoh untuk InProgress (dengan properti tambahan)
   const projects = [
     {
       id: "1",
@@ -264,6 +293,9 @@ const InProgress: React.FC<{
         "https://randomuser.me/api/portraits/men/1.jpg",
         "https://randomuser.me/api/portraits/women/2.jpg",
       ],
+      contactNumber: "+62 812-3456-7890",
+      noERD: "ERD-2024-001",
+      client: "PT. Teknologi Maju",
     },
     {
       id: "2",
@@ -277,6 +309,9 @@ const InProgress: React.FC<{
         "https://randomuser.me/api/portraits/men/3.jpg",
         "https://randomuser.me/api/portraits/women/4.jpg",
       ],
+      contactNumber: "+62 813-9876-5432",
+      noERD: "ERD-2024-002",
+      client: "PT. Solusi Digital",
     },
     {
       id: "3",
@@ -290,6 +325,9 @@ const InProgress: React.FC<{
         "https://randomuser.me/api/portraits/men/5.jpg",
         "https://randomuser.me/api/portraits/women/6.jpg",
       ],
+      contactNumber: "+62 814-5678-1234",
+      noERD: "ERD-2024-003",
+      client: "PT. Kreatif Solusi",
     },
     {
       id: "4",
@@ -303,6 +341,9 @@ const InProgress: React.FC<{
         "https://randomuser.me/api/portraits/men/5.jpg",
         "https://randomuser.me/api/portraits/women/6.jpg",
       ],
+      contactNumber: "+62 815-6789-4321",
+      noERD: "ERD-2024-004",
+      client: "PT. Inovasi Digital",
     },
   ];
 
@@ -318,7 +359,7 @@ const InProgress: React.FC<{
             onProjectSelect={onProjectSelect}
             onCardClick={() => {
               if (!isRemoveMode) {
-                setSelectedProject(projects.find((p) => p.id === project.id));
+                setSelectedProject(project);
               }
             }}
             selectedProjects={selectedProjects}
@@ -330,6 +371,9 @@ const InProgress: React.FC<{
         <Popup
           title={selectedProject.title}
           duration={selectedProject.duration}
+          contactNumber={selectedProject.contactNumber}
+          noERD={selectedProject.noERD}
+          client={selectedProject.client}
           onClose={() => setSelectedProject(null)}
           onDetail={handleDetail}
           onHold={handleHold}
@@ -339,7 +383,9 @@ const InProgress: React.FC<{
   );
 };
 
+// ============================================================
 // Komponen UpcomingProjects dengan PopupInProgress
+// ============================================================
 const UpcomingProjects: React.FC<{
   projects: Project[];
   isRemoveMode: boolean;
@@ -361,7 +407,7 @@ const UpcomingProjects: React.FC<{
       ],
       reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     },
-    // Tambahkan proyek lainnya di sini...
+    // Tambahkan proyek lainnya jika diperlukan...
   ];
 
   return (
@@ -384,7 +430,6 @@ const UpcomingProjects: React.FC<{
         ))}
       </div>
 
-      {/* Tampilkan PopupInProgress bila ada proyek yang diklik */}
       {!isRemoveMode && selectedProject && (
         <PopupInProgress
           title={selectedProject.title}
@@ -392,23 +437,21 @@ const UpcomingProjects: React.FC<{
           onClose={() => setSelectedProject(null)}
           onInProgress={() => {
             console.log("Memindahkan proyek ke In Progress:", selectedProject);
-            // Tampilkan notifikasi sukses di pojok kanan atas
             Swal.fire({
-                icon: "success",
-                title: "Project has been on hold",
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                background: "rgb(0, 208, 255)",
-                color: "#000000",
-                didOpen: (toast) => {
-                  toast.onmouseenter = Swal.stopTimer;
-                  toast.onmouseleave = Swal.resumeTimer;
-                },
-              });
-            // Implementasikan logika pemindahan status disini (misalnya update state/global store)
+              icon: "success",
+              title: "Project moved to In Progress",
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              background: "rgb(0, 208, 255)",
+              color: "#000000",
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+            });
             setSelectedProject(null);
           }}
         />
@@ -417,7 +460,9 @@ const UpcomingProjects: React.FC<{
   );
 };
 
+// ============================================================
 // Komponen OnHold dengan PopupInProgress
+// ============================================================
 const OnHold: React.FC<{
   projects: Project[];
   isRemoveMode: boolean;
@@ -439,7 +484,7 @@ const OnHold: React.FC<{
       ],
       reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     },
-    // Tambahkan proyek lainnya di sini...
+    // Tambahkan proyek lainnya jika diperlukan...
   ];
 
   return (
@@ -462,7 +507,6 @@ const OnHold: React.FC<{
         ))}
       </div>
 
-      {/* Tampilkan PopupInProgress bila ada proyek yang diklik */}
       {!isRemoveMode && selectedProject && (
         <PopupInProgress
           title={selectedProject.title}
@@ -470,23 +514,21 @@ const OnHold: React.FC<{
           onClose={() => setSelectedProject(null)}
           onInProgress={() => {
             console.log("Memindahkan proyek ke In Progress:", selectedProject);
-            // Tampilkan notifikasi sukses di pojok kanan atas
             Swal.fire({
-                icon: "success",
-                title: "Project has been on hold",
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                background: "rgb(0, 208, 255)",
-                color: "#000000",
-                didOpen: (toast) => {
-                  toast.onmouseenter = Swal.stopTimer;
-                  toast.onmouseleave = Swal.resumeTimer;
-                },
-              });
-            // Implementasikan logika pemindahan status disini
+              icon: "success",
+              title: "Project moved to In Progress",
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              background: "rgb(0, 208, 255)",
+              color: "#000000",
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+            });
             setSelectedProject(null);
           }}
         />
