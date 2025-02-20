@@ -1,17 +1,14 @@
+// project.tsx
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Project } from "../component/api/projectApi"; // Pastikan path sesuai
+import { Project } from "../component/api/projectApi"; // Adjust path if needed
 
-// ============================================================
-// Komponen Popup untuk InProgress (dengan tambahan informasi)
-// ============================================================
+// --- Popup Components (unchanged) ---
 interface PopupProps {
   title: string;
   duration: string;
-  contactNumber: string;
-  noERD: string;
-  client: string;
   onClose: () => void;
   onDetail: () => void;
   onHold: () => void;
@@ -20,9 +17,6 @@ interface PopupProps {
 const Popup: React.FC<PopupProps> = ({
   title,
   duration,
-  contactNumber,
-  noERD,
-  client,
   onClose,
   onDetail,
   onHold,
@@ -30,8 +24,7 @@ const Popup: React.FC<PopupProps> = ({
   const navigate = useNavigate();
 
   const handleDetail = () => {
-    // Kirim nilai project name melalui route state ke halaman task list
-    navigate("/task", { state: { projectName: title } });
+    navigate("/task");
     onDetail();
   };
 
@@ -52,11 +45,12 @@ const Popup: React.FC<PopupProps> = ({
       },
     });
     onHold();
+    onClose(); // Close pop-up
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-10 relative w-96">
+      <div className="bg-white rounded-lg p-20 relative">
         <button
           className="absolute top-2 right-2 text-black text-xl font-bold"
           onClick={onClose}
@@ -66,22 +60,7 @@ const Popup: React.FC<PopupProps> = ({
         <h2 className="text-2xl font-bold text-center mb-4">Project Details</h2>
         <h1 className="text-lg font-semibold text-center mb-2">{title}</h1>
         <p className="text-sm text-center text-gray-700 mb-4">{duration}</p>
-
-        {/* Informasi tambahan */}
-        <div className="text-left space-y-2 text-gray-800">
-          <p>
-            <span className="font-semibold">Client:</span> {client}
-          </p>
-          <p>
-            <span className="font-semibold">Contact Number:</span> {contactNumber}
-          </p>
-          <p>
-            <span className="font-semibold">No ERD:</span> {noERD}
-          </p>
-        </div>
-
-        {/* Tombol Detail & Hold */}
-        <div className="flex flex-col items-center gap-4 mt-6">
+        <div className="flex flex-col items-center gap-4">
           <button
             className="bg-curawedaColor text-white font-semibold w-full py-2 rounded-full hover:bg-[#029FCC]"
             onClick={handleDetail}
@@ -100,60 +79,18 @@ const Popup: React.FC<PopupProps> = ({
   );
 };
 
-// ============================================================
-// Komponen PopupInProgress (untuk Upcoming & OnHold)
-// ============================================================
-interface PopupInProgressProps {
-  title: string;
-  duration: string;
-  onClose: () => void;
-  onInProgress: () => void;
-}
 
-const PopupInProgress: React.FC<PopupInProgressProps> = ({
-  title,
-  duration,
-  onClose,
-  onInProgress,
-}) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-20 relative">
-        <button
-          className="absolute top-2 right-2 text-black text-xl font-bold"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        <h2 className="text-2xl font-bold text-center mb-4">Project Details</h2>
-        <h1 className="text-lg font-semibold text-center mb-2">{title}</h1>
-        <p className="text-sm text-center text-gray-700 mb-4">{duration}</p>
-        <div className="flex flex-col items-center gap-4">
-          <button
-            className="bg-curawedaColor text-white font-semibold w-full py-2 rounded-full hover:bg-[#029FCC]"
-            onClick={onInProgress}
-          >
-            In Progress
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================================
-// Komponen ProjectCard
-// ============================================================
+// --- ProjectCard Component (unchanged) ---
 interface ProjectCardProps {
   id: string;
   title: string;
   duration: string;
-  phase?: string; // Optional untuk Upcoming
+  phase?: string; // For Upcoming
   endDateStatus: string;
   endDateColor: string;
   members: string[];
-  reason?: string; // Optional untuk On Hold
-  progress?: number; // Optional untuk In Progress
+  reason?: string; // For On Hold
+  progress?: number; // For In Progress
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
@@ -260,281 +197,86 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   );
 };
 
-// ============================================================
-// Komponen InProgress
-// ============================================================
-const InProgress: React.FC<{
+// --- Revised Child Components ---
+// Now these components simply receive projects via props rather than fetching internally.
+
+interface ProjectsSectionProps {
   projects: Project[];
   isRemoveMode: boolean;
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
-}> = ({ isRemoveMode, onProjectSelect, selectedProjects }) => {
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  sectionTitle: string;
+}
+
+const InProgress: React.FC<ProjectsSectionProps> = ({
+  projects,
+  isRemoveMode,
+  onProjectSelect,
+  selectedProjects,
+  sectionTitle,
+}) => {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const navigate = useNavigate();
 
   const handleDetail = () => {
-    console.log("Detail clicked");
+    navigate("/task");
+    setSelectedProject(null);
   };
-
-  const handleHold = () => {
-    console.log("Hold clicked");
-  };
-
-  // Data proyek contoh untuk InProgress (dengan properti tambahan)
-  const projects = [
-    {
-      id: "1",
-      title: "TourO Web Development",
-      duration: "January 10, 2024 - July 30, 2024",
-      phase: "Mr.Lorem",
-      progress: 70,
-      endDateStatus: "2 Days Left",
-      endDateColor: "#B20000",
-      members: [
-        "https://randomuser.me/api/portraits/men/1.jpg",
-        "https://randomuser.me/api/portraits/women/2.jpg",
-      ],
-      contactNumber: "+62 812-3456-7890",
-      noERD: "ERD-2024-001",
-      client: "PT. Teknologi Maju",
-    },
-    {
-      id: "2",
-      title: "Dashboard Portal",
-      duration: "February 12, 2024 - August 12, 2024",
-      phase: "Mr.Ipsum",
-      progress: 50,
-      endDateStatus: "2 Weeks Left",
-      endDateColor: "#D68C1E",
-      members: [
-        "https://randomuser.me/api/portraits/men/3.jpg",
-        "https://randomuser.me/api/portraits/women/4.jpg",
-      ],
-      contactNumber: "+62 813-9876-5432",
-      noERD: "ERD-2024-002",
-      client: "PT. Solusi Digital",
-    },
-    {
-      id: "3",
-      title: "Designing",
-      duration: "March 20, 2023 - August 20, 2024",
-      phase: "Mr.Jhon",
-      progress: 85,
-      endDateStatus: "1 Month Left",
-      endDateColor: "#148B84",
-      members: [
-        "https://randomuser.me/api/portraits/men/5.jpg",
-        "https://randomuser.me/api/portraits/women/6.jpg",
-      ],
-      contactNumber: "+62 814-5678-1234",
-      noERD: "ERD-2024-003",
-      client: "PT. Kreatif Solusi",
-    },
-    {
-      id: "4",
-      title: "Project",
-      duration: "July 10, 2024 - July 12, 2025",
-      phase: "Mrs.Lorem ipsum lorem ipsum",
-      progress: 5,
-      endDateStatus: "12 Months Left",
-      endDateColor: "#0AB239",
-      members: [
-        "https://randomuser.me/api/portraits/men/5.jpg",
-        "https://randomuser.me/api/portraits/women/6.jpg",
-      ],
-      contactNumber: "+62 815-6789-4321",
-      noERD: "ERD-2024-004",
-      client: "PT. Inovasi Digital",
-    },
-  ];
 
   return (
     <div className="p-6">
-      <h1 className="text-4xl font-bold mb-8 text-left">In Progress</h1>
+      <h1 className="text-4xl font-bold mb-8 text-left">{sectionTitle}</h1>
       <div className="flex flex-wrap justify-start">
         {projects.map((project) => (
-          <ProjectCard
+          <div
             key={project.id}
-            {...project}
-            isRemoveMode={isRemoveMode}
-            onProjectSelect={onProjectSelect}
-            onCardClick={() => {
-              if (!isRemoveMode) {
-                setSelectedProject(project);
-              }
+            onClick={() => {
+              if (!isRemoveMode) setSelectedProject(project);
             }}
-            selectedProjects={selectedProjects}
-          />
+            className="cursor-pointer"
+          >
+            <ProjectCard
+              id={project.id?.toString() || ""}
+              title={project.title}
+              duration={`${new Date(project.start_date).toLocaleDateString()} - ${new Date(
+                project.end_date
+              ).toLocaleDateString()}`}
+              endDateStatus={"Status Proyek"}
+              endDateColor={"#FF0000"}
+              members={[]}
+              isRemoveMode={isRemoveMode}
+              onProjectSelect={onProjectSelect}
+              selectedProjects={selectedProjects}
+              onCardClick={() => {
+                if (!isRemoveMode) setSelectedProject(project);
+              }}
+            />
+          </div>
         ))}
       </div>
 
       {!isRemoveMode && selectedProject && (
         <Popup
           title={selectedProject.title}
-          duration={selectedProject.duration}
-          contactNumber={selectedProject.contactNumber}
-          noERD={selectedProject.noERD}
-          client={selectedProject.client}
+          duration={`${new Date(selectedProject.start_date).toLocaleDateString()} - ${new Date(
+            selectedProject.end_date
+          ).toLocaleDateString()}`}
           onClose={() => setSelectedProject(null)}
           onDetail={handleDetail}
-          onHold={handleHold}
+          onHold={() => setSelectedProject(null)}
         />
       )}
     </div>
   );
 };
 
-// ============================================================
-// Komponen UpcomingProjects dengan PopupInProgress
-// ============================================================
-const UpcomingProjects: React.FC<{
-  projects: Project[];
-  isRemoveMode: boolean;
-  onProjectSelect: (id: string) => void;
-  selectedProjects: string[];
-}> = ({ isRemoveMode, onProjectSelect, selectedProjects }) => {
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
-
-  const projects = [
-    {
-      id: "1",
-      title: "Web Development",
-      duration: "July 16, 2024",
-      endDateStatus: "5 Days to Start",
-      endDateColor: "#4CAF50",
-      members: [
-        "https://randomuser.me/api/portraits/men/3.jpg",
-        "https://randomuser.me/api/portraits/women/4.jpg",
-      ],
-      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    },
-    // Tambahkan proyek lainnya jika diperlukan...
-  ];
-
-  return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold mb-8 text-left">Upcoming</h1>
-      <div className="flex flex-wrap justify-start">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            {...project}
-            isRemoveMode={isRemoveMode}
-            onProjectSelect={onProjectSelect}
-            selectedProjects={selectedProjects}
-            onCardClick={() => {
-              if (!isRemoveMode) {
-                setSelectedProject(project);
-              }
-            }}
-          />
-        ))}
-      </div>
-
-      {!isRemoveMode && selectedProject && (
-        <PopupInProgress
-          title={selectedProject.title}
-          duration={selectedProject.duration}
-          onClose={() => setSelectedProject(null)}
-          onInProgress={() => {
-            console.log("Memindahkan proyek ke In Progress:", selectedProject);
-            Swal.fire({
-              icon: "success",
-              title: "Project moved to In Progress",
-              toast: true,
-              position: "top-end",
-              showConfirmButton: false,
-              timer: 3000,
-              timerProgressBar: true,
-              background: "rgb(0, 208, 255)",
-              color: "#000000",
-              didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-              },
-            });
-            setSelectedProject(null);
-          }}
-        />
-      )}
-    </div>
-  );
+const UpcomingProjects: React.FC<ProjectsSectionProps> = (props) => {
+  // Reuse InProgress layout with a different section title.
+  return <InProgress {...props} sectionTitle="Upcoming" />;
 };
 
-// ============================================================
-// Komponen OnHold dengan PopupInProgress
-// ============================================================
-const OnHold: React.FC<{
-  projects: Project[];
-  isRemoveMode: boolean;
-  onProjectSelect: (id: string) => void;
-  selectedProjects: string[];
-}> = ({ isRemoveMode, onProjectSelect, selectedProjects }) => {
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
-
-  const projects = [
-    {
-      id: "1",
-      title: "Dashboard Portal",
-      duration: "February 12, 2024 - August 12, 2024",
-      endDateStatus: "On Hold for 1 Week",
-      endDateColor: "#9C27B0",
-      members: [
-        "https://randomuser.me/api/portraits/men/11.jpg",
-        "https://randomuser.me/api/portraits/women/12.jpg",
-      ],
-      reason: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    },
-    // Tambahkan proyek lainnya jika diperlukan...
-  ];
-
-  return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold mb-8 text-left">On Hold</h1>
-      <div className="flex flex-wrap justify-start">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            {...project}
-            isRemoveMode={isRemoveMode}
-            onProjectSelect={onProjectSelect}
-            selectedProjects={selectedProjects}
-            onCardClick={() => {
-              if (!isRemoveMode) {
-                setSelectedProject(project);
-              }
-            }}
-          />
-        ))}
-      </div>
-
-      {!isRemoveMode && selectedProject && (
-        <PopupInProgress
-          title={selectedProject.title}
-          duration={selectedProject.duration}
-          onClose={() => setSelectedProject(null)}
-          onInProgress={() => {
-            console.log("Memindahkan proyek ke In Progress:", selectedProject);
-            Swal.fire({
-              icon: "success",
-              title: "Project moved to In Progress",
-              toast: true,
-              position: "top-end",
-              showConfirmButton: false,
-              timer: 3000,
-              timerProgressBar: true,
-              background: "rgb(0, 208, 255)",
-              color: "#000000",
-              didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-              },
-            });
-            setSelectedProject(null);
-          }}
-        />
-      )}
-    </div>
-  );
+const OnHold: React.FC<ProjectsSectionProps> = (props) => {
+  return <InProgress {...props} sectionTitle="On Hold" />;
 };
 
 export { InProgress, UpcomingProjects, OnHold };
