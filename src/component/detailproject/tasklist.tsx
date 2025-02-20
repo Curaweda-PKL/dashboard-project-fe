@@ -4,6 +4,7 @@ import { FaChevronDown } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
 import Swal from "sweetalert2";
 import projectTaskApi, { Task as ApiTask } from "../api/projectTaskApi";
+import { useLocation } from "react-router-dom"; // <-- Import useLocation
 
 // Definisi tipe Task untuk tampilan (bisa di-extend dari API Task)
 interface Task extends ApiTask {
@@ -11,12 +12,15 @@ interface Task extends ApiTask {
 }
 
 const TaskList: React.FC = () => {
-  // State tasks diambil dari API (awalnya kosong)
+  // Ambil projectName dari route state
+  const location = useLocation();
+  const routeState = (location.state as { projectName?: string }) || {};
+  const projectNameFromRoute = routeState.projectName || "Default Project Name";
+
+  // State tasks dan lainnya
   const [tasks, setTasks] = useState<Task[]>([]);
-  // State untuk mode hapus
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
-  // State modal untuk menambahkan task baru
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newTask, setNewTask] = useState<Task>({
     module: "",
@@ -28,7 +32,6 @@ const TaskList: React.FC = () => {
     showAssigneesDropdown: false,
   });
 
-  // State modal untuk mengedit task
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editTaskIndex, setEditTaskIndex] = useState<number | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
@@ -47,7 +50,6 @@ const TaskList: React.FC = () => {
       try {
         const data = await projectTaskApi.getAllProjectTasks();
         console.log("Fetched tasks:", data);
-        // Pastikan data berupa array
         if (Array.isArray(data)) {
           setTasks(data);
         } else {
@@ -110,7 +112,7 @@ const TaskList: React.FC = () => {
     );
   };
 
-  // Fungsi untuk menambahkan task baru (operasi lokal; bisa integrasikan API createTask)
+  // Fungsi untuk menambahkan task baru (operasi lokal)
   const handleAddTask = () => {
     setTasks([...tasks, newTask]);
     Swal.fire({
@@ -135,7 +137,6 @@ const TaskList: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  // Fungsi untuk toggle assignee di modal tambah task
   const toggleAssignee = (assignee: string) => {
     setNewTask((prevTask) => {
       const updatedAssignees = prevTask.assignees.includes(assignee)
@@ -149,14 +150,12 @@ const TaskList: React.FC = () => {
     setNewTask({ ...newTask, showAssigneesDropdown: false });
   };
 
-  // Buka modal edit dengan data task yang akan diedit
   const handleOpenEditModal = (index: number) => {
     setEditTaskIndex(index);
     setEditTask({ ...tasks[index] });
     setIsEditModalOpen(true);
   };
 
-  // Fungsi untuk toggle assignee di modal edit task
   const toggleEditAssignee = (assignee: string) => {
     if (editTask) {
       const updatedAssignees = editTask.assignees.includes(assignee)
@@ -166,7 +165,6 @@ const TaskList: React.FC = () => {
     }
   };
 
-  // Fungsi untuk menyimpan perubahan dari modal edit
   const handleSaveEdit = () => {
     if (editTaskIndex !== null && editTask !== null) {
       const updatedTasks = [...tasks];
@@ -176,24 +174,16 @@ const TaskList: React.FC = () => {
       };
       setTasks(updatedTasks);
 
-      // Menampilkan SweetAlert Toast saat task berhasil diubah
-      const Toast = Swal.mixin({
+      Swal.fire({
+        icon: "success",
+        title: "Task has been changed",
         toast: true,
         position: "top-end",
         showConfirmButton: false,
         timer: 3000,
         timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.onmouseenter = Swal.stopTimer;
-          toast.onmouseleave = Swal.resumeTimer;
-        },
-      });
-
-      Toast.fire({
-        icon: "success",
-        title: "Task has been changed",
-        background: "rgb(0, 208, 255)", // Warna biru untuk background
-        color: "#000000", // Warna teks agar terlihat jelas
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
       });
     }
     setIsEditModalOpen(false);
@@ -203,9 +193,10 @@ const TaskList: React.FC = () => {
     <div className="p-4">
       <HeaderDetail />
 
+      {/* Header Detail yang otomatis mengisi nama project */}
       <div className="mb-6 text-black font-bold">
         <p>
-          <strong>Project :</strong> TourO Web Development
+          <strong>Project :</strong> {projectNameFromRoute}
         </p>
         <p>
           <strong>PM :</strong> Gustavo Bergson
@@ -218,6 +209,7 @@ const TaskList: React.FC = () => {
         </p>
       </div>
 
+      {/* Tabel Task List */}
       <div className="overflow-x-auto">
         <table className="text-center w-full rounded-lg overflow-hidden border">
           <thead>
@@ -340,19 +332,16 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Contoh field Project Name (sama dengan Module Name untuk contoh ini) */}
+              {/* Field Project Name terisi otomatis dari route state */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
                 </label>
                 <input
                   type="text"
-                  value={newTask.module}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, module: e.target.value })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
+                  value={projectNameFromRoute}
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
                 />
               </div>
               <div>
@@ -529,19 +518,16 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Untuk contoh, field Project Name sama dengan Module Name */}
+              {/* Field Project Name (otomatis dan read-only) */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
                 </label>
                 <input
                   type="text"
-                  value={editTask.module}
-                  onChange={(e) =>
-                    setEditTask({ ...editTask, module: e.target.value })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
+                  value={projectNameFromRoute}
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
                 />
               </div>
               <div>

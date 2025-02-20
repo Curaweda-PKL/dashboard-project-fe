@@ -1,51 +1,44 @@
-// projectSummaryApi.ts
+const BASE_URL = "http://localhost:8080/api";
 
-// Definisikan tipe data untuk hasil yang diharapkan
 export interface ProjectSummary {
   title: string;
-  start_date: string; // misalnya dalam format ISO string
-  end_date: string;
+  start_date: Date;
+  end_date: Date;
 }
 
-/**
- * Fungsi untuk mengambil data proyek dari API dan mengembalikan
- * hanya field title, start_date, dan end_date.
- */
 export async function fetchProjectSummary(): Promise<ProjectSummary[]> {
   try {
-    const response = await fetch("http://localhost:8080/api/projects", {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No auth token found!");
+      throw new Error("No auth token found!");
+    }
+
+    console.log("Fetching data from:", `${BASE_URL}/projects`);
+
+    const response = await fetch(`${BASE_URL}/projects`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Gunakan token dari localStorage
       },
     });
 
     if (!response.ok) {
-      const errorRes = await response.json().catch(() => ({}));
-      throw new Error(errorRes.message || "Failed to fetch projects");
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    // Ambil data JSON dari respons
-    const jsonData = await response.json();
+    const data = await response.json();
+    console.log("Fetched Project Data:", data);
 
-    // Jika API mengembalikan objek dengan properti "data", gunakan properti tersebut,
-    // jika tidak, gunakan jsonData langsung.
-    const projects = jsonData.data ? jsonData.data : jsonData;
-
-    if (!Array.isArray(projects)) {
-      throw new Error("Projects data is not an array");
-    }
-
-    // Map data proyek untuk mengembalikan hanya field title, start_date, dan end_date
-    const projectSummaries: ProjectSummary[] = projects.map((project: any) => ({
+    return data.map((project: any) => ({
       title: project.title,
-      start_date: project.start_date,
-      end_date: project.end_date,
+      start_date: new Date(project.start_date),
+      end_date: new Date(project.end_date),
     }));
-
-    return projectSummaries;
   } catch (error) {
     console.error("Error fetching project summary:", error);
     return [];
   }
 }
+
