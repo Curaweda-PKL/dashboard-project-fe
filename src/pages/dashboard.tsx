@@ -122,23 +122,43 @@ const Dashboard = () => {
     setIsRemoveMode(false);
   };
 
-  // Data untuk statistik proyek (bisa juga dihitung dari state 'projects')
   const projectData = [
-    { count: projects.filter(p => p.status.toLowerCase() === "in progress" || p.status.toLowerCase() === "in-progress").length, label: "In Progress" },
-    { count: projects.filter(p => p.status.toLowerCase() === "upcoming").length, label: "Upcoming" },
-    { count: projects.filter(p => p.status.toLowerCase() === "on hold" || p.status.toLowerCase() === "on-hold").length, label: "On Hold" },
+    {
+      count: projects.filter(
+        (p) =>
+          p.status.toLowerCase() === "in progress" ||
+          p.status.toLowerCase() === "in-progress"
+      ).length,
+      label: "In Progress",
+    },
+    {
+      count: projects.filter((p) => p.status.toLowerCase() === "upcoming").length,
+      label: "Upcoming",
+    },
+    {
+      count: projects.filter(
+        (p) =>
+          p.status.toLowerCase() === "on hold" ||
+          p.status.toLowerCase() === "on-hold"
+      ).length,
+      label: "On Hold",
+    },
     { count: projects.length, label: "Total Projects" },
   ];
 
-  // Filter proyek berdasarkan status untuk dikirim ke masing-masing komponen
+  // Filter proyek berdasarkan status
   const inProgressProjects = projects.filter(
-    (p) => p.status.toLowerCase() === "in progress" || p.status.toLowerCase() === "in-progress"
+    (p) =>
+      p.status.toLowerCase() === "in progress" ||
+      p.status.toLowerCase() === "in-progress"
   );
   const upcomingProjects = projects.filter(
     (p) => p.status.toLowerCase() === "upcoming"
   );
   const onHoldProjects = projects.filter(
-    (p) => p.status.toLowerCase() === "on hold" || p.status.toLowerCase() === "on-hold"
+    (p) =>
+      p.status.toLowerCase() === "on hold" ||
+      p.status.toLowerCase() === "on-hold"
   );
 
   const handleConfirmRemove = () => {
@@ -208,6 +228,7 @@ const Dashboard = () => {
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("inProgress", id)}
           selectedProjects={selectedProjects.inProgress}
+          sectionTitle="In Progress"  // Added required prop
         />
       </div>
       <div className="bg-white shadow-md rounded-lg">
@@ -216,6 +237,7 @@ const Dashboard = () => {
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("upcoming", id)}
           selectedProjects={selectedProjects.upcoming}
+          sectionTitle="Upcoming"  // Added required prop
         />
       </div>
       <div className="bg-white shadow-md rounded-lg">
@@ -224,6 +246,7 @@ const Dashboard = () => {
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("onHold", id)}
           selectedProjects={selectedProjects.onHold}
+          sectionTitle="On Hold"  // Added required prop
         />
       </div>
 
