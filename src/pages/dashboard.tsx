@@ -1,7 +1,6 @@
-// src/pages/dashboard.tsx
 import { useState, useEffect } from "react";
 import LayoutProject from "../layout/layoutProject";
-import { InProgress, UpcomingProjects, OnHold } from "../component/project";
+import { InProgress, UpcomingProjects } from "../component/project";
 import Swal from "sweetalert2";
 import projectApi, { Project } from "../component/api/projectApi";
 
@@ -12,28 +11,30 @@ const Dashboard = () => {
   const [selectedProjects, setSelectedProjects] = useState<{ [key: string]: string[] }>({
     inProgress: [],
     upcoming: [],
-    onHold: [],
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // State form input
+  const [projectName, setProjectName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [contractNumber, setContractNumber] = useState("");
+  const [noErd, setNoErd] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [description, setDescription] = useState("");
 
-  // Ambil data proyek dari backend saat komponen Dashboard dimount
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const data = await projectApi.getAllProjects();
-        console.log("Data proyek:", data); // Lihat apakah data sesuai ekspektasi
         setProjects(data);
       } catch (error) {
-        console.error("Error fetching projects:", error);
         Swal.fire({ icon: "error", title: "Failed to fetch projects" });
       }
     };
     fetchProjects();
   }, []);
 
-  // Tampilkan notifikasi login (jika diperlukan)
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "true") {
       localStorage.removeItem("isLoggedIn");
@@ -55,17 +56,20 @@ const Dashboard = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
-  // Handler untuk menambah proyek
   const handleAddProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ambil data dari form (Anda bisa menambahkan state untuk form input)
+
     const newProjectData = {
-      title: "New Project", // Contoh, ganti dengan data dari form
+      title: projectName,
       start_date: new Date(startDate),
       end_date: new Date(endDate),
-      description: "Description here",
-      status: "upcoming", // Misalnya default status adalah upcoming
+      contract_number: contractNumber,
+      no_erd: noErd,
+      client_name: clientName,
+      description: description, // Definition of project
+      status: "upcoming", // default status
       pic_id: 1,
+      progress: 0, // default progress
     };
 
     try {
@@ -82,11 +86,16 @@ const Dashboard = () => {
         timerProgressBar: true,
       });
       setIsModalOpen(false);
-      // Setelah menambah proyek, refresh data
+      setProjectName("");
+      setStartDate("");
+      setEndDate("");
+      setContractNumber("");
+      setNoErd("");
+      setClientName("");
+      setDescription("");
       const data = await projectApi.getAllProjects();
       setProjects(data);
     } catch (error) {
-      console.error(error);
       Swal.fire({ icon: "error", title: "Failed to add project" });
     }
   };
@@ -101,8 +110,7 @@ const Dashboard = () => {
   };
 
   const handleRemoveProjects = () => {
-    console.log("Removing selected projects:", selectedProjects);
-    setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
+    setSelectedProjects({ inProgress: [], upcoming: [] });
     setIsRemoveMode(false);
     Swal.fire({
       icon: "success",
@@ -118,16 +126,15 @@ const Dashboard = () => {
   };
 
   const handleCancelRemove = () => {
-    setSelectedProjects({ inProgress: [], upcoming: [], onHold: [] });
+    setSelectedProjects({ inProgress: [], upcoming: [] });
     setIsRemoveMode(false);
   };
 
   const projectData = [
     {
-      count: projects.filter(
-        (p) =>
-          p.status.toLowerCase() === "in progress" ||
-          p.status.toLowerCase() === "in-progress"
+      count: projects.filter((p) =>
+        p.status.toLowerCase() === "in progress" ||
+        p.status.toLowerCase() === "in-progress"
       ).length,
       label: "In Progress",
     },
@@ -135,30 +142,15 @@ const Dashboard = () => {
       count: projects.filter((p) => p.status.toLowerCase() === "upcoming").length,
       label: "Upcoming",
     },
-    {
-      count: projects.filter(
-        (p) =>
-          p.status.toLowerCase() === "on hold" ||
-          p.status.toLowerCase() === "on-hold"
-      ).length,
-      label: "On Hold",
-    },
     { count: projects.length, label: "Total Projects" },
   ];
 
-  // Filter proyek berdasarkan status
-  const inProgressProjects = projects.filter(
-    (p) =>
-      p.status.toLowerCase() === "in progress" ||
-      p.status.toLowerCase() === "in-progress"
+  const inProgressProjects = projects.filter((p) =>
+    p.status.toLowerCase() === "in progress" ||
+    p.status.toLowerCase() === "in-progress"
   );
   const upcomingProjects = projects.filter(
     (p) => p.status.toLowerCase() === "upcoming"
-  );
-  const onHoldProjects = projects.filter(
-    (p) =>
-      p.status.toLowerCase() === "on hold" ||
-      p.status.toLowerCase() === "on-hold"
   );
 
   const handleConfirmRemove = () => {
@@ -228,7 +220,7 @@ const Dashboard = () => {
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("inProgress", id)}
           selectedProjects={selectedProjects.inProgress}
-          sectionTitle="In Progress"  // Added required prop
+          sectionTitle="In Progress"
         />
       </div>
       <div className="bg-white shadow-md rounded-lg">
@@ -237,16 +229,7 @@ const Dashboard = () => {
           isRemoveMode={isRemoveMode}
           onProjectSelect={(id) => handleProjectSelect("upcoming", id)}
           selectedProjects={selectedProjects.upcoming}
-          sectionTitle="Upcoming"  // Added required prop
-        />
-      </div>
-      <div className="bg-white shadow-md rounded-lg">
-        <OnHold
-          projects={onHoldProjects}
-          isRemoveMode={isRemoveMode}
-          onProjectSelect={(id) => handleProjectSelect("onHold", id)}
-          selectedProjects={selectedProjects.onHold}
-          sectionTitle="On Hold"  // Added required prop
+          sectionTitle="Upcoming"
         />
       </div>
 
@@ -268,6 +251,8 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
                 />
               </div>
               <div>
@@ -277,7 +262,11 @@ const Dashboard = () => {
                     className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
                     onClick={toggleDropdown}
                   >
-                    <span className={`${startDate && endDate ? "text-black" : "text-gray-500"}`}>
+                    <span
+                      className={`${
+                        startDate && endDate ? "text-black" : "text-gray-500"
+                      }`}
+                    >
                       {startDate && endDate
                         ? `${startDate} to ${endDate}`
                         : "Select Periode"}
@@ -297,14 +286,12 @@ const Dashboard = () => {
                       />
                     </svg>
                   </div>
-
                   {isDropdownOpen && (
                     <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg p-4">
                       <div className="flex items-center space-x-2">
                         <input
                           type="date"
                           className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                          placeholder="Start Date"
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
                         />
@@ -312,7 +299,6 @@ const Dashboard = () => {
                         <input
                           type="date"
                           className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                          placeholder="End Date"
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
                         />
@@ -333,6 +319,8 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                  value={contractNumber}
+                  onChange={(e) => setContractNumber(e.target.value)}
                 />
               </div>
               <div>
@@ -340,6 +328,8 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                  value={noErd}
+                  onChange={(e) => setNoErd(e.target.value)}
                 />
               </div>
               <div>
@@ -347,13 +337,19 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Description</label>
+                <label className="block font-semibold mb-2">
+                  Definition of Project
+                </label>
                 <textarea
                   rows={3}
                   className="w-full px-4 py-2 bg-white border rounded-lg focus:outline-none focus:ring focus:ring-blue-500"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 ></textarea>
               </div>
               <button

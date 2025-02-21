@@ -12,6 +12,7 @@ export interface Project {
   contract_number?: string;
   erd_number?: string;
   client?: string;
+  progress?: number;
   created_at?: Date;
   updated_at?: Date;
 }
