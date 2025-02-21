@@ -57,7 +57,8 @@ const Demo: React.FC = () => {
   return (
     <Paper>
       <Scheduler data={appointments}>
-        <ViewState defaultCurrentDate="2025-01-10" />
+        {/* Gunakan tanggal saat ini atau sesuaikan dengan data */}
+        <ViewState defaultCurrentDate={new Date()} />
         <MonthView />
         <Toolbar />
         <DateNavigator />
