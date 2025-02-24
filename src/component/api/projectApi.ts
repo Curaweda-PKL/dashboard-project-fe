@@ -39,6 +39,9 @@ const projectApi = (() => {
     created_at: project.created_at ? new Date(project.created_at) : undefined,
     updated_at: project.updated_at ? new Date(project.updated_at) : undefined,
     pic_id: project.pic ? project.pic.id : project.pic_id,
+    contract_number: project.contract_number, // Ensure this is included
+    erd_number: project.erd_number, // Ensure this is included
+    client: project.client, // Ensure this is included
   });
 
   async function getAllProjects(): Promise<Project[]> {
