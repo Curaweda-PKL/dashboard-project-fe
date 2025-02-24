@@ -18,9 +18,9 @@ const Dashboard = () => {
   const [projectName, setProjectName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [contractNumber, setContractNumber] = useState("");
-  const [noErd, setNoErd] = useState("");
-  const [clientName, setClientName] = useState("");
+  const [contract_number, setContractNumber] = useState("");
+  const [erd_number, setNoErd] = useState("");
+  const [client, setClientName] = useState("");
   const [description, setDescription] = useState("");
 
   useEffect(() => {
@@ -63,9 +63,9 @@ const Dashboard = () => {
       title: projectName,
       start_date: new Date(startDate),
       end_date: new Date(endDate),
-      contract_number: contractNumber,
-      no_erd: noErd,
-      client_name: clientName,
+      contract_number: contract_number,
+      erd_number: erd_number,
+      client: client,
       description: description, // Definition of project
       status: "upcoming", // default status
       pic_id: 1,
@@ -109,21 +109,32 @@ const Dashboard = () => {
     }));
   };
 
-  const handleRemoveProjects = () => {
-    setSelectedProjects({ inProgress: [], upcoming: [] });
-    setIsRemoveMode(false);
-    Swal.fire({
-      icon: "success",
-      title: "Project has been removed",
-      background: "rgb(0, 208, 255)",
-      color: "#000000",
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-    });
+  const handleRemoveProjects = async () => {
+    try {
+      const inProgressDeletions = selectedProjects.inProgress.map((id) =>
+        projectApi.deleteProject(Number(id))
+      );
+      const upcomingDeletions = selectedProjects.upcoming.map((id) =>
+        projectApi.deleteProject(Number(id))
+      );
+      const results = await Promise.allSettled([...inProgressDeletions, ...upcomingDeletions]);
+      // Opsional: periksa hasil masing-masing jika diperlukan
+      const hasError = results.some((result) => result.status === "rejected");
+      if (hasError) {
+        throw new Error("One or more deletions failed.");
+      }
+      // Reset state dan refresh daftar proyek
+      setSelectedProjects({ inProgress: [], upcoming: [] });
+      setIsRemoveMode(false);
+      Swal.fire({ /* success alert */ });
+      const data = await projectApi.getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error(error);
+      Swal.fire({ icon: "error", title: "Failed to remove project" });
+    }
   };
+  
 
   const handleCancelRemove = () => {
     setSelectedProjects({ inProgress: [], upcoming: [] });
@@ -319,7 +330,7 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                  value={contractNumber}
+                  value={contract_number}
                   onChange={(e) => setContractNumber(e.target.value)}
                 />
               </div>
@@ -328,7 +339,7 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                  value={noErd}
+                  value={erd_number}
                   onChange={(e) => setNoErd(e.target.value)}
                 />
               </div>
@@ -337,7 +348,7 @@ const Dashboard = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                  value={clientName}
+                  value={client}
                   onChange={(e) => setClientName(e.target.value)}
                 />
               </div>

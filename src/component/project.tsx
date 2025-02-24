@@ -29,9 +29,9 @@ function getTimeLeft(endDate: Date): { label: string; color: string } {
 interface PopupProps {
   title: string;
   duration: string;
-  clientName: string;
-  contractNumber: string;
-  noErd: string;
+  client: string;
+  contract_number: string;
+  erd_number: string;
   description: string; // Definition of project
   currentStatus: string;
   onClose: () => void;
@@ -41,9 +41,9 @@ interface PopupProps {
 const Popup: React.FC<PopupProps> = ({
   title,
   duration,
-  clientName,
-  contractNumber,
-  noErd,
+  client,
+  contract_number,
+  erd_number,
   description,
   currentStatus,
   onClose,
@@ -89,16 +89,16 @@ const Popup: React.FC<PopupProps> = ({
 
         <div className="text-gray-700 text-lg space-y-3 mb-6">
           <p>
-            <strong>Contract Number:</strong> {contractNumber}
+            <strong>Contract Number:</strong> {contract_number}
           </p>
           <p>
-            <strong>No ERD:</strong> {noErd}
+            <strong>No ERD:</strong> {erd_number}
           </p>
           <p>
             <strong>Definition of Project:</strong> {description}
           </p>
           <p>
-            <strong>Client Name:</strong> {clientName}
+            <strong>Client Name:</strong> {client}
           </p>
         </div>
 
@@ -132,7 +132,7 @@ interface ProjectCardProps {
   title: string;
   duration: string; // Contoh: "DD/MM/YYYY - DD/MM/YYYY"
   endDate: Date; // untuk hitung sisa waktu
-  clientName: string;
+  client: string;
   description: string; // Definition of project
   status: string;
   progress?: number;
@@ -148,7 +148,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
   duration,
   endDate,
-  clientName,
+  client,
   description,
   status,
   progress,
@@ -192,7 +192,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <h2 className="font-bold text-2xl mb-1 text-center truncate">{title}</h2>
           {status.toLowerCase().includes("in progress") ? (
             <p className="text-base text-center text-gray-700 mb-2 truncate">
-              <strong>Client:</strong> {clientName}
+              <strong>Client:</strong> {client}
             </p>
           ) : (
             <div className="mb-2">
@@ -289,7 +289,7 @@ const InProgress: React.FC<ProjectsSectionProps> = ({
                 title={project.title}
                 duration={duration}
                 endDate={new Date(project.end_date)}
-                clientName={project.client || ""}
+                client={project.client || ""}
                 description={project.description || ""}
                 status={project.status}
                 progress={project.progress ?? 0}
@@ -312,9 +312,9 @@ const InProgress: React.FC<ProjectsSectionProps> = ({
           duration={`${new Date(selectedProject.start_date).toLocaleDateString()} - ${new Date(
             selectedProject.end_date
           ).toLocaleDateString()}`}
-          clientName={selectedProject.client || ""}
-          contractNumber={selectedProject.contract_number || ""}
-          noErd={selectedProject.erd_number || ""}
+          client={selectedProject.client || ""}
+          contract_number={selectedProject.contract_number || ""}
+          erd_number={selectedProject.erd_number || ""}
           description={selectedProject.description || ""}
           currentStatus={selectedProject.status}
           onClose={() => setSelectedProject(null)}
@@ -370,7 +370,7 @@ const UpcomingProjects: React.FC<ProjectsSectionProps> = ({
                 title={project.title}
                 duration={duration}
                 endDate={new Date(project.end_date)}
-                clientName={""} // Tidak tampil di card Upcoming
+                client={project.client || ""} // Tidak tampil di card Upcoming
                 description={project.description || ""}
                 status={project.status}
                 progress={0} // Upcoming tidak memiliki progress
@@ -393,9 +393,9 @@ const UpcomingProjects: React.FC<ProjectsSectionProps> = ({
           duration={`${new Date(selectedProject.start_date).toLocaleDateString()} - ${new Date(
             selectedProject.end_date
           ).toLocaleDateString()}`}
-          clientName={selectedProject.client || ""}
-          contractNumber={selectedProject.contract_number || ""}
-          noErd={selectedProject.erd_number || ""}
+          client={selectedProject.client || ""}
+          contract_number={selectedProject.contract_number || ""}
+          erd_number={selectedProject.erd_number || ""}
           description={selectedProject.description || ""}
           currentStatus={selectedProject.status}
           onClose={() => setSelectedProject(null)}
