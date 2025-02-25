@@ -110,12 +110,17 @@ const projectApi = (() => {
     projectData: Partial<Omit<Project, "id" | "created_at" | "updated_at">>
   ): Promise<Project> {
     try {
+      // Deklarasikan dan gunakan 'formattedData' di dalam blok try
       const formattedData = {
         ...projectData,
-        start_date: projectData.start_date ? formatDateForAPI(projectData.start_date) : undefined,
-        end_date: projectData.end_date ? formatDateForAPI(projectData.end_date) : undefined,
+        start_date: projectData.start_date
+          ? formatDateForAPI(projectData.start_date)
+          : undefined,
+        end_date: projectData.end_date
+          ? formatDateForAPI(projectData.end_date)
+          : undefined,
       };
-
+  
       const result = await authApi._fetchWithAuth(`${BASE_URL}/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +135,8 @@ const projectApi = (() => {
       );
     }
   }
+  
+  
 
   async function deleteProject(id: number): Promise<void> {
     try {

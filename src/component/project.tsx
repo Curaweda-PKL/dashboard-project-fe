@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Project } from "../component/api/projectApi"; // Pastikan path sesuai
+import projectApi, { Project } from "../component/api/projectApi"; // Pastikan path sesuai
 
 // ------------------------------------
 // Helper: Hitung sisa waktu (time left) berdasarkan tanggal akhir
@@ -251,6 +251,7 @@ interface ProjectsSectionProps {
   onProjectSelect: (id: string) => void;
   selectedProjects: string[];
   sectionTitle: string;
+  refreshProjects: () => void; // <-- Tambahan
 }
 
 const InProgress: React.FC<ProjectsSectionProps> = ({
@@ -331,23 +332,38 @@ const UpcomingProjects: React.FC<ProjectsSectionProps> = ({
   onProjectSelect,
   selectedProjects,
   sectionTitle,
+  refreshProjects, // terima fungsi refresh
 }) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  const handleSetInProgress = () => {
-    Swal.fire({
-      icon: "success",
-      title: "Project is now In Progress",
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      background: "rgb(0, 208, 255)",
-      color: "#000000",
-    });
-    setSelectedProject(null);
+  const handleSetInProgress = async () => {
+    if (!selectedProject) return;
+    try {
+      // Panggil API untuk mengupdate status
+      await projectApi.updateProject(Number(selectedProject.id), {
+        status: "In Progress",
+      });
+      
+      Swal.fire({
+        icon: "success",
+        title: "Project is now In Progress",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+      // Tutup popup
+      setSelectedProject(null);
+      // Opsional: refresh daftar proyek, misalnya dengan memanggil ulang API getAllProjects
+      refreshProjects();
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Failed to update project status" });
+    }
   };
+  
 
   return (
     <div className="p-4">

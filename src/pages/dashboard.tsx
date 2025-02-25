@@ -23,6 +23,16 @@ const Dashboard = () => {
   const [client, setClientName] = useState("");
   const [description, setDescription] = useState("");
 
+  // Fungsi untuk refresh data proyek dari API
+  const refreshProjects = async () => {
+    try {
+      const data = await projectApi.getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Failed to refresh projects", error);
+    }
+  };
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -95,6 +105,7 @@ const Dashboard = () => {
       setDescription("");
       const data = await projectApi.getAllProjects();
       setProjects(data);
+      await refreshProjects();
     } catch (error) {
       Swal.fire({ icon: "error", title: "Failed to add project" });
     }
@@ -129,6 +140,7 @@ const Dashboard = () => {
       Swal.fire({ /* success alert */ });
       const data = await projectApi.getAllProjects();
       setProjects(data);
+      await refreshProjects();
     } catch (error) {
       console.error(error);
       Swal.fire({ icon: "error", title: "Failed to remove project" });
@@ -232,6 +244,7 @@ const Dashboard = () => {
           onProjectSelect={(id) => handleProjectSelect("inProgress", id)}
           selectedProjects={selectedProjects.inProgress}
           sectionTitle="In Progress"
+          refreshProjects={refreshProjects}
         />
       </div>
       <div className="bg-white shadow-md rounded-lg">
@@ -241,6 +254,7 @@ const Dashboard = () => {
           onProjectSelect={(id) => handleProjectSelect("upcoming", id)}
           selectedProjects={selectedProjects.upcoming}
           sectionTitle="Upcoming"
+          refreshProjects={refreshProjects}
         />
       </div>
 
