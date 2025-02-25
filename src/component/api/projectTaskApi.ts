@@ -1,6 +1,6 @@
 // projectTaskApi.ts
 // Pastikan endpoint ini sesuai dengan routing backend Anda
-const BASE_URL = "http://localhost:8080/api/project-tasks";
+const BASE_URL = "http://localhost:8080/api";
 
 // Definisikan tipe Task (sesuaikan dengan data API)
 export interface Task {
@@ -10,121 +10,172 @@ export interface Task {
   totalWeight: number;
   percent: number;
   assignees: string[];
-  deadline: string;
+  deadline?: string;
   // properti tambahan jika ada...
 }
 
 /**
  * Helper untuk menangani response API.
- * Jika response memiliki properti data, kembalikan data tersebut,
+ * Jika response memiliki properti "data", kembalikan data tersebut,
  * jika tidak, kembalikan JSON secara langsung.
  */
-async function handleResponse(response: Response) {
+const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     const errorRes = await response.json().catch(() => ({}));
     throw new Error(errorRes.message || "API request failed");
   }
   const jsonData = await response.json();
-  return jsonData.data ? jsonData.data : jsonData;
-}
+  if ("data" in jsonData) {
+    return jsonData.data as T;
+  }
+  return jsonData as T;
+};
 
 /**
  * Mengambil semua project task dengan dukungan pagination dan pencarian.
  * @param params Parameter query, misalnya { page: 0, limit: 10, search: "" }
  * @returns {Promise<Task[]>} - Array task dari API.
  */
-async function getAllProjectTasks({
+export const getAllProjectTasks = async ({
   page = 0,
   limit = 10,
   search = "",
-} = {}): Promise<Task[]> {
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+} = {}): Promise<Task[]> => {
   try {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found! Please login.");
+    }
+
     const queryString = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
       search,
     }).toString();
-    const response = await fetch(`${BASE_URL}?${queryString}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
+
+    const response = await fetch(`${BASE_URL}/projects/1?${queryString}`, {
+      headers,
     });
-    return await handleResponse(response);
+
+    const result = await handleResponse<any>(response);
+    if (Array.isArray(result)) {
+      return result;
+    }
+    if (result && Array.isArray(result.result)) {
+      return result.result;
+    }
+    if (result && Array.isArray(result.data)) {
+      return result.data;
+    }
+    console.error("Unexpected format of response:", result);
+    return [];
   } catch (error) {
     throw error;
   }
-}
+};
 
 /**
  * Mengambil project task berdasarkan ID.
  */
-async function getProjectTaskById(id: number): Promise<Task> {
+export const getProjectTaskById = async (id: number): Promise<Task> => {
   try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    return await handleResponse(response);
+    let token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found! Please login.");
+    }
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
+    const response = await fetch(`${BASE_URL}/${id}`, { headers });
+    return await handleResponse<Task>(response);
   } catch (error) {
     throw error;
   }
-}
+};
 
 /**
  * Membuat project task baru.
  */
-async function createProjectTask(taskData: Object): Promise<Task> {
+export const createProjectTask = async (taskData: Omit<Task, "id">): Promise<Task> => {
   try {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found! Please login.");
+    }
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
     const response = await fetch(`${BASE_URL}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(taskData),
     });
-    return await handleResponse(response);
+    return await handleResponse<Task>(response);
   } catch (error) {
     throw error;
   }
-}
+};
 
 /**
  * Memperbarui project task berdasarkan ID.
  */
-async function updateProjectTask(id: number, taskData: Object): Promise<Task> {
+export const updateProjectTask = async (
+  id: number,
+  taskData: Partial<Task>
+): Promise<Task> => {
   try {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found! Please login.");
+    }
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(taskData),
     });
-    return await handleResponse(response);
+    return await handleResponse<Task>(response);
   } catch (error) {
     throw error;
   }
-}
+};
 
 /**
  * Menghapus project task berdasarkan ID.
  */
-async function deleteProjectTask(id: number): Promise<Object> {
+export const deleteProjectTask = async (id: number): Promise<Object> => {
   try {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No auth token found! Please login.");
+    }
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
-    return await handleResponse(response);
+    return await handleResponse<Object>(response);
   } catch (error) {
     throw error;
   }
-}
+};
 
 export default {
   getAllProjectTasks,
