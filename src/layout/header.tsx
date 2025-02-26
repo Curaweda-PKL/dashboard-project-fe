@@ -8,7 +8,7 @@ import { IoMdSettings } from "react-icons/io";
 import NotificationsPopup from "../component/notificationsPopup";
 import iconMap from "./iconMap";
 import sidebarLinks from "../layout/sidebar.json";
-import { fetchUser, User } from "../component/api/usersApi";
+import { fetchUser, UserSummary } from "../component/api/usersApi";
 
 interface SidebarLink {
   name: string;
@@ -23,7 +23,7 @@ const Layout = () => {
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [showNotifications, setShowNotifications] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
 
   // Rekursif mencari judul halaman
   const getPageTitle = (links: SidebarLink[], path: string): string => {
@@ -240,4 +240,3 @@ const Layout = () => {
 };
 
 export default Layout;
-
