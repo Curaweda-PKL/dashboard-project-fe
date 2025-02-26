@@ -1,26 +1,42 @@
-// src/api/usersApi.ts
 import authApi from "./authApi";
 
-export interface User {
-  id: string;
+export interface UserSummary {
   name: string;
   email: string;
 }
 
-// Helper untuk memproses response API
-const processResponse = (jsonData: any) => {
-  return jsonData.data ? jsonData.data : jsonData;
-};
-
 const usersApi = {
-  getUserById: async (id: string): Promise<User> => {
+  getUserById: async (id: string): Promise<UserSummary> => {
+    const url = `http://localhost:8080/api/users/${id}`;
+    console.log("Fetching user from:", url);
+
+    // Ambil token dari authApi
+    const token = authApi.getAccessToken();
+    if (!token) {
+      throw new Error("Token tidak tersedia");
+    }
+
     try {
-      const response = await authApi._fetchWithAuth(`http://localhost:8080/api/users/${id}`, {
-        // Bisa menambahkan header tambahan jika diperlukan,
-        // tetapi "Content-Type" sudah di-set di authApi.ts.
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        // Gunakan "omit" agar kredensial (misalnya cookies) tidak dikirim,
+        // sehingga tidak terjadi konflik dengan header Access-Control-Allow-Origin dari server.
+        credentials: "omit",
       });
-      const data = processResponse(response);
-      return data;
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("User data:", data);
+
+      const { name, email } = data;
+      return { name, email };
     } catch (error) {
       console.error("Error fetching user by id:", error);
       throw error;
