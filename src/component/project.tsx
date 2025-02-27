@@ -84,10 +84,10 @@ const Popup: React.FC<PopupProps> = ({
         </button>
         <h2 className="text-4xl font-bold text-center mb-6">Project Details</h2>
         <p className="text-center font-bold text-3xl mb-4">Status: {currentStatus}</p>
-        <h1 className="text-2xl font-semibold text-center mb-2">{title}</h1>
+        <h1 className="text-2xl font-semibold text-center mb-2 whitespace-normal break-words">{title}</h1>
         <p className="text-xl text-center text-gray-700 mb-6">{duration}</p>
 
-        <div className="text-gray-700 text-lg space-y-3 mb-6">
+        <div className="text-gray-700 text-lg space-y-3 mb-6 whitespace-normal break-words">
           <p>
             <strong>Contract Number:</strong> {contract_number}
           </p>
@@ -95,7 +95,12 @@ const Popup: React.FC<PopupProps> = ({
             <strong>No ERD:</strong> {erd_number}
           </p>
           <p>
-            <strong>Definition of Project:</strong> {description}
+            <div className="whitespace-normal break-words">
+              <strong>Definition of Project:</strong>
+                <div className="mt-1 max-h-32 overflow-y-auto">
+                  {description}
+                </div>
+            </div>
           </p>
           <p>
             <strong>Client Name:</strong> {client}
@@ -189,15 +194,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Konten utama dengan padding bawah untuk memberi ruang bagi bottom row */}
         <div className="pb-10">
           <p className="text-lg text-gray-500 mb-1 text-center truncate">{duration}</p>
-          <h2 className="font-bold text-2xl mb-1 text-center truncate">{title}</h2>
+          <h2 className="font-bold text-2xl mb-1 text-center whitespace-normal break-words">{title}</h2>
           {status.toLowerCase().includes("in progress") ? (
-            <p className="text-base text-center text-gray-700 mb-2 truncate">
+            <p className="text-base text-center text-gray-700 mb-2 whitespace-normal break-words">
               <strong>Client:</strong> {client}
             </p>
           ) : (
             <div className="mb-2">
               {/* Untuk Upcoming, gunakan line-clamp untuk membatasi baris jika tersedia */}
-              <p className="text-base text-gray-700 text-center line-clamp-3">
+              <p className="text-base text-gray-700 text-center line-clamp-5 whitespace-normal break-words">
                 {description}
               </p>
             </div>

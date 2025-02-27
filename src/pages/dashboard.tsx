@@ -137,7 +137,19 @@ const Dashboard = () => {
       // Reset state dan refresh daftar proyek
       setSelectedProjects({ inProgress: [], upcoming: [] });
       setIsRemoveMode(false);
-      Swal.fire({ /* success alert */ });
+
+      Swal.fire({
+        icon: "success",
+        title: "Project has been removed",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+
       const data = await projectApi.getAllProjects();
       setProjects(data);
       await refreshProjects();

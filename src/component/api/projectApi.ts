@@ -140,7 +140,7 @@ const projectApi = (() => {
 
   async function deleteProject(id: number): Promise<void> {
     try {
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/projects/${id}`, {
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/projects/delete/${id}`, {
         method: "DELETE",
       });
       processResponse(result);
