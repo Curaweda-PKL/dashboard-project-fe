@@ -14,8 +14,18 @@ interface Task extends ApiTask {
 const TaskList: React.FC = () => {
   // Ambil projectName dari route state
   const location = useLocation();
-  const routeState = (location.state as { projectName?: string }) || {};
+  const routeState = (location.state as {
+    projectName?: string;
+    pm?: string;
+    date?: string;
+    client?: string;
+  }) || {};
+
+  // Berikan default value jika data tidak ada
   const projectNameFromRoute = routeState.projectName || "Default Project Name";
+  const pmFromRoute = routeState.pm || "Default PM";
+  const dateFromRoute = routeState.date || "Default Date";
+  const clientFromRoute = routeState.client || "Default Client";
 
   // State tasks dan lainnya
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -113,28 +123,46 @@ const TaskList: React.FC = () => {
   };
 
   // Fungsi untuk menambahkan task baru (operasi lokal)
-  const handleAddTask = () => {
-    setTasks([...tasks, newTask]);
-    Swal.fire({
-      icon: "success",
-      title: "Task has been added",
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-    });
-    // Reset form setelah task ditambahkan
-    setNewTask({
-      module: "",
-      weight: 0,
-      totalWeight: 0,
-      percent: 0,
-      assignees: [],
-      deadline: "",
-      showAssigneesDropdown: false,
-    });
-    setIsModalOpen(false);
+  const handleAddTask = async () => {
+    try {
+      // Panggil API untuk membuat task baru
+      const createdTask = await projectTaskApi.createProjectTask(newTask);
+      // Perbarui state dengan task yang dikembalikan dari backend
+      setTasks((prevTasks) => [...prevTasks, createdTask]);
+      
+      Swal.fire({
+        icon: "success",
+        title: "Task has been added",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      
+      // Reset form setelah task ditambahkan
+      setNewTask({
+        module: "",
+        weight: 0,
+        totalWeight: 0,
+        percent: 0,
+        assignees: [],
+        deadline: "",
+        showAssigneesDropdown: false,
+      });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error adding task:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to add task",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
   };
 
   const toggleAssignee = (assignee: string) => {
@@ -199,13 +227,13 @@ const TaskList: React.FC = () => {
           <strong>Project :</strong> {projectNameFromRoute}
         </p>
         <p>
-          <strong>PM :</strong> Gustavo Bergson
+          <strong>PM :</strong> {pmFromRoute}
         </p>
         <p>
-          <strong>Date :</strong> 12/12/2024
+          <strong>Date :</strong> {dateFromRoute}
         </p>
         <p>
-          <strong>Client :</strong> Mr.Lorem
+          <strong>Client :</strong> {clientFromRoute}
         </p>
       </div>
 
