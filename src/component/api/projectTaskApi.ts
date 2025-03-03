@@ -69,6 +69,25 @@ const projectTaskApi = {
     }
   },
 
+  // projectTaskApi.ts
+  getTasksByProjectId: async (projectId: number): Promise<Task[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.data ? result.data : result;
+    } catch (error) {
+      console.error("Error fetching tasks for project", projectId, error);
+      throw error;
+    }
+  },
+
+
   // Create a new project task
   // Create a new project task
 createProjectTask: async (task: Task): Promise<Task> => {
