@@ -13,13 +13,13 @@ function getTimeLeft(endDate: Date): { label: string; color: string } {
   if (days <= 0) {
     return { label: "Overdue", color: "#B20000" };
   } else if (days < 7) {
-    return { label: `${days} days left`, color: "#F44336" };
+    return { label: `${days} days left`, color: "#D6B41E" };
   } else if (days < 30) {
     const weeks = Math.ceil(days / 7);
     return { label: `${weeks} weeks left`, color: "#029FCC" };
   } else {
     const months = Math.ceil(days / 30);
-    return { label: `${months} months left`, color: "#148B84" };
+    return { label: `${months} months left`, color: "#0AB239" };
   }
 }
 
@@ -53,7 +53,15 @@ const Popup: React.FC<PopupProps> = ({
   const isInProgress = currentStatus.toLowerCase().includes("in progress");
 
   const handleDetail = () => {
-    navigate("/task");
+    navigate("/task", {
+      state: {
+        projectName: title, // Nama project
+        pm: "Gustavo Bergson", // Contoh PM, atau gunakan properti dari project jika tersedia
+        date: duration, // Anda bisa mengirimkan duration atau format tanggal tertentu
+        client: client, // Nama client
+        // Kirim properti lain jika diperlukan
+      },
+    });
     onClose();
   };
 
