@@ -1,48 +1,84 @@
 import authApi from "./authApi";
 
 export interface UserSummary {
+  id: string;
   name: string;
   email: string;
+  // Tambahkan field lain yang diperlukan
 }
 
-const usersApi = {
-  getUserById: async (id: string): Promise<UserSummary> => {
-    const url = `http://localhost:8080/api/users/${id}`;
-    console.log("Fetching user from:", url);
+const usersApi = (() => {
+  const BASE_URL = "http://localhost:8080/api";
 
-    // Ambil token dari authApi
-    const token = authApi.getAccessToken();
-    if (!token) {
-      throw new Error("Token tidak tersedia");
-    }
+  // Helper: jika respons API dibungkus dalam properti "data", kembalikan nilainya
+  const processResponse = (jsonData: any) => {
+    return jsonData.data ? jsonData.data : jsonData;
+  };
 
+  // Fungsi untuk mendapatkan user berdasarkan ID
+  async function getUser(userId: string): Promise<UserSummary> {
     try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        // Gunakan "omit" agar kredensial (misalnya cookies) tidak dikirim,
-        // sehingga tidak terjadi konflik dengan header Access-Control-Allow-Origin dari server.
-        credentials: "omit",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("User data:", data);
-
-      const { name, email } = data;
-      return { name, email };
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/users/${userId}`);
+      const data = processResponse(result);
+      console.log("Fetched user data:", data); // Tambahkan komen data
+      return data;
     } catch (error) {
-      console.error("Error fetching user by id:", error);
-      throw error;
+      console.error("Error fetching user:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to fetch user"
+      );
     }
-  },
-};
+  }
 
-export const fetchUser = usersApi.getUserById;
+  // Fungsi untuk mendapatkan user saat ini (berdasarkan token JWT)
+  async function getCurrentUser(): Promise<UserSummary> {
+    try {
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/users/me`);
+      const data = processResponse(result);
+      console.log("Fetched current user data:", data); // Tambahkan komen data
+      return data;
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to fetch current user"
+      );
+    }
+  }
+
+  // Fungsi untuk mendapatkan user yang tersimpan di localStorage (jika ada)
+  function getUserFromStorage(): UserSummary | null {
+    const userJson = localStorage.getItem("currentUser");
+    if (userJson) {
+      try {
+        return JSON.parse(userJson);
+      } catch (error) {
+        console.error("Error parsing user from storage:", error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Fungsi helper untuk mendapatkan current user dengan fallback ke data cached
+  async function getCurrentUserWithFallback(): Promise<UserSummary | null> {
+    const storedUser = getUserFromStorage();
+    try {
+      const freshUser = await getCurrentUser();
+      localStorage.setItem("currentUser", JSON.stringify(freshUser));
+      return freshUser;
+    } catch (error) {
+      console.error("Failed to fetch current user, using cached data if available", error);
+      return storedUser;
+    }
+  }
+
+  return {
+    getUser,
+    getCurrentUser,
+    getUserFromStorage,
+    getCurrentUserWithFallback,
+  };
+})();
+
 export default usersApi;
+
