@@ -4,7 +4,15 @@ import { FaChevronDown } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
 import Swal from "sweetalert2";
 import projectTaskApi, { Task as ApiTask } from "../api/projectTaskApi";
-import { useLocation } from "react-router-dom"; // <-- Import useLocation
+import { useParams, useLocation } from "react-router-dom";
+
+interface Task extends ApiTask {
+  showAssigneesDropdown?: boolean;
+  projectName?: string;
+  pm?: string;
+  date?: string;
+  client?: string;
+}
 
 // Definisi tipe Task untuk tampilan (bisa di-extend dari API Task)
 interface Task extends ApiTask {
@@ -12,7 +20,17 @@ interface Task extends ApiTask {
 }
 
 const TaskList: React.FC = () => {
-  // Ambil projectName dari route state
+  const { projectId } = useParams<{ projectId: string }>();
+
+  // State untuk detail project
+  const [projectData, setProjectData] = useState({
+    projectName: "Default Project Name",
+    pm: "Default PM",
+    date: "Default Date",
+    client: "Default Client",
+  });
+
+  // Ambil data dari route state jika tersedia
   const location = useLocation();
   const routeState = (location.state as {
     projectName?: string;
@@ -21,11 +39,17 @@ const TaskList: React.FC = () => {
     client?: string;
   }) || {};
 
-  // Berikan default value jika data tidak ada
-  const projectNameFromRoute = routeState.projectName || "Default Project Name";
-  const pmFromRoute = routeState.pm || "Default PM";
-  const dateFromRoute = routeState.date || "Default Date";
-  const clientFromRoute = routeState.client || "Default Client";
+  // Jika ada data dari route state, perbarui projectData
+  useEffect(() => {
+    if (routeState && routeState.projectName) {
+      setProjectData({
+        projectName: routeState.projectName,
+        pm: routeState.pm || "Default PM",
+        date: routeState.date || "Default Date",
+        client: routeState.client || "Default Client",
+      });
+    }
+  }, [routeState]);
 
   // State tasks dan lainnya
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -54,7 +78,9 @@ const TaskList: React.FC = () => {
     return totalWeight !== 0 ? (weight / totalWeight) * 100 : 0;
   };
 
-  // --- Fetch Data dari API ---
+  // --- Fetch Data dari API ---  
+  // Kami memanggil API satu kali untuk mengambil tasks,
+  // dan jika route state tidak ada, kami ambil detail project dari task pertama.
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -62,6 +88,17 @@ const TaskList: React.FC = () => {
         console.log("Fetched tasks:", data);
         if (Array.isArray(data)) {
           setTasks(data);
+          // Jika route state tidak menyediakan detail project dan data task tidak kosong,
+          // gunakan task pertama untuk mengupdate projectData.
+          if (!routeState?.projectName && data.length > 0) {
+            const firstTask = data[0] as Task;
+            setProjectData({
+              projectName: firstTask.projectName || "Default Project Name",
+              pm: firstTask.pm || "Default PM",
+              date: firstTask.date || "Default Date",
+              client: firstTask.client || "Default Client",
+            });
+          }
         } else {
           console.error("Data fetched is not an array:", data);
           setTasks([]);
@@ -80,7 +117,7 @@ const TaskList: React.FC = () => {
     };
 
     fetchTasks();
-  }, []);
+  }, [routeState, projectId]);
 
   // Fungsi untuk mengaktifkan mode hapus
   const toggleEditingMode = () => {
@@ -129,7 +166,7 @@ const TaskList: React.FC = () => {
       const createdTask = await projectTaskApi.createProjectTask(newTask);
       // Perbarui state dengan task yang dikembalikan dari backend
       setTasks((prevTasks) => [...prevTasks, createdTask]);
-      
+
       Swal.fire({
         icon: "success",
         title: "Task has been added",
@@ -139,7 +176,7 @@ const TaskList: React.FC = () => {
         timer: 3000,
         timerProgressBar: true,
       });
-      
+
       // Reset form setelah task ditambahkan
       setNewTask({
         module: "",
@@ -219,21 +256,22 @@ const TaskList: React.FC = () => {
 
   return (
     <div className="p-4">
-      <HeaderDetail />
+      {/* Oper data project ke HeaderDetail */}
+      <HeaderDetail/>
 
       {/* Header Detail yang otomatis mengisi nama project */}
       <div className="mb-6 text-black font-bold">
         <p>
-          <strong>Project :</strong> {projectNameFromRoute}
+          <strong>Project :</strong> {projectData.projectName}
         </p>
         <p>
-          <strong>PM :</strong> {pmFromRoute}
+          <strong>PM :</strong> {projectData.pm}
         </p>
         <p>
-          <strong>Date :</strong> {dateFromRoute}
+          <strong>Date :</strong> {projectData.date}
         </p>
         <p>
-          <strong>Client :</strong> {clientFromRoute}
+          <strong>Client :</strong> {projectData.client}
         </p>
       </div>
 
@@ -360,14 +398,14 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Field Project Name terisi otomatis dari route state */}
+              {/* Field Project Name terisi otomatis dari detail project */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
                 </label>
                 <input
                   type="text"
-                  value={projectNameFromRoute}
+                  value={projectData.projectName}
                   readOnly
                   className="w-full border rounded-md p-2 bg-gray-200"
                 />
@@ -553,7 +591,7 @@ const TaskList: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={projectNameFromRoute}
+                  value={projectData.projectName}
                   readOnly
                   className="w-full border rounded-md p-2 bg-gray-200"
                 />

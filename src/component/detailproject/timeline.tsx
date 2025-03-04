@@ -1,5 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail"; // Pastikan file ini tersedia
+import projectTaskApi, { Task as ApiTask } from "../api/projectTaskApi";
+import { useParams, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
+
+interface Task extends ApiTask {
+  showAssigneesDropdown?: boolean;
+  projectName?: string;
+  pm?: string;
+  date?: string;
+  client?: string;
+}
 
 /*** 1. Interface data ***/
 interface Module {
@@ -106,6 +117,75 @@ const Timeline: React.FC = () => {
       duration: "14 DAY",
     },
   ]);
+
+  const { projectId } = useParams<{ projectId: string }>();
+
+  const [projectData, setProjectData] = useState({
+      projectName: "Default Project Name",
+      pm: "Default PM",
+      date: "Default Date",
+      client: "Default Client",
+    });
+
+    const location = useLocation();
+      const routeState = (location.state as {
+        projectName?: string;
+        pm?: string;
+        date?: string;
+        client?: string;
+      }) || {};
+
+      useEffect(() => {
+          if (routeState && routeState.projectName) {
+            setProjectData({
+              projectName: routeState.projectName,
+              pm: routeState.pm || "Default PM",
+              date: routeState.date || "Default Date",
+              client: routeState.client || "Default Client",
+            });
+          }
+        }, [routeState]);
+
+        const [tasks, setTasks] = useState<Task[]>([]);
+        console.log(tasks.length);
+
+        useEffect(() => {
+          const fetchTasks = async () => {
+            try {
+              const data = await projectTaskApi.getAllProjectTasks();
+              console.log("Fetched tasks:", data);
+              if (Array.isArray(data)) {
+                setTasks(data);
+                // Jika route state tidak menyediakan detail project dan data task tidak kosong,
+                // gunakan task pertama untuk mengupdate projectData.
+                if (!routeState?.projectName && data.length > 0) {
+                  const firstTask = data[0] as Task;
+                  setProjectData({
+                    projectName: firstTask.projectName || "Default Project Name",
+                    pm: firstTask.pm || "Default PM",
+                    date: firstTask.date || "Default Date",
+                    client: firstTask.client || "Default Client",
+                  });
+                }
+              } else {
+                console.error("Data fetched is not an array:", data);
+                setTasks([]);
+              }
+            } catch (error: any) {
+              console.error("Failed to fetch tasks:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Failed to load tasks",
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+              });
+            }
+          };
+      
+          fetchTasks();
+        }, [routeState, projectId]);
 
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
 
@@ -300,21 +380,23 @@ const Timeline: React.FC = () => {
 
   return (
     <div>
-      <HeaderDetail />
-      <div className="mb-6 text-black font-bold">
-        <p>
-          <strong>Project :</strong> TourO Web Development
-        </p>
-        <p>
-          <strong>PM :</strong> Gustavo Bergson
-        </p>
-        <p>
-          <strong>Date :</strong> 12/12/2024
-        </p>
-        <p>
-          <strong>Client :</strong> Mr.Lorem
-        </p>
-      </div>
+      <HeaderDetail/>
+
+{/* Header Detail yang otomatis mengisi nama project */}
+<div className="mb-6 text-black font-bold">
+  <p>
+    <strong>Project :</strong> {projectData.projectName}
+  </p>
+  <p>
+    <strong>PM :</strong> {projectData.pm}
+  </p>
+  <p>
+    <strong>Date :</strong> {projectData.date}
+  </p>
+  <p>
+    <strong>Client :</strong> {projectData.client}
+  </p>
+</div>
 
       {/* Pastikan container menggunakan overflow-x-auto relative agar overlay dan tabel scroll bersama */}
       <div className="overflow-x-auto relative">
