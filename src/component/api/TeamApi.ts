@@ -1,107 +1,73 @@
-import authApi from "./authApi";
+import authApi from "./authApi"; // Pastikan import authApi sesuai dengan lokasi dan implementasinya
 
 export interface TeamMember {
   id: number;
   name: string;
-  role?: string;
-  assigned?: string;
-  teamRoleId?: number;
-  teamAssignId?: number;
-}
-
-export interface TeamRole {
-  id: number;
-  name: string;
-}
-
-export interface TeamAssignment {
-  id: number;
-  name: string;
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
-  data: {
-    result: T[];
-    page: number;
-    limit: number;
-    total_rows: number;
-    total_page: number;
-  };
-}
-
-export interface SingleResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
+  role: string;
+  assigned: string;
 }
 
 const teamApi = (() => {
-    const BASE_URL = "http://localhost:8080/api";
+  const BASE_URL = "http://localhost:8080/api";
 
-  // Helper untuk meng‑unwrap response bila data dibungkus dalam properti "data"
-  const processResponse = (jsonData: any) => {
-    return jsonData.data ? jsonData.data : jsonData;
-  };
+  // Helper: Ekstrak data jika respons dibungkus dalam properti "data"
+  const processResponse = (data: any) => (data.data ? data.data : data);
 
-  // Fungsi untuk memapping data team member dari backend ke interface TeamMember
-  const mapTeamMember = (member: any): TeamMember => ({
-    id: member.id,
-    name: member.name,
-    role: member.role,
-    assigned: member.assigned,
-    teamRoleId: member.teamRoleId,
-    teamAssignId: member.teamAssignId,
+  // Mapping respons untuk memastikan properti name, role, dan assigned muncul dengan benar.
+  // Jika properti name tidak ada, coba ambil dari objek user.
+  const mapTeamMember = (item: any): TeamMember => ({
+    id: item.id,
+    name: item.name || (item.user ? item.user.name : ""),
+    role: item.role,
+    assigned: item.assigned,
   });
 
-  async function getAllTeamMembers(page = 1, limit = 10, search = ''): Promise<TeamMember[]> {
+  // Ambil semua team member
+  async function getAllTeams(): Promise<TeamMember[]> {
     try {
-      const result = await authApi._fetchWithAuth(
-        `${BASE_URL}/team?page=${page}&limit=${limit}&search=${search}`
-      );
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/teams`, {
+        headers: { "Content-Type": "application/json" },
+      });
       const data = processResponse(result);
-      // Jika respons tidak langsung berupa array, periksa properti "result"
-      const membersArray = Array.isArray(data)
-        ? data
-        : data.result && Array.isArray(data.result)
-        ? data.result
-        : [];
-      return membersArray.map((member: any) => mapTeamMember(member));
-    } catch (error) {
-      console.error("Error fetching team members:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to fetch team members"
-      );
+      const resultArray = Array.isArray(data) ? data : data.result || [];
+      return resultArray.map(mapTeamMember);
+    } catch (error: any) {
+      console.error("Error in getAllTeams:", error);
+      throw error;
     }
   }
 
-  async function getTeamMember(id: number): Promise<TeamMember> {
-    try {
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/team/${id}`);
-      const data = processResponse(result);
-      return mapTeamMember(data);
-    } catch (error) {
-      console.error(`Error fetching team member ${id}:`, error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to fetch team member"
-      );
-    }
-  }
-
-  async function updateTeamData(
+  // Update team member berdasarkan ID.
+  // Mapping: role → teamRoleId dan assigned → teamAssignId
+  async function updateTeamMember(
     id: number,
-    data: { teamRoleId?: number; teamAssignId?: number }
+    updateData: Partial<TeamMember>
   ): Promise<TeamMember> {
     try {
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/team/${id}/teamdata`, {
-        method: "PUT",
+      // Bangun payload dengan mapping yang sesuai
+      const formattedData: any = {};
+      if (updateData.role !== undefined) {
+        formattedData.teamRoleId = updateData.role;
+      }
+      if (updateData.assigned !== undefined) {
+        formattedData.teamAssignId = updateData.assigned;
+      }
+
+      // Debug: Cetak payload update
+      console.log("Payload update:", formattedData);
+
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/teams/1/${id}`, {
+        method: "PUT", // Menggunakan PUT untuk update penuh
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formattedData),
       });
-      const responseData = processResponse(result);
-      return mapTeamMember(responseData);
-    } catch (error) {
+
+      // Debug: Cetak respons dari back end
+      console.log("Response update:", result);
+
+      const data = processResponse(result);
+      return mapTeamMember(data);
+    } catch (error: any) {
       console.error(`Error updating team member ${id}:`, error);
       throw new Error(
         error instanceof Error ? error.message : "Failed to update team member"
@@ -109,38 +75,9 @@ const teamApi = (() => {
     }
   }
 
-  async function getTeamRoles(): Promise<TeamRole[]> {
-    try {
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/teamroles`);
-      const data = processResponse(result);
-      return data;
-    } catch (error) {
-      console.error("Error fetching team roles:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to fetch team roles"
-      );
-    }
-  }
-
-  async function getTeamAssignments(): Promise<TeamAssignment[]> {
-    try {
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/teamassign`);
-      const data = processResponse(result);
-      return data;
-    } catch (error) {
-      console.error("Error fetching team assignments:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to fetch team assignments"
-      );
-    }
-  }
-
   return {
-    getAllTeamMembers,
-    getTeamMember,
-    updateTeamData,
-    getTeamRoles,
-    getTeamAssignments,
+    getAllTeams,
+    updateTeamMember,
   };
 })();
 
