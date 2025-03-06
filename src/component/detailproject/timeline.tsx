@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail"; // Pastikan file ini tersedia
+import { getProjectTimelines, updateProjectTimeline } from "../api/timelineApi"; // Sesuaikan path
 
 /*** 1. Interface data ***/
+// Ditambahkan properti id agar sinkron dengan data API (jika tersedia)
 interface Module {
+  id?: number;
   name: string;
   startDate: string; // format "DD/MM/YYYY"
   endDate: string;   // format "DD/MM/YYYY"
@@ -41,88 +44,63 @@ function computeTimelinePosition(startDate: string, endDate: string) {
 
 /*** 3. Komponen utama Timeline ***/
 const Timeline: React.FC = () => {
-  const [modules, setModules] = useState<Module[]>([
-    {
-      name: "Module 1",
-      startDate: "05/01/2024",
-      endDate: "01/03/2024",
-      status: "ON PROGRESS",
-      timeline: "5 Jan - 1 Mar",
-      color: "bg-[#ECA6A6]",
-      duration: "57 DAY",
-    },
-    {
-      name: "Module 2",
-      startDate: "02/02/2024",
-      endDate: "14/03/2024",
-      status: "PENDING",
-      timeline: "2 Feb - 14 Mar",
-      color: "bg-[#B20000]",
-      duration: "40 DAY",
-    },
-    {
-      name: "Module 3",
-      startDate: "25/02/2024",
-      endDate: "20/07/2024",
-      status: "DONE",
-      timeline: "25 Feb - 20 Jul",
-      color: "bg-[#1C148B]",
-      duration: "145 DAY",
-    },
-    {
-      name: "Module 4",
-      startDate: "21/05/2024",
-      endDate: "25/06/2024",
-      status: "ON PROGRESS",
-      timeline: "21 Mei - 25 Jun",
-      color: "bg-[#ECA6A6]",
-      duration: "35 DAY",
-    },
-    {
-      name: "Module 5",
-      startDate: "16/06/2024",
-      endDate: "20/07/2024",
-      status: "PENDING",
-      timeline: "16 Jun - 20 Jul",
-      color: "bg-[#B20000]",
-      duration: "34 DAY",
-    },
-    {
-      name: "Module 6",
-      startDate: "14/03/2024",
-      endDate: "02/05/2024",
-      status: "ON PROGRESS",
-      timeline: "14 Mar - 2 May",
-      color: "bg-[#ECA6A6]",
-      duration: "49 DAY",
-    },
-    {
-      name: "Module 7",
-      startDate: "01/07/2024",
-      endDate: "15/07/2024",
-      status: "PENDING",
-      timeline: "1 Jul - 15 Jul",
-      color: "bg-[#B20000]",
-      duration: "14 DAY",
-    },
-  ]);
-
+  // State modules diinisialisasi sebagai array kosong. Data akan diambil dari API.
+  const [modules, setModules] = useState<Module[]>([]);
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
 
-  // Fungsi handleStatusChange akan mengupdate status dan properti color
-  const handleStatusChange = (index: number, newStatus: string) => {
+  // Mengambil data timeline dari API saat komponen pertama kali dirender.
+  useEffect(() => {
+    async function fetchTimelines() {
+      try {
+        // Contoh: Mengambil timeline dengan parameter search "1", offset 0, limit 10.
+        const data: Module[] = await getProjectTimelines("1", 0, 10);
+        // Asumsikan response API sudah sesuai dengan struktur Module
+        setModules(data);
+      } catch (error) {
+        console.error("Gagal mengambil data timeline:", error);
+      }
+    }
+    fetchTimelines();
+  }, []);
+
+  // Fungsi handleStatusChange mengupdate status dan properti color, serta mengirim update ke backend.
+  const handleStatusChange = async (index: number, newStatus: string) => {
     const updatedModules = [...modules];
     updatedModules[index].status = newStatus;
     if (newStatus === "DONE") updatedModules[index].color = "bg-[#1C148B]";
-    if (newStatus === "ON PROGRESS") updatedModules[index].color = "bg-[#ECA6A6]";
-    if (newStatus === "PENDING") updatedModules[index].color = "bg-[#B20000]";
+    else if (newStatus === "ON PROGRESS") updatedModules[index].color = "bg-[#ECA6A6]";
+    else if (newStatus === "PENDING") updatedModules[index].color = "bg-[#B20000]";
     setModules(updatedModules);
     setOpenDropdownIndex(null);
+
+    // Jika module memiliki id, kirim update ke backend.
+    if (updatedModules[index].id !== undefined) {
+      try {
+        const module = updatedModules[index];
+        const moduleId: number = module.id!; // Pastikan id sudah pasti (non-null)
+        // Data update disesuaikan dengan API. Di sini diasumsikan setiap module merupakan detail timeline.
+        const updateData = {
+          project_id: 1, // Sesuaikan atau ambil dari data module jika ada
+          details: [
+            {
+              module: module.name,
+              start_date: module.startDate,
+              end_date: module.endDate,
+              status: module.status,
+            },
+          ],
+        };
+        const res = await updateProjectTimeline(moduleId, updateData);
+        console.log("Update timeline di backend:", res);
+      } catch (error) {
+        console.error("Gagal memperbarui timeline di backend:", error);
+      }
+    }
   };
 
-  /*** 4. Render tabel (struktur tabel tidak diubah) ***/
+  /*** 4. Render tabel ***/
   const renderCombinedTable = () => {
-    const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const weeks = [1, 2, 3, 4];
 
     return (
@@ -251,9 +229,12 @@ const Timeline: React.FC = () => {
     return (
       <>
         {modules.map((module, rowIndex) => {
-          const { left, width } = computeTimelinePosition(module.startDate, module.endDate);
+          const { left, width } = computeTimelinePosition(
+            module.startDate,
+            module.endDate
+          );
 
-          // Ubah offset vertical khusus berdasarkan timeline
+          // Ubah offset vertical khusus berdasarkan timeline (sesuaikan bila perlu)
           let verticalOffset = PILL_VERTICAL_OFFSET;
           if (module.timeline === "5 Jan - 1 Mar") {
             verticalOffset = -25;
@@ -266,7 +247,7 @@ const Timeline: React.FC = () => {
           } else if (module.timeline === "1 Jul - 15 Jul") {
             verticalOffset = 125;
           } else if (module.timeline === "16 Jun - 20 Jul") {
-            verticalOffset = 70; // Offset khusus: sedikit lebih ke bawah
+            verticalOffset = 70;
           }
 
           const top =
@@ -316,7 +297,7 @@ const Timeline: React.FC = () => {
         </p>
       </div>
 
-      {/* Pastikan container menggunakan overflow-x-auto relative agar overlay dan tabel scroll bersama */}
+      {/* Container dengan overflow-x-auto dan relative agar overlay dan tabel scroll bersama */}
       <div className="overflow-x-auto relative">
         {renderCombinedTable()}
         {renderTimelineOverlay()}

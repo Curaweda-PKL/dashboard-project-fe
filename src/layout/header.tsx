@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
 import { useState, useCallback, useEffect } from "react";
@@ -6,6 +6,9 @@ import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
 import NotificationsPopup from "../component/notificationsPopup";
+import iconMap from "./iconMap";
+import sidebarLinks from "../layout/sidebar.json";
+import { fetchUser, UserSummary } from "../component/api/usersApi";
 
 interface SidebarLink {
   name: string;
@@ -14,24 +17,19 @@ interface SidebarLink {
   children?: SidebarLink[];
 }
 
-import iconMap from "./iconMap";
-import sidebarLinks from "../layout/sidebar.json";
-
 const Layout = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Hook untuk navigasi
+  const navigate = useNavigate();
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [showNotifications, setShowNotifications] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
+  const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
 
   // Rekursif mencari judul halaman
   const getPageTitle = (links: SidebarLink[], path: string): string => {
-    // Cek apakah path berada di dalam /settings
     if (path.includes("/settings")) {
-      return "Settings"; // Jika di dalam /settings, tampilkan judul Settings
+      return "Settings";
     }
-
-    // Lanjutkan dengan pencarian judul di sidebar
     for (const link of links) {
       if (link.path === path) {
         return link.name;
@@ -41,7 +39,7 @@ const Layout = () => {
         if (title) return title;
       }
     }
-    return "Dashboard"; // Default title
+    return "Dashboard";
   };
 
   // Update judul halaman berdasarkan lokasi
@@ -67,6 +65,20 @@ const Layout = () => {
     }));
   }, []);
 
+  // Panggil API untuk mendapatkan data user (misalnya, user yang sedang login)
+  useEffect(() => {
+    async function getUserData() {
+      try {
+        // Ganti "1" dengan id user yang sesuai atau ambil dari token / context autentikasi
+        const userData = await fetchUser("1");
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    }
+    getUserData();
+  }, []);
+
   const renderSubLinks = useCallback(
     (link: SidebarLink) => {
       const isOpen = !!openSubmenus[link.name];
@@ -81,39 +93,37 @@ const Layout = () => {
             onClick={() => link.children && toggleSubmenu(link.name)}
           >
             <div className="flex items-center w-full">
-            {link.path ? (
-              <NavLink
-                to={link.path}
-                className={({ isActive }) =>
-                  `flex items-center p-2 rounded-full w-full ${
-                    isActive
-                      ? "bg-[#02CCFF] text-black font-semibold"
-                      : "text-black hover:bg-blue-200"
-                  }`
-                }
-              >
-                {IconComponent && <IconComponent className="mr-2" />}
-                {link.name === "Team" && <FaUser className="mr-2" />}
-                {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
-                {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
-                {link.name === "Settings" && <IoMdSettings className="mr-2" />}
-                {link.name}
-              </NavLink>
-            ) : (
-              <span className="flex items-center">
-                {IconComponent && <IconComponent className="mr-2" />}
-                {link.name}
-              </span>
-            )}
-          </div>
-
+              {link.path ? (
+                <NavLink
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `flex items-center p-2 rounded-full w-full ${
+                      isActive
+                        ? "bg-[#02CCFF] text-black font-semibold"
+                        : "text-black hover:bg-blue-200"
+                    }`
+                  }
+                >
+                  {IconComponent && <IconComponent className="mr-2" />}
+                  {link.name === "Team" && <FaUser className="mr-2" />}
+                  {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
+                  {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
+                  {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+                  {link.name}
+                </NavLink>
+              ) : (
+                <span className="flex items-center">
+                  {IconComponent && <IconComponent className="mr-2" />}
+                  {link.name}
+                </span>
+              )}
+            </div>
             {link.children && (
               <MdExpandMore
                 className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
               />
             )}
           </div>
-
           {link.children && isOpen && (
             <ul className="ml-4 mt-2">
               {link.children
@@ -145,7 +155,6 @@ const Layout = () => {
   return (
     <div className="h-screen drawer lg:drawer-open">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
-
       <div className="drawer-content flex flex-col bg-white h-screen">
         <div className="mx-4 mt-4">
           <div className="justify-between p-2 bg-white rounded-lg navbar text-slate-800">
@@ -171,11 +180,9 @@ const Layout = () => {
                 </svg>
               </label>
             </div>
-
             <div className="flex items-center justify-start">
               <div className="text-5xl font-bold mr-8">{pageTitle}</div>
             </div>
-
             <div className="ml-auto">
               <div className="flex items-center justify-center">
                 <div className="indicator mr-10">
@@ -186,14 +193,11 @@ const Layout = () => {
                     </span>
                   </button>
                 </div>
-
-                {/* Garis Pemisah */}
-                <div className="border-l-2 h-12 mx-4 border-gray-300"></div> {/* Garis vertikal */}
-
+                <div className="border-l-2 h-12 mx-4 border-gray-300"></div>
                 <details className="dropdown dropdown-end">
                   <summary
-                    className="btn btn-ghost border "
-                    onClick={() => navigate("/settings")} // Navigasi ke halaman Settings
+                    className="btn btn-ghost border"
+                    onClick={() => navigate("/settings")}
                   >
                     <div className="avatar">
                       <div className="w-12 border border-black rounded-full">
@@ -206,9 +210,11 @@ const Layout = () => {
                     </div>
                     <div className="text-right mr-4">
                       <p className="text-lg font-semibold lg:text-xl">
-                        Username
+                        {currentUser?.name}
                       </p>
-                      <p className="text-sm">axyz@gmail</p>
+                      <p className="text-sm">
+                        {currentUser?.email}
+                      </p>
                     </div>
                   </summary>
                 </details>
@@ -216,12 +222,10 @@ const Layout = () => {
             </div>
           </div>
         </div>
-
         <div className="flex flex-col m-4 overflow-y-auto">
           <Outlet />
         </div>
       </div>
-
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
           <li>
@@ -230,8 +234,6 @@ const Layout = () => {
           {sidebarLinks.map(renderSubLinks)}
         </ul>
       </div>
-
-      {/* Conditionally render NotificationsPopup */}
       {showNotifications && <NotificationsPopup onClose={() => setShowNotifications(false)} />}
     </div>
   );

@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
         timerProgressBar: true,
       });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       // Show error notification
       Swal.fire({
