@@ -37,8 +37,7 @@ const teamApi = (() => {
     }
   }
 
-  // Update team member berdasarkan ID.
-  // Mapping: role → teamRoleId dan assigned → teamAssignId
+  // Update team member berdasarkan ID menggunakan endpoint /teams/update/:id
   async function updateTeamMember(
     id: number,
     updateData: Partial<TeamMember>
@@ -47,22 +46,22 @@ const teamApi = (() => {
       // Bangun payload dengan mapping yang sesuai
       const formattedData: any = {};
       if (updateData.role !== undefined) {
-        formattedData.teamRoleId = updateData.role;
+        formattedData.role = updateData.role;
       }
       if (updateData.assigned !== undefined) {
-        formattedData.teamAssignId = updateData.assigned;
+        formattedData.assigned = updateData.assigned;
       }
 
-      // Debug: Cetak payload update
       console.log("Payload update:", formattedData);
 
-      const result = await authApi._fetchWithAuth(`${BASE_URL}/teams/1/${id}`, {
-        method: "PUT", // Menggunakan PUT untuk update penuh
+      // Gunakan endpoint sesuai dengan route back end: /teams/update/:id
+      const updateUrl = `${BASE_URL}/teams/update/${id}`;
+      const result = await authApi._fetchWithAuth(updateUrl, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedData),
       });
 
-      // Debug: Cetak respons dari back end
       console.log("Response update:", result);
 
       const data = processResponse(result);

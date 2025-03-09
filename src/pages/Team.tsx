@@ -100,11 +100,12 @@ const TeamTable = () => {
     });
   };
 
-  // Fungsi update: mengirim name, role, dan assigned ke backend
+  // Fungsi update: mengirim role dan assigned ke backend (Name tidak diubah)
   const handleUpdateMember = async () => {
     if (!editingMember || editingMember.id === undefined) return;
     try {
       const updatedMember = await teamApi.updateTeamMember(editingMember.id, {
+        // Name tidak dikirim untuk diupdate karena tidak boleh diubah
         name: editingMember.name,
         role: editingMember.role,
         assigned: editingMember.assigned,
@@ -173,10 +174,8 @@ const TeamTable = () => {
                 <input
                   type="text"
                   value={editingMember.name}
-                  onChange={(e) =>
-                    setEditingMember({ ...editingMember, name: e.target.value })
-                  }
-                  className="w-full border border-black bg-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  readOnly
+                  className="w-full border border-black bg-gray-100 rounded-full p-2 focus:outline-none"
                 />
               </div>
               {/* Field Role: Input text untuk edit role */}
