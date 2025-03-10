@@ -118,22 +118,31 @@ const projectTaskApi = {
     return createdTask;
   },
 
-  // Hapus project task (opsional)
-  deleteProjectTask: async (projectId: number, taskId: number): Promise<any> => {
-    const response = await fetch(
-      `${API_BASE_URL}/projects/${projectId}/task/${taskId}`,
-      {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      }
-    );
-
+  updateTaskDetail: async (projectId: number, detailId: number, payload: TaskDetail): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task-detail/${detailId}`, {
+      method: "PUT", // atau PATCH sesuai API Anda
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
     return await response.json();
   },
+  
+
+  // Hapus project task (opsional)
+  deleteTaskDetail: async (projectId: number, detailId: number): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task-detail/${detailId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return await response.json();
+  },
+  
 };
 
 export default projectTaskApi;
