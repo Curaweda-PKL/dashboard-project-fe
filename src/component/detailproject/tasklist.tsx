@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail";
 import Swal from "sweetalert2";
-import projectTaskApi from "../api/projectTaskApi"; // <--- import API
+import projectTaskApi from "../api/projectTaskApi"; // pastikan updateTaskDetail sudah ada di sini
 import { useParams, useLocation } from "react-router-dom";
+import { FaPencilAlt } from "react-icons/fa";
 
-// Struktur data "Task" di-extend agar sesuai dengan data dari backend.
-// Di backend, setiap "projectTask" punya "task_details" array, berisi
-// (module, weight, feature, task, percentage, status, dll).
-interface TaskDetail {
+// Definisi tipe sesuai backend
+export interface TaskDetail {
+  id?: number; // Opsional jika belum ada saat create
   module: string;
   weight: number;
   feature: string;
@@ -16,23 +16,19 @@ interface TaskDetail {
   status: string;
 }
 
-interface ProjectTask {
+export interface ProjectTask {
   id?: number;
   project_id?: number;
   created_at?: string;
   updated_at?: string;
-
-  // Field dari backend (snake_case) untuk menampung detail
   task_details?: TaskDetail[];
-  
-  // (Opsional) Jika Anda ada field lain di root-level projectTask, bisa ditambah di sini
   projectName?: string;
   pm?: string;
   date?: string;
   client?: string;
 }
 
-// Interface untuk menampung data form "Add Task"
+// Interface untuk form input "Add Task" dan "Edit Task Detail"
 interface MinimalTaskForm {
   module: string;
   weight: number;
@@ -45,7 +41,7 @@ interface MinimalTaskForm {
 const TaskList: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
 
-  // State untuk detail project (hanya tampilan)
+  // State untuk detail project (tampilan)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
     pm: "Default PM",
@@ -53,7 +49,7 @@ const TaskList: React.FC = () => {
     client: "Default Client",
   });
 
-  // Ambil data dari route state jika tersedia
+  // Ambil data dari route state (jika ada)
   const location = useLocation();
   const routeState = (location.state as {
     projectName?: string;
@@ -62,7 +58,6 @@ const TaskList: React.FC = () => {
     client?: string;
   }) || {};
 
-  // Jika ada data dari route state, perbarui projectData
   useEffect(() => {
     if (routeState && routeState.projectName) {
       setProjectData({
@@ -74,17 +69,15 @@ const TaskList: React.FC = () => {
     }
   }, [routeState]);
 
-  // State untuk menampung tasks (sesuai struktur backend)
+  // State tasks dan modal
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
-
-  // State untuk mengatur mode hapus
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
-
-  // State modal "Add Task"
+  // Untuk hapus, simpan ID detail yang dipilih
+  const [selectedDetailIds, setSelectedDetailIds] = useState<number[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  // State form input "Add Task"
+  // Modal edit task detail
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  // State untuk form add task
   const [newTask, setNewTask] = useState<MinimalTaskForm>({
     module: "",
     weight: 0,
@@ -93,21 +86,17 @@ const TaskList: React.FC = () => {
     percentage: 0,
     status: "Pending",
   });
+  // State untuk form edit task detail, termasuk projectName (read-only)
+  const [editDetail, setEditDetail] = useState<(MinimalTaskForm & { id: number; projectName: string }) | null>(null);
 
-  // --- Fetch Data dari API ---
+  // Fetch tasks dari API
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        // Panggil API untuk ambil data tasks
         const data = await projectTaskApi.getAllProjectTasks(Number(projectId));
         console.log("Fetched tasks:", data);
-
-        // 'data' diharapkan array of ProjectTask
         if (Array.isArray(data)) {
           setTasks(data);
-
-          // Jika routeState tidak ada, kita bisa ambil data dari task pertama
-          // (ini hanya contoh menampilkan nama project, PM, dsb.)
           if (!routeState?.projectName && data.length > 0) {
             const firstTask = data[0];
             setProjectData({
@@ -133,19 +122,24 @@ const TaskList: React.FC = () => {
         });
       }
     };
-
     fetchTasks();
   }, [routeState, projectId]);
 
-  // Fungsi untuk toggle mode hapus
+  // Toggle mode editing (untuk hapus)
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
-    setSelectedTasks([]);
+    setSelectedDetailIds([]);
   };
 
-  // Fungsi untuk hapus task (lokal)
-  // (Jika Anda ingin hapus ke backend, panggil projectTaskApi.deleteProjectTask)
-  const handleRemoveTask = async () => {
+  // Handler checkbox: simpan detail id yang dipilih
+  const handleCheckboxChange = (detailId: number) => {
+    setSelectedDetailIds((prev) =>
+      prev.includes(detailId) ? prev.filter((id) => id !== detailId) : [...prev, detailId]
+    );
+  };
+
+  // Handler hapus detail terpilih
+  const handleRemoveSelectedDetails = async () => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -157,20 +151,13 @@ const TaskList: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Misal: hapus setiap task yang dipilih
-          for (const index of selectedTasks) {
-            const taskToDelete = tasks[index];
-            if (taskToDelete?.id) {
-              await projectTaskApi.deleteProjectTask(
-                Number(taskToDelete.project_id),
-                taskToDelete.id
-              );
-            }
+          console.log("Selected detail IDs for removal:", selectedDetailIds);
+          for (const detailId of selectedDetailIds) {
+            await projectTaskApi.deleteTaskDetail(Number(projectId), detailId);
           }
-          // Setelah operasi delete selesai, lakukan re-fetch data
           const refreshedData = await projectTaskApi.getAllProjectTasks(Number(projectId));
           setTasks(refreshedData);
-          setSelectedTasks([]);
+          setSelectedDetailIds([]);
           setIsEditing(false);
           Swal.fire({
             icon: "success",
@@ -184,10 +171,10 @@ const TaskList: React.FC = () => {
             color: "#000000",
           });
         } catch (error) {
-          console.error("Error deleting task:", error);
+          console.error("Error deleting task details:", error);
           Swal.fire({
             icon: "error",
-            title: "Failed to delete task",
+            title: "Failed to delete selected task details",
             toast: true,
             position: "top-end",
             showConfirmButton: false,
@@ -198,16 +185,66 @@ const TaskList: React.FC = () => {
       }
     });
   };
+
+  // Fungsi untuk membuka modal edit dan menyimpan data detail beserta id
+  const openEditModal = (detail: TaskDetail) => {
+    if (!detail.id) {
+      // Tampilkan peringatan atau hentikan eksekusi jika id tidak tersedia
+      Swal.fire({
+        icon: "error",
+        title: "Task detail ID is missing.",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      return;
+    }
+    setEditDetail({
+      ...detail,
+      id: detail.id!, // gunakan non-null assertion karena sudah dicek
+      projectName: projectData.projectName,
+    });
+    setIsEditModalOpen(true);
+  };
   
 
-  // Fungsi checkbox
-  const handleCheckboxChange = (index: number) => {
-    setSelectedTasks((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+  // Fungsi untuk update task detail
+  const handleUpdateTaskDetail = async () => {
+    if (!editDetail) return;
+    try {
+      const detailId = editDetail.id;
+      await projectTaskApi.updateTaskDetail(Number(projectId), detailId, editDetail);
+      const refreshedData = await projectTaskApi.getAllProjectTasks(Number(projectId));
+      setTasks(refreshedData);
+      setIsEditModalOpen(false);
+      Swal.fire({
+        icon: "success",
+        title: "Task has been changed",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+    } catch (error) {
+      console.error("Error updating task detail:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to update task detail",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
   };
 
-  // Fungsi untuk menambahkan task (mengirim ke backend)
+  // Fungsi untuk menambahkan task (create)
   const handleAddTask = async () => {
     try {
       const payloadForApi = {
@@ -222,13 +259,9 @@ const TaskList: React.FC = () => {
           },
         ],
       };
-  
       await projectTaskApi.createProjectTask(payloadForApi, Number(projectId));
-      
-      // Langsung re-fetch data
       const refreshedData = await projectTaskApi.getAllProjectTasks(Number(projectId));
       setTasks(refreshedData);
-  
       Swal.fire({
         icon: "success",
         title: "Task has been added",
@@ -240,18 +273,15 @@ const TaskList: React.FC = () => {
         background: "rgb(0, 208, 255)",
         color: "#000000",
       });
-  
-      // Reset form dan tutup modal
       setNewTask({
         module: "",
         weight: 0,
         feature: "",
         task: "",
         percentage: 0,
-        status: "",
+        status: "Pending",
       });
       setIsModalOpen(false);
-  
     } catch (error) {
       console.error("Error adding task:", error);
       Swal.fire({
@@ -265,14 +295,10 @@ const TaskList: React.FC = () => {
       });
     }
   };
-  
 
   return (
     <div className="p-4">
-      {/* Header */}
       <HeaderDetail />
-
-      {/* Info Project */}
       <div className="mb-6 text-black font-bold">
         <p>
           <strong>Project :</strong> {projectData.projectName}
@@ -287,8 +313,6 @@ const TaskList: React.FC = () => {
           <strong>Client :</strong> {projectData.client}
         </p>
       </div>
-
-      {/* Tabel Task List */}
       <div className="overflow-x-auto">
         <table className="text-center w-full rounded-lg overflow-hidden border">
           <thead>
@@ -300,16 +324,15 @@ const TaskList: React.FC = () => {
               <th className="p-4 border-b">TASK</th>
               <th className="p-4 border-b">PERCENTAGE</th>
               <th className="p-4 border-b">STATUS</th>
+              <th className="p-4 border-b">Edit</th>
             </tr>
           </thead>
           <tbody className="bg-white">
             {tasks.map((task, taskIndex) => {
-              // Ambil detail pertama, jika ada
               if (!task.task_details || task.task_details.length === 0) {
-                // Jika ternyata kosong, tampilkan baris placeholder
                 return (
                   <tr key={`no-detail-${taskIndex}`}>
-                    <td colSpan={6}>No details found</td>
+                    <td colSpan={isEditing ? 8 : 7}>No details found</td>
                   </tr>
                 );
               }
@@ -323,26 +346,33 @@ const TaskList: React.FC = () => {
                       <label className="flex justify-center">
                         <input
                           type="checkbox"
-                          checked={selectedTasks.includes(detailIndex)}
-                          onChange={() => handleCheckboxChange(detailIndex)}
+                          checked={selectedDetailIds.includes(detail.id!)}
+                          onChange={() => handleCheckboxChange(detail.id!)}
                           className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
                         />
                       </label>
                     </td>
                   )}
-                  <td className="p-4">{detail?.module || "-"}</td>
-                  <td className="p-4">{detail?.weight !== undefined ? detail.weight : "-"}</td>
-                  <td className="p-4">{detail?.feature || "-"}</td>
-                  <td className="p-4">{detail?.task || "-"}</td>
-                  <td className="p-4">{detail?.percentage !== undefined ? detail.percentage : "-"}</td>
-                  <td className="p-4">{detail?.status || "-"}</td>
+                  <td className="p-4">{detail.module || "-"}</td>
+                  <td className="p-4">{detail.weight !== undefined ? detail.weight : "-"}</td>
+                  <td className="p-4">{detail.feature || "-"}</td>
+                  <td className="p-4">{detail.task || "-"}</td>
+                  <td className="p-4">{detail.percentage !== undefined ? detail.percentage : "-"}</td>
+                  <td className="p-4">{detail.status || "-"}</td>
+                  <td className="p-4">
+                    <button
+                      onClick={() => openEditModal(detail)}
+                      className="text-green-500 hover:text-green-700"
+                      title="Edit Task Detail"
+                    >
+                      <FaPencilAlt />
+                    </button>
+                  </td>
                 </tr>
               ));
             })}
           </tbody>
         </table>
-
-        {/* Tombol Add dan Remove */}
         <div className="flex justify-between mt-6">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -368,7 +398,7 @@ const TaskList: React.FC = () => {
                 </button>
                 <button
                   className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
-                  onClick={handleRemoveTask}
+                  onClick={handleRemoveSelectedDetails}
                 >
                   Remove
                 </button>
@@ -377,8 +407,6 @@ const TaskList: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Modal Add Task */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
@@ -398,7 +426,6 @@ const TaskList: React.FC = () => {
               }}
               className="flex flex-col gap-4"
             >
-              {/* MODULE */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Module Name
@@ -413,8 +440,6 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-
-              {/* Project Name (readOnly, dari projectData) */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Project Name
@@ -426,8 +451,6 @@ const TaskList: React.FC = () => {
                   className="w-full border rounded-md p-2 bg-gray-200"
                 />
               </div>
-
-              {/* WEIGHT */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Weight
@@ -446,8 +469,6 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-
-              {/* FEATURE */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Feature
@@ -462,8 +483,6 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-
-              {/* TASK */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Task Description
@@ -478,8 +497,6 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-
-              {/* PERCENTAGE */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Percentage
@@ -489,17 +506,12 @@ const TaskList: React.FC = () => {
                   step="0.01"
                   value={newTask.percentage}
                   onChange={(e) =>
-                    setNewTask({
-                      ...newTask,
-                      percentage: parseFloat(e.target.value),
-                    })
+                    setNewTask({ ...newTask, percentage: parseFloat(e.target.value) })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
               </div>
-
-              {/* STATUS */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Status
@@ -517,7 +529,6 @@ const TaskList: React.FC = () => {
                   <option value="Completed">Completed</option>
                 </select>
               </div>
-
               <div className="flex justify-between mt-4">
                 <button
                   type="button"
@@ -531,6 +542,158 @@ const TaskList: React.FC = () => {
                   className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
                 >
                   Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isEditModalOpen && editDetail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setEditDetail(null);
+              }}
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl text-black font-bold mb-4 text-center">
+              Edit Task Detail
+            </h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await handleUpdateTaskDetail();
+              }}
+              className="flex flex-col gap-4"
+            >
+              {/* Urutan sama dengan form add */}
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Module Name
+                </label>
+                <input
+                  type="text"
+                  value={editDetail.module}
+                  onChange={(e) =>
+                    setEditDetail({ ...editDetail, module: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Project Name
+                </label>
+                <input
+                  type="text"
+                  value={projectData.projectName}
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Weight
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editDetail.weight}
+                  onChange={(e) =>
+                    setEditDetail({
+                      ...editDetail,
+                      weight: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Feature
+                </label>
+                <input
+                  type="text"
+                  value={editDetail.feature}
+                  onChange={(e) =>
+                    setEditDetail({ ...editDetail, feature: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Task Description
+                </label>
+                <input
+                  type="text"
+                  value={editDetail.task}
+                  onChange={(e) =>
+                    setEditDetail({ ...editDetail, task: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Percentage
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editDetail.percentage}
+                  onChange={(e) =>
+                    setEditDetail({
+                      ...editDetail,
+                      percentage: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-black font-semibold mb-1">
+                  Status
+                </label>
+                <select
+                  value={editDetail.status}
+                  onChange={(e) =>
+                    setEditDetail({ ...editDetail, status: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div className="flex justify-between mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditDetail(null);
+                  }}
+                  className="bg-[#6D6D6D] text-white font-bold py-2 px-4 rounded-md hover:bg-[#494949]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
+                >
+                  Save
                 </button>
               </div>
             </form>
