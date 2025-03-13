@@ -324,7 +324,7 @@ const TaskList: React.FC = () => {
               <th className="p-4 border-b">TASK</th>
               <th className="p-4 border-b">PERCENTAGE</th>
               <th className="p-4 border-b">STATUS</th>
-              <th className="p-4 border-b">Edit</th>
+              <th className="p-4 border-b"></th>
             </tr>
           </thead>
           <tbody className="bg-white">
