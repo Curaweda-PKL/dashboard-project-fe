@@ -10,7 +10,6 @@ import summaryServiceAPI, {
   ProjectSummary,
 } from "../api/summaryApi";
 
-// Komponen Summary tidak lagi menggunakan ProjectDetail
 const Summary: React.FC = () => {
   const { projectId } = useParams<{ projectId?: string }>();
 
@@ -56,7 +55,7 @@ const Summary: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSummary, setNewSummary] = useState({
     module: "",
-    case_field: "", // gunakan case_field, bukan case
+    case_field: "",
     causes: "",
     action: "",
     assignees: [] as string[],
@@ -126,6 +125,7 @@ const Summary: React.FC = () => {
         0,
         10
       );
+      console.log("Fetched project summaries:", response);
       if (response.result && response.result.length > 0) {
         const summaryObj: ProjectSummary = response.result[0];
         setSummaryId(summaryObj.id);
@@ -157,20 +157,24 @@ const Summary: React.FC = () => {
       if (result.isConfirmed && summaryId !== null && projectId) {
         const updatedDetails = summaries.filter((_, index) => !selectedTasks.includes(index));
         try {
-          await summaryServiceAPI.updateProjectSummary(parseInt(projectId), summaryId, {
-            summaryDetails: updatedDetails.map(
-              ({ module, case_field, causes, action, assignees, deadline, status, close_date }) => ({
-                module,
-                case_field,
-                causes,
-                action,
-                assignees,
-                deadline,
-                status,
-                close_date: close_date || "",
-              })
-            ),
-          });
+          await summaryServiceAPI.updateProjectSummary(
+            parseInt(projectId),
+            summaryId,
+            {
+              summaryDetails: updatedDetails.map(
+                ({ module, case_field, causes, action, assignees, deadline, status, close_date }) => ({
+                  module,
+                  case_field,
+                  causes,
+                  action,
+                  assignees,
+                  deadline,
+                  status,
+                  close_date: close_date || "",
+                })
+              ),
+            }
+          );
           setSummaries(updatedDetails);
           setIsEditing(false);
           setSelectedTasks([]);
@@ -212,12 +216,15 @@ const Summary: React.FC = () => {
             action: newSummary.action,
             assignees: newSummary.assignees,
             deadline: newSummary.deadline,
-            status: "Open", // default status
+            status: "Open",
             close_date: "",
           },
         ],
       };
-      const createdSummary = await summaryServiceAPI.createProjectSummary(parseInt(projectId), payload);
+      const createdSummary = await summaryServiceAPI.createProjectSummary(
+        parseInt(projectId),
+        payload
+      );
       setSummaryId(createdSummary.id);
       setSummaries(createdSummary.details || []);
       setNewSummary({
@@ -404,22 +411,13 @@ const Summary: React.FC = () => {
                         i === index ? updatedRow : detail
                       );
                       try {
-                        if (summaryId && projectId) {
+                        if (projectId && summaryId !== null) {
                           const updatedSummary = await summaryServiceAPI.updateProjectSummary(
                             parseInt(projectId),
                             summaryId,
                             {
                               summaryDetails: updatedDetails.map(
-                                ({
-                                  module,
-                                  case_field,
-                                  causes,
-                                  action,
-                                  assignees,
-                                  deadline,
-                                  status,
-                                  close_date,
-                                }) => ({
+                                ({ module, case_field, causes, action, assignees, deadline, status, close_date }) => ({
                                   module,
                                   case_field,
                                   causes,

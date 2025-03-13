@@ -1,12 +1,13 @@
+// summaryServiceAPI.ts
 import authApi from "./authApi";
 
 // Tambahkan interface ProjectDetail (jika diperlukan di file lain)
-// export interface ProjectDetail {
-//   projectName: string;
-//   pm: string;
-//   date: string;
-//   client: string;
-// }
+export interface ProjectDetail {
+  projectName: string;
+  pm: string;
+  date: string;
+  client: string;
+}
 
 // Tipe detail summary (menyesuaikan dengan format backend)
 export interface SummaryDetail {
@@ -95,7 +96,7 @@ const summaryServiceAPI = {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
-      console.log("Summary API raw data:", result); // Tampilkan data di console
+      console.log("Summary API raw data:", result); // Debug: tampilkan data di console
       if (!result?.status || !result?.data) {
         throw new Error("Invalid API response");
       }
