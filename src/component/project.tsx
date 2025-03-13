@@ -6,10 +6,20 @@ import projectApi, { Project } from "../component/api/projectApi"; // Pastikan p
 // ------------------------------------
 // Helper: Hitung sisa waktu (time left) berdasarkan tanggal akhir
 // ------------------------------------
-function getTimeLeft(endDate: Date): { label: string; color: string } {
+function getTimeLeft(startDate: Date, endDate: Date): { label: string; color: string } {
   const now = new Date();
+  
+  // Jika tanggal sekarang belum mencapai tanggal mulai project
+  if (now < startDate) {
+    const diff = startDate.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return { label: `Akan Dimulai dalam ${days} hari`, color: "#8E44AD" }; // warna bisa disesuaikan
+  }
+  
+  // Jika sudah dimulai, hitung sisa waktu menuju tanggal akhir
   const diff = endDate.getTime() - now.getTime();
   const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  
   if (days <= 0) {
     return { label: "Overdue", color: "#B20000" };
   } else if (days < 7) {
@@ -22,6 +32,7 @@ function getTimeLeft(endDate: Date): { label: string; color: string } {
     return { label: `${months} months left`, color: "#0AB239" };
   }
 }
+
 
 // ------------------------------------
 // Helper: Parse "DD/MM/YYYY" -> Date
@@ -391,6 +402,7 @@ interface ProjectCardProps {
   id: string;
   title: string;
   duration: string; // Contoh: "DD/MM/YYYY - DD/MM/YYYY"
+  startDate: Date;
   endDate: Date; // untuk hitung sisa waktu
   client: string;
   description: string; // Definition of project
@@ -407,6 +419,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   id,
   title,
   duration,
+  startDate,
   endDate,
   client,
   description,
@@ -419,7 +432,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const isSelected = selectedProjects.includes(id);
-  const { label: timeLeftLabel, color: timeLeftColor } = getTimeLeft(endDate);
+  const { label: timeLeftLabel, color: timeLeftColor } = getTimeLeft(startDate, endDate);
 
   let progressColor = "#F44336";
   if (progress && progress >= 80) {
@@ -550,6 +563,7 @@ const InProgress: React.FC<ProjectsSectionProps> = ({
                 id={String(project.id)}
                 title={project.title}
                 duration={duration}
+                startDate={new Date(project.start_date)}
                 endDate={new Date(project.end_date)}
                 client={project.client || ""}
                 description={project.description || ""}
@@ -648,6 +662,7 @@ const UpcomingProjects: React.FC<ProjectsSectionProps> = ({
                 id={String(project.id)}
                 title={project.title}
                 duration={duration}
+                startDate={new Date(project.start_date)}
                 endDate={new Date(project.end_date)}
                 client={project.client || ""} // Tidak tampil di card Upcoming
                 description={project.description || ""}
