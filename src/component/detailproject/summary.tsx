@@ -1,29 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import HeaderDetail from "./headerdetail";
 import { RiPencilFill } from "react-icons/ri";
 import { FaChevronDown } from "react-icons/fa";
+import { useParams, useLocation } from "react-router-dom";
+import summaryServiceAPI, {
+  SummaryDetail,
+  ProjectSummaryResponse,
+  ProjectSummary,
+} from "../api/summaryApi";
 
+// Komponen Summary tidak lagi menggunakan ProjectDetail
 const Summary: React.FC = () => {
-  // Initial summary data; ensure the "assignees" property is stored as an array
-  const [data, setData] = useState([
-    {
-      module: "Pembelian",
-      case: "Button Error",
-      causes: "Error in program code",
-      action: "Correct the wrong program code",
-      assignees: ["Gustavo Bergson"],
-      deadline: "15/12/2024",
-      status: "On Going",
-      closeDate: "18/12/2024",
-    },
-  ]);
+  const { projectId } = useParams<{ projectId?: string }>();
 
-  // State for the Add Summary modal
+  // State untuk detail project (menggunakan data dari route state atau default)
+  const [projectData, setProjectData] = useState({
+    projectName: "Default Project Name",
+    pm: "Default PM",
+    date: "Default Date",
+    client: "Default Client",
+  });
+
+  // Ambil data dari route state jika tersedia
+  const location = useLocation();
+  const routeState = (location.state as {
+    projectName?: string;
+    pm?: string;
+    date?: string;
+    client?: string;
+  }) || {};
+
+  useEffect(() => {
+    if (routeState && routeState.projectName) {
+      setProjectData({
+        projectName: routeState.projectName,
+        pm: routeState.pm || "Default PM",
+        date: routeState.date || "Default Date",
+        client: routeState.client || "Default Client",
+      });
+    }
+  }, [routeState]);
+
+  // State untuk menyimpan summary details yang didapat dari API
+  const [summaries, setSummaries] = useState<SummaryDetail[]>([]);
+  // Simpan summaryId (misalnya gunakan summary pertama jika ada)
+  const [summaryId, setSummaryId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Untuk mode editing (untuk menghapus beberapa summary detail)
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+
+  // State untuk modal Add Summary
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSummary, setNewSummary] = useState({
     module: "",
-    case: "",
+    case_field: "", // gunakan case_field, bukan case
     causes: "",
     action: "",
     assignees: [] as string[],
@@ -31,11 +64,11 @@ const Summary: React.FC = () => {
     showAssigneesDropdown: false,
   });
 
-  // State for the Edit Summary modal
+  // State untuk modal Edit Summary
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editSummary, setEditSummary] = useState({
     module: "",
-    case: "",
+    case_field: "",
     causes: "",
     action: "",
     assignees: [] as string[],
@@ -44,14 +77,10 @@ const Summary: React.FC = () => {
   });
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  // State for the summary deletion (editing) mode
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
-
-  // Available assignees list
+  // List available assignees
   const assigneesList = ["Gustavo Bergson", "Roger Franci", "Wilson Press"];
 
-  // Toggle function for assignees in the Add Summary modal
+  // Toggle fungsi untuk assignees di modal Add
   const toggleAssignee = (assignee: string) => {
     setNewSummary((prev) => {
       const newAssignees = [...prev.assignees];
@@ -63,7 +92,7 @@ const Summary: React.FC = () => {
     });
   };
 
-  // Toggle function for assignees in the Edit Summary modal
+  // Toggle fungsi untuk assignees di modal Edit
   const toggleEditAssignee = (assignee: string) => {
     setEditSummary((prev) => {
       const newAssignees = [...prev.assignees];
@@ -82,81 +111,154 @@ const Summary: React.FC = () => {
 
   const handleCheckboxChange = (index: number) => {
     if (selectedTasks.includes(index)) {
-      setSelectedTasks(selectedTasks.filter((taskIndex) => taskIndex !== index));
+      setSelectedTasks(selectedTasks.filter((i) => i !== index));
     } else {
       setSelectedTasks([...selectedTasks, index]);
     }
   };
 
+  // Ambil data summary dari API
+  const fetchSummaries = async () => {
+    if (!projectId) return;
+    try {
+      const response: ProjectSummaryResponse = await summaryServiceAPI.fetchProjectSummaries(
+        parseInt(projectId),
+        0,
+        10
+      );
+      if (response.result && response.result.length > 0) {
+        const summaryObj: ProjectSummary = response.result[0];
+        setSummaryId(summaryObj.id);
+        setSummaries(summaryObj.details || []);
+      } else {
+        setSummaries([]);
+      }
+    } catch (err) {
+      console.error("Error fetching summaries:", err);
+      setError("Gagal mengambil data summary. Silakan coba lagi nanti.");
+    }
+  };
+
+  useEffect(() => {
+    fetchSummaries();
+  }, [projectId]);
+
+  // Handle delete selected summary details
   const handleRemoveSelectedTasks = () => {
     Swal.fire({
       title: "Are you sure?",
-      text: "You won't be able to revert this?",
+      text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#09ABCA",
       cancelButtonColor: "#6A6A6A",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const newData = data.filter((_, index) => !selectedTasks.includes(index));
-        setData(newData);
-        setIsEditing(false);
-        setSelectedTasks([]);
-
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top-end",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-          },
-        });
-
-        Toast.fire({
-          icon: "success",
-          title: "Summary has been removed",
-          background: "rgb(0, 208, 255)",
-          color: "#000000",
-        });
+    }).then(async (result) => {
+      if (result.isConfirmed && summaryId !== null && projectId) {
+        const updatedDetails = summaries.filter((_, index) => !selectedTasks.includes(index));
+        try {
+          await summaryServiceAPI.updateProjectSummary(parseInt(projectId), summaryId, {
+            summaryDetails: updatedDetails.map(
+              ({ module, case_field, causes, action, assignees, deadline, status, close_date }) => ({
+                module,
+                case_field,
+                causes,
+                action,
+                assignees,
+                deadline,
+                status,
+                close_date: close_date || "",
+              })
+            ),
+          });
+          setSummaries(updatedDetails);
+          setIsEditing(false);
+          setSelectedTasks([]);
+          Swal.fire({
+            icon: "success",
+            title: "Summary has been removed",
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            background: "rgb(0, 208, 255)",
+            color: "#000000",
+          });
+        } catch (error) {
+          console.error("Error updating summary after deletion:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Failed to remove summary",
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+          });
+        }
       }
     });
   };
 
-  const handleAddSummary = () => {
-    setData([...data, { ...newSummary, status: "Open", closeDate: "" }]);
-    setNewSummary({
-      module: "",
-      case: "",
-      causes: "",
-      action: "",
-      assignees: [],
-      deadline: "",
-      showAssigneesDropdown: false,
-    });
-    setIsModalOpen(false);
-
-    Swal.fire({
-      icon: "success",
-      title: "Summary has been added",
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      background: "rgb(0, 208, 255)",
-      color: "#000000",
-    });
+  // Handle Add Summary
+  const handleAddSummary = async () => {
+    if (!projectId) return;
+    try {
+      const payload = {
+        summaryDetails: [
+          {
+            module: newSummary.module,
+            case_field: newSummary.case_field,
+            causes: newSummary.causes,
+            action: newSummary.action,
+            assignees: newSummary.assignees,
+            deadline: newSummary.deadline,
+            status: "Open", // default status
+            close_date: "",
+          },
+        ],
+      };
+      const createdSummary = await summaryServiceAPI.createProjectSummary(parseInt(projectId), payload);
+      setSummaryId(createdSummary.id);
+      setSummaries(createdSummary.details || []);
+      setNewSummary({
+        module: "",
+        case_field: "",
+        causes: "",
+        action: "",
+        assignees: [],
+        deadline: "",
+        showAssigneesDropdown: false,
+      });
+      setIsModalOpen(false);
+      Swal.fire({
+        icon: "success",
+        title: "Summary has been added",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+    } catch (error) {
+      console.error("Error creating summary:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to add summary",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    }
   };
 
+  // Handle Open Edit Modal
   const handleOpenEditModal = (index: number) => {
-    const summaryToEdit = data[index];
+    const summaryToEdit = summaries[index];
     setEditSummary({
       module: summaryToEdit.module,
-      case: summaryToEdit.case,
+      case_field: summaryToEdit.case_field,
       causes: summaryToEdit.causes,
       action: summaryToEdit.action,
       assignees: Array.isArray(summaryToEdit.assignees)
@@ -169,17 +271,40 @@ const Summary: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleEditSummary = () => {
-    if (editIndex !== null) {
-      const updatedData = [...data];
-      updatedData[editIndex] = {
-        ...editSummary,
-        status: updatedData[editIndex].status,
-        closeDate: updatedData[editIndex].closeDate,
+  // Handle Edit Summary
+  const handleEditSummary = async () => {
+    if (editIndex === null || summaryId === null || !projectId) return;
+    try {
+      const updatedDetails = [...summaries];
+      updatedDetails[editIndex] = {
+        ...updatedDetails[editIndex],
+        module: editSummary.module,
+        case_field: editSummary.case_field,
+        causes: editSummary.causes,
+        action: editSummary.action,
+        assignees: editSummary.assignees,
+        deadline: editSummary.deadline,
       };
-      setData(updatedData);
+      const updatedSummary = await summaryServiceAPI.updateProjectSummary(
+        parseInt(projectId),
+        summaryId,
+        {
+          summaryDetails: updatedDetails.map(
+            ({ module, case_field, causes, action, assignees, deadline, status, close_date }) => ({
+              module,
+              case_field,
+              causes,
+              action,
+              assignees,
+              deadline,
+              status,
+              close_date: close_date || "",
+            })
+          ),
+        }
+      );
+      setSummaries(updatedSummary.details || []);
       setIsEditModalOpen(false);
-
       Swal.fire({
         icon: "success",
         title: "Summary has been changed",
@@ -187,9 +312,18 @@ const Summary: React.FC = () => {
         position: "top-end",
         showConfirmButton: false,
         timer: 3000,
-        timerProgressBar: true,
         background: "rgb(0, 208, 255)",
         color: "#000000",
+      });
+    } catch (error) {
+      console.error("Error updating summary:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to update summary",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
       });
     }
   };
@@ -199,19 +333,24 @@ const Summary: React.FC = () => {
       <HeaderDetail />
       <div className="mb-6 text-black font-bold">
         <p>
-          <strong>Project :</strong> TourO Web Development
+          <strong>Project :</strong> {projectData.projectName}
         </p>
         <p>
-          <strong>PM :</strong> Gustavo Bergson
+          <strong>PM :</strong> {projectData.pm}
         </p>
         <p>
-          <strong>Date :</strong> 12/12/2024
+          <strong>Date :</strong> {projectData.date}
         </p>
         <p>
-          <strong>Client :</strong> Mr. Lorem
+          <strong>Client :</strong> {projectData.client}
         </p>
       </div>
-
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="text-center w-full rounded-lg overflow-hidden">
           <thead>
@@ -228,7 +367,7 @@ const Summary: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((row, index) => (
+            {summaries.map((row, index) => (
               <tr
                 key={index}
                 className="border-t text-center text-black font-bold hover:bg-gray-100 transition duration-200"
@@ -240,13 +379,13 @@ const Summary: React.FC = () => {
                         type="checkbox"
                         checked={selectedTasks.includes(index)}
                         onChange={() => handleCheckboxChange(index)}
-                        className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
+                        className="w-6 h-6 border-2 border-gray-400 rounded-full transition duration-200 cursor-pointer"
                       />
                     </label>
                   </td>
                 )}
                 <td className="p-4 border-b">{row.module}</td>
-                <td className="p-4 border-b">{row.case}</td>
+                <td className="p-4 border-b">{row.case_field}</td>
                 <td className="p-4 border-b">{row.causes}</td>
                 <td className="p-4 border-b">{row.action}</td>
                 <td className="p-4 border-b">
@@ -258,16 +397,55 @@ const Summary: React.FC = () => {
                 <td className="p-4 border-b">
                   <select
                     className="bg-transparent text-black cursor-pointer"
-                    defaultValue={row.status}
+                    value={row.status}
+                    onChange={async (e) => {
+                      const updatedRow = { ...row, status: e.target.value };
+                      const updatedDetails = summaries.map((detail, i) =>
+                        i === index ? updatedRow : detail
+                      );
+                      try {
+                        if (summaryId && projectId) {
+                          const updatedSummary = await summaryServiceAPI.updateProjectSummary(
+                            parseInt(projectId),
+                            summaryId,
+                            {
+                              summaryDetails: updatedDetails.map(
+                                ({
+                                  module,
+                                  case_field,
+                                  causes,
+                                  action,
+                                  assignees,
+                                  deadline,
+                                  status,
+                                  close_date,
+                                }) => ({
+                                  module,
+                                  case_field,
+                                  causes,
+                                  action,
+                                  assignees,
+                                  deadline,
+                                  status,
+                                  close_date: close_date || "",
+                                })
+                              ),
+                            }
+                          );
+                          setSummaries(updatedSummary.details || []);
+                        }
+                      } catch (error) {
+                        console.error("Error updating status:", error);
+                      }
+                    }}
                   >
                     <option value="Open">Open</option>
                     <option value="On Going">On Going</option>
                     <option value="Closed">Closed</option>
                   </select>
                 </td>
-                {/* Close Date column with edit button */}
                 <td className="p-4 border-b relative">
-                  <span>{row.closeDate}</span>
+                  <span>{row.close_date}</span>
                   <button
                     onClick={() => handleOpenEditModal(index)}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#0AB239] hover:text-[#0AB239]"
@@ -324,9 +502,7 @@ const Summary: React.FC = () => {
             >
               ✕
             </button>
-            <h2 className="text-2xl text-black font-bold mb-4 text-center">
-              Add Summary
-            </h2>
+            <h2 className="text-2xl font-bold mb-4 text-center">Add Summary</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -335,9 +511,7 @@ const Summary: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Module Name
-                </label>
+                <label className="block text-lg font-bold mb-1">Module Name</label>
                 <input
                   type="text"
                   value={newSummary.module}
@@ -349,23 +523,19 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Case
-                </label>
+                <label className="block text-lg font-bold mb-1">Case</label>
                 <input
                   type="text"
-                  value={newSummary.case}
+                  value={newSummary.case_field}
                   onChange={(e) =>
-                    setNewSummary({ ...newSummary, case: e.target.value })
+                    setNewSummary({ ...newSummary, case_field: e.target.value })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Causes
-                </label>
+                <label className="block text-lg font-bold mb-1">Causes</label>
                 <input
                   type="text"
                   value={newSummary.causes}
@@ -377,9 +547,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Action
-                </label>
+                <label className="block text-lg font-bold mb-1">Action</label>
                 <input
                   type="text"
                   value={newSummary.action}
@@ -390,14 +558,12 @@ const Summary: React.FC = () => {
                   required
                 />
               </div>
-              {/* Dropdown for Assignees with submit button */}
+              {/* Dropdown for Assignees */}
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
-                  Assignees
-                </label>
+                <label className="block text-lg font-semibold mb-1">Assignees</label>
                 <div className="relative">
                   <div
-                    className="border rounded-md p-2 bg-white cursor-pointer relative flex justify-between items-center"
+                    className="border rounded-md p-2 bg-white cursor-pointer flex justify-between items-center"
                     onClick={() =>
                       setNewSummary({
                         ...newSummary,
@@ -427,7 +593,7 @@ const Summary: React.FC = () => {
                             type="checkbox"
                             checked={newSummary.assignees.includes(assignee)}
                             onChange={() => toggleAssignee(assignee)}
-                            className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
+                            className="w-6 h-6 border-2 border-gray-400 rounded-full transition duration-200 cursor-pointer"
                           />
                           {assignee}
                         </label>
@@ -436,12 +602,9 @@ const Summary: React.FC = () => {
                         <button
                           type="button"
                           onClick={() =>
-                            setNewSummary({
-                              ...newSummary,
-                              showAssigneesDropdown: false,
-                            })
+                            setNewSummary({ ...newSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
+                          className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"
                         >
                           Submit
                         </button>
@@ -451,9 +614,7 @@ const Summary: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Deadline
-                </label>
+                <label className="block text-lg font-bold mb-1">Deadline</label>
                 <input
                   type="date"
                   value={newSummary.deadline}
@@ -474,7 +635,7 @@ const Summary: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-curawedaColor text-white px-4 py-2 rounded-md hover:bg-curawedaColor"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   Submit
                 </button>
@@ -494,9 +655,7 @@ const Summary: React.FC = () => {
             >
               ✕
             </button>
-            <h2 className="text-2xl text-black font-bold mb-4 text-center">
-              Edit Summary
-            </h2>
+            <h2 className="text-2xl font-bold mb-4 text-center">Edit Summary</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -505,9 +664,7 @@ const Summary: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Module Name
-                </label>
+                <label className="block text-lg font-bold mb-1">Module Name</label>
                 <input
                   type="text"
                   value={editSummary.module}
@@ -519,23 +676,19 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Case
-                </label>
+                <label className="block text-lg font-bold mb-1">Case</label>
                 <input
                   type="text"
-                  value={editSummary.case}
+                  value={editSummary.case_field}
                   onChange={(e) =>
-                    setEditSummary({ ...editSummary, case: e.target.value })
+                    setEditSummary({ ...editSummary, case_field: e.target.value })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Causes
-                </label>
+                <label className="block text-lg font-bold mb-1">Causes</label>
                 <input
                   type="text"
                   value={editSummary.causes}
@@ -547,9 +700,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Action
-                </label>
+                <label className="block text-lg font-bold mb-1">Action</label>
                 <input
                   type="text"
                   value={editSummary.action}
@@ -560,14 +711,12 @@ const Summary: React.FC = () => {
                   required
                 />
               </div>
-              {/* Dropdown for Assignees in Edit Summary modal with submit button */}
+              {/* Dropdown for Assignees in Edit Modal */}
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
-                  Assignees
-                </label>
+                <label className="block text-lg font-semibold mb-1">Assignees</label>
                 <div className="relative">
                   <div
-                    className="border rounded-md p-2 bg-white cursor-pointer relative flex justify-between items-center"
+                    className="border rounded-md p-2 bg-white cursor-pointer flex justify-between items-center"
                     onClick={() =>
                       setEditSummary({
                         ...editSummary,
@@ -597,7 +746,7 @@ const Summary: React.FC = () => {
                             type="checkbox"
                             checked={editSummary.assignees.includes(assignee)}
                             onChange={() => toggleEditAssignee(assignee)}
-                            className="appearance-none w-6 h-6 border-2 border-gray-400 rounded-full checked:bg-curawedaColor checked:border-curawedaColor transition duration-200 cursor-pointer"
+                            className="w-6 h-6 border-2 border-gray-400 rounded-full transition duration-200 cursor-pointer"
                           />
                           {assignee}
                         </label>
@@ -606,12 +755,9 @@ const Summary: React.FC = () => {
                         <button
                           type="button"
                           onClick={() =>
-                            setEditSummary({
-                              ...editSummary,
-                              showAssigneesDropdown: false,
-                            })
+                            setEditSummary({ ...editSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
+                          className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"
                         >
                           Submit
                         </button>
@@ -621,9 +767,7 @@ const Summary: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-lg text-black font-bold mb-1">
-                  Deadline
-                </label>
+                <label className="block text-lg font-bold mb-1">Deadline</label>
                 <input
                   type="date"
                   value={editSummary.deadline}
@@ -644,7 +788,7 @@ const Summary: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-curawedaColor text-white px-4 py-2 rounded-md hover:bg-curawedaColor"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   Submit
                 </button>
