@@ -1,20 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { CiImageOn } from "react-icons/ci";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2";
+import userProfileApi from "../component/api/userProfilApi"; // Pastikan path sesuai
 
 const Profiles: React.FC = () => {
-  const location = useLocation();
   const [username, setUsername] = useState<string>("User Name");
+  const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
+  // Ambil data profil user dari backend
   useEffect(() => {
-    if (location.state && location.state.username) {
-      setUsername(location.state.username);
+    async function loadProfile() {
+      try {
+        // Jika userId belum tersimpan di localStorage, panggil fetchAndStoreCurrentUser
+        if (!localStorage.getItem("userId")) {
+          await userProfileApi.fetchAndStoreCurrentUser();
+        }
+        const profileData = await userProfileApi.getUserProfile();
+        setUsername(profileData.name);
+        setProfilePic(profileData.profile_pic);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
     }
-  }, [location]);
+    loadProfile();
+  }, []);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newUsername = e.target.value;
@@ -31,10 +43,43 @@ const Profiles: React.FC = () => {
       confirmButtonColor: "#09abca",
       cancelButtonColor: "#6D6D6D",
       confirmButtonText: "Save",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        console.log("Username saved:", username);
-        setHasChanges(false);
+        try {
+          const updatedProfile = await userProfileApi.updateUserProfile({ name: username });
+          setUsername(updatedProfile.name);
+          setHasChanges(false);
+
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+
+          Toast.fire({
+            icon: "success",
+            title: "Username changed successfully",
+            background: "rgb(0, 208, 255)",
+            color: "#000000",
+          });
+        } catch (error) {
+          console.error("Error updating username:", error);
+        }
+      }
+    });
+  };
+
+  const handleSaveImage = async () => {
+    if (selectedImage) {
+      try {
+        const result = await userProfileApi.uploadProfilePicture(selectedImage);
+        setProfilePic(result.profile_pic);
 
         const Toast = Swal.mixin({
           toast: true,
@@ -50,36 +95,13 @@ const Profiles: React.FC = () => {
 
         Toast.fire({
           icon: "success",
-          title: "Username changed successfully",
-          background: "rgb(0, 208, 255)", // Warna biru untuk background
-          color: "#000000", // Warna teks agar terlihat jelas
+          title: "Profile picture changed successfully",
+          background: "rgb(0, 208, 255)",
+          color: "#000000",
         });
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
       }
-    });
-  };
-
-  const handleSaveImage = () => {
-    if (selectedImage) {
-      console.log("Image saved:", selectedImage.name);
-      
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.onmouseenter = Swal.stopTimer;
-          toast.onmouseleave = Swal.resumeTimer;
-        },
-      });
-  
-      Toast.fire({
-        icon: "success",
-        title: "Profile changed successfully",
-        background: "rgb(0, 208, 255)", // Warna biru untuk background
-        color: "#000000", // Warna teks agar terlihat jelas
-      });
     }
     setIsPopupVisible(false);
   };
@@ -113,13 +135,19 @@ const Profiles: React.FC = () => {
           <div className="text-white">
             <div className="mb-6 text-center">
               <div className="w-24 h-24 mx-auto rounded-full bg-gray-400">
-                {selectedImage && (
+                {selectedImage ? (
                   <img
                     src={URL.createObjectURL(selectedImage)}
                     alt="Selected"
                     className="w-full h-full rounded-full object-cover"
                   />
-                )}
+                ) : profilePic ? (
+                  <img
+                    src={profilePic}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : null}
               </div>
               <button
                 onClick={() => setIsPopupVisible(true)}

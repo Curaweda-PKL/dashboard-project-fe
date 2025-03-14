@@ -1,175 +1,213 @@
-// Definisikan tipe untuk detail timeline
-interface TimelineDetail {
-    module: string;
-    start_date: string; // Bisa juga berupa Date jika diperlukan, tapi pastikan konversi yang tepat
-    end_date: string;
-    status: string;
+import authApi from "./authApi";
+
+// Tipe detail timeline (menyesuaikan dengan format backend)
+export interface TimelineDetail {
+  id?: number;         // Pastikan setiap detail memiliki ID untuk keperluan update
+  module: string;
+  startDate: string;   // Frontend menggunakan camelCase
+  endDate: string;     // Frontend menggunakan camelCase
+  status: string;
+}
+
+// Tipe projectTimeline
+export interface ProjectTimeline {
+  id?: number;
+  project_id?: number;
+  created_at?: string;
+  updated_at?: string;
+  details?: TimelineDetail[];
+  projectName?: string;
+  pm?: string;
+  date?: string;
+  client?: string;
+}
+
+const API_BASE_URL = "http://localhost:8080/api/projects";
+
+// Helper untuk mendapatkan headers dengan autentikasi
+const getAuthHeaders = () => {
+  const token = authApi.getAccessToken();
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
+  return headers;
+};
+
+// Helper untuk mengubah format data dari backend ke frontend
+const mapBackendToFrontend = (backendData: any): ProjectTimeline => {
+  if (!backendData) return {} as ProjectTimeline;
   
-  // Tipe untuk data timeline secara keseluruhan
-  interface TimelineData {
-    project_id: number;
-    details: TimelineDetail[];
-  }
+  // Pemetaan details (ubah snake_case ke camelCase dan mapping ID)
+  const mappedDetails = backendData.details?.map((detail: any) => ({
+    id: detail.id,
+    module: detail.module,
+    startDate: detail.start_date,
+    endDate: detail.end_date,
+    status: detail.status,
+  })) || [];
   
-  // URL dasar API (ubah sesuai konfigurasi server)
-  const BASE_URL = "http://localhost:3000/api/project-timelines";
-  
-  /**
-   * Mengambil data project timeline dengan parameter pencarian, offset, dan limit.
-   * @param search Nilai pencarian untuk project_id (bisa string atau number).
-   * @param offset Posisi offset untuk paginasi.
-   * @param limit Batas data yang ingin diambil.
-   */
-  export async function getProjectTimelines(
-    search: string | number = "",
-    offset: number = 0,
-    limit: number = 10
-  ): Promise<any> {
+  return {
+    ...backendData,
+    details: mappedDetails,
+  };
+};
+
+const projectTimelineAPI = {
+  // GET: Ambil semua timeline dari project tertentu
+  getAllTimelines: async (projectId: number): Promise<ProjectTimeline[]> => {
     try {
+      const response = await fetch(`${API_BASE_URL}/${projectId}/timeline`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("getAllTimelines => raw result:", result);
+      if (!result?.status || !result?.data?.result) {
+        console.error("Invalid API response:", result);
+        return [];
+      }
+      return Array.isArray(result.data.result)
+        ? result.data.result.map(mapBackendToFrontend)
+        : [];
+    } catch (error) {
+      console.error("Error fetching timelines:", error);
+      return [];
+    }
+  },
+
+  // GET: Ambil satu timeline berdasarkan ID
+  getTimelineById: async (timelineId: number): Promise<ProjectTimeline> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/timeline/${timelineId}`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("getTimelineById => raw result:", result);
+      return mapBackendToFrontend(result?.data || {});
+    } catch (error) {
+      console.error("Error fetching timeline by id:", error);
+      return {} as ProjectTimeline;
+    }
+  },
+
+  // POST: Buat timeline baru untuk project tertentu
+  createTimeline: async (payload: { details: TimelineDetail[] }, projectId: number): Promise<ProjectTimeline> => {
+    try {
+      const backendPayload = {
+        project_id: projectId,
+        details: payload.details.map(detail => ({
+          module: detail.module,
+          start_date: detail.startDate,
+          end_date: detail.endDate,
+          status: detail.status,
+        })),
+      };
+      const response = await fetch(`${API_BASE_URL}/${projectId}/timeline`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(backendPayload),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("createTimeline => raw result:", result);
+      return mapBackendToFrontend(result?.data || {});
+    } catch (error) {
+      console.error("Error creating timeline:", error);
+      throw error;
+    }
+  },
+
+  // PUT: Update timeline berdasarkan ID
+  updateTimeline: async (timelineId: number, payload: any): Promise<ProjectTimeline> => {
+    try {
+      const backendPayload = { ...payload };
+      if (payload.details) {
+        backendPayload.details = payload.details.map((detail: TimelineDetail) => ({
+          module: detail.module,
+          start_date: detail.startDate,
+          end_date: detail.endDate,
+          status: detail.status,
+        }));
+      }
+      const response = await fetch(`${API_BASE_URL}/timeline/${timelineId}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(backendPayload),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("updateTimeline => raw result:", result);
+      return mapBackendToFrontend(result?.data || {});
+    } catch (error) {
+      console.error("Error updating timeline:", error);
+      throw error;
+    }
+  },
+
+  // DELETE: Hapus timeline berdasarkan ID
+  deleteTimeline: async (timelineId: number): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/timeline/${timelineId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("deleteTimeline => raw result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error deleting timeline:", error);
+      throw error;
+    }
+  },
+
+  // PATCH: Perbarui status timeline detail menggunakan route:
+  // "/:projectId/timeline-detail/:detailId"
+  updateTimelineDetailStatus: async (
+    projectId: number,
+    detailId: number,
+    newStatus: string
+  ): Promise<ProjectTimeline> => {
+    try {
+      // Jika backend mengharapkan payload terbungkus dalam "timeline_detail"
+      const payload = { timeline_detail: { status: newStatus } };
+      console.log("Sending payload:", payload);
       const response = await fetch(
-        `${BASE_URL}?search=${search}&offset=${offset}&limit=${limit}`
+        `${API_BASE_URL}/${projectId}/timeline-detail/${detailId}`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        }
       );
       if (!response.ok) {
-        throw new Error("Terjadi kesalahan saat mengambil data timeline");
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      return await response.json();
+      const result = await response.json();
+      console.log("updateTimelineDetailStatus => raw result:", result);
+      return mapBackendToFrontend(result?.data || {});
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error updating timeline detail status:", error);
       throw error;
     }
-  }
-  
-  /**
-   * Mengambil data satu project timeline berdasarkan id.
-   * @param id ID timeline.
-   */
-  export async function getProjectTimelineById(id: number): Promise<any> {
-    try {
-      const response = await fetch(`${BASE_URL}/${id}`);
-      if (!response.ok) {
-        throw new Error("Terjadi kesalahan saat mengambil data timeline");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error:", error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Membuat project timeline baru.
-   * @param timelineData Data timeline baru dengan tipe TimelineData.
-   */
-  export async function createProjectTimeline(
-    timelineData: TimelineData
-  ): Promise<any> {
-    try {
-      const response = await fetch(BASE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(timelineData),
-      });
-      if (!response.ok) {
-        throw new Error("Terjadi kesalahan saat membuat timeline");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error:", error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Memperbarui data project timeline berdasarkan id.
-   * @param id ID timeline yang akan diperbarui.
-   * @param timelineData Data baru untuk timeline dengan tipe TimelineData.
-   */
-  export async function updateProjectTimeline(
-    id: number,
-    timelineData: TimelineData
-  ): Promise<any> {
-    try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(timelineData),
-      });
-      if (!response.ok) {
-        throw new Error("Terjadi kesalahan saat memperbarui timeline");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error:", error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Menghapus project timeline berdasarkan id.
-   * @param id ID timeline yang akan dihapus.
-   */
-  export async function deleteProjectTimeline(id: number): Promise<any> {
-    try {
-      const response = await fetch(`${BASE_URL}/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Terjadi kesalahan saat menghapus timeline");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error:", error);
-      throw error;
-    }
-  }
-  
-  // Contoh penggunaan fungsi fetch
-  (async () => {
-    // Contoh: Mengambil semua timeline dengan pencarian "1", offset 0 dan limit 10
-    const timelines = await getProjectTimelines("1", 0, 10);
-    console.log("Data timelines:", timelines);
-  
-    // Contoh: Mengambil satu timeline berdasarkan id
-    const timeline = await getProjectTimelineById(1);
-    console.log("Data timeline:", timeline);
-  
-    // Contoh: Membuat timeline baru
-    const newTimeline: TimelineData = {
-      project_id: 1,
-      details: [
-        {
-          module: "Module A",
-          start_date: "2025-01-01",
-          end_date: "2025-02-01",
-          status: "pending",
-        },
-      ],
-    };
-    const createdTimeline = await createProjectTimeline(newTimeline);
-    console.log("Timeline baru:", createdTimeline);
-  
-    // Contoh: Memperbarui timeline dengan id tertentu
-    const updateData: TimelineData = {
-      project_id: 1,
-      details: [
-        {
-          module: "Module B",
-          start_date: "2025-03-01",
-          end_date: "2025-04-01",
-          status: "in-progress",
-        },
-      ],
-    };
-    const updatedTimeline = await updateProjectTimeline(1, updateData);
-    console.log("Timeline yang diperbarui:", updatedTimeline);
-  
-    // Contoh: Menghapus timeline dengan id tertentu
-    const deletedTimeline = await deleteProjectTimeline(1);
-    console.log("Timeline yang dihapus:", deletedTimeline);
-  })();
-  
+  },
+};
+
+export default projectTimelineAPI;

@@ -44,14 +44,14 @@ const App: React.FC = () => {
           </Route>
 
           {/* Route Task List */}
-          <Route path="/task" element={<TaskList />} />
+          <Route path="/project/:projectId/task" element={<TaskList />} />
 
           {/* Route Summary */}
-          <Route path="/summary" element={<Summary />} />
+          <Route path="/project/:projectId/summary" element={<Summary />} />
 
           {/* Route Add Team Project */}
           <Route path="/addTeamProject" element={<AddTeamProject />} />
-          <Route path="/timeline" element={<Timeline />} />
+          <Route path="/project/:projectId/timeline" element={<Timeline />} />
         </Route>
 
         {/* Route Not Found */}

@@ -8,7 +8,8 @@ import { IoMdSettings } from "react-icons/io";
 import NotificationsPopup from "../component/notificationsPopup";
 import iconMap from "./iconMap";
 import sidebarLinks from "../layout/sidebar.json";
-import { fetchUser, UserSummary } from "../component/api/usersApi";
+import { UserSummary } from "../component/api/usersApi";
+import usersApi from "../component/api/usersApi"; // Default import
 
 interface SidebarLink {
   name: string;
@@ -25,15 +26,11 @@ const Layout = () => {
   const [pageTitle, setPageTitle] = useState("Dashboard");
   const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
 
-  // Rekursif mencari judul halaman
+  // Fungsi rekursif untuk mendapatkan judul halaman dari sidebarLinks
   const getPageTitle = (links: SidebarLink[], path: string): string => {
-    if (path.includes("/settings")) {
-      return "Settings";
-    }
+    if (path.includes("/settings")) return "Settings";
     for (const link of links) {
-      if (link.path === path) {
-        return link.name;
-      }
+      if (link.path === path) return link.name;
       if (link.children) {
         const title = getPageTitle(link.children, path);
         if (title) return title;
@@ -48,6 +45,7 @@ const Layout = () => {
     setPageTitle(currentTitle);
   }, [location.pathname]);
 
+  // Membuka submenu berdasarkan URL
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setOpenSubmenus((prevState) => ({
@@ -65,12 +63,12 @@ const Layout = () => {
     }));
   }, []);
 
-  // Panggil API untuk mendapatkan data user (misalnya, user yang sedang login)
+  // Ambil data user dari API agar username dan email muncul di header
   useEffect(() => {
     async function getUserData() {
       try {
         // Ganti "1" dengan id user yang sesuai atau ambil dari token / context autentikasi
-        const userData = await fetchUser("1");
+        const userData = await usersApi.getUser("1");
         setCurrentUser(userData);
       } catch (error) {
         console.error("Error fetching current user:", error);
@@ -83,7 +81,6 @@ const Layout = () => {
     (link: SidebarLink) => {
       const isOpen = !!openSubmenus[link.name];
       const IconComponent = iconMap[link.icon];
-
       return (
         <li key={link.name} className="flex flex-col text-xl">
           <div
@@ -188,7 +185,7 @@ const Layout = () => {
                 <div className="indicator mr-10">
                   <button onClick={() => setShowNotifications(true)}>
                     <IoNotificationsSharp size={30} className="text-2xl font-bold" />
-                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs text-bold text-white mt-1 bg-teal-600">
+                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white mt-1 bg-teal-600">
                       99+
                     </span>
                   </button>
