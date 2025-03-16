@@ -105,14 +105,15 @@ const TeamTable = () => {
     if (!editingMember || editingMember.id === undefined) return;
     try {
       const updatedMember = await teamApi.updateTeamMember(editingMember.id, {
-        // Name tidak dikirim untuk diupdate karena tidak boleh diubah
-        name: editingMember.name,
         role: editingMember.role,
         assigned: editingMember.assigned,
       });
+      // Lakukan merge data sehingga properti name dari state sebelumnya tetap ada
       setTeamMembers((prev) =>
         prev.map((member) =>
-          member.id === updatedMember.id ? updatedMember : member
+          member.id === updatedMember.id
+            ? { ...member, ...updatedMember, name: member.name }
+            : member
         )
       );
       showSuccessToast();

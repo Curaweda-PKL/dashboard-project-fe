@@ -4,6 +4,7 @@ import { useLocation, useParams } from "react-router-dom";
 import projectTimelineAPI, { ProjectTimeline, TimelineDetail } from "../api/timelineApi";
 
 /*** 1. Interface data ***/
+// Ditambahkan properti id agar sinkron dengan data API (jika tersedia)
 interface Module {
   id?: number; // ID timeline detail untuk update status
   name: string;

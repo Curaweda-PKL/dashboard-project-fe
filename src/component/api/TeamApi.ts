@@ -43,7 +43,7 @@ const teamApi = (() => {
     updateData: Partial<TeamMember>
   ): Promise<TeamMember> {
     try {
-      // Bangun payload dengan mapping yang sesuai
+      // Bangun payload dengan mapping yang sesuai (hanya mengirim role dan assigned)
       const formattedData: any = {};
       if (updateData.role !== undefined) {
         formattedData.role = updateData.role;
