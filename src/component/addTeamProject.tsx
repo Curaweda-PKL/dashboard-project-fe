@@ -1,43 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { FiUser, FiUserPlus, FiUserMinus } from "react-icons/fi";
 import Swal from "sweetalert2";
+import teamApi from "./api/TeamProjectApi";// Pastikan path sesuai dengan lokasi teamApi Anda
 
 interface Member {
   id: number;
   name: string;
   role: string;
   status: string;
-  isAdded: boolean; // Indicates if the member is already added to the project
+  isAdded: boolean; // Menandakan apakah member sudah ditambahkan ke proyek
 }
 
 const AddTeamProject: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [initialMembers, setInitialMembers] = useState<Member[]>([]);
-  const [isChanged, setIsChanged] = useState(false); // Detect if there are any changes
+  const [isChanged, setIsChanged] = useState(false); // Deteksi jika ada perubahan
 
   useEffect(() => {
-    // Simulate fetching members data
-    const fetchMembers = () => {
-      const teamMembers: Member[] = [
-        { id: 1, name: "Gustavo Bergson", role: "FrontEnd Developer", status: "PKL", isAdded: true },
-        { id: 2, name: "Kaylynn Baptista", role: "BackEnd Developer", status: "Incubation", isAdded: true },
-        { id: 3, name: "Alfredo Lipshutz", role: "FrontEnd Developer", status: "Employee", isAdded: false },
-        { id: 4, name: "Alena Passaquinidci Arcand", role: "UI/UX Designer", status: "PKL", isAdded: false },
-      ];
-      setMembers(teamMembers);
-      setInitialMembers(teamMembers); // Save the initial state
+    // Mengambil data team member dari API melalui teamApi
+    const fetchMembers = async () => {
+      try {
+        const apiMembers = await teamApi.getAllTeams();
+        // Mapping data API ke format komponen, tentukan isAdded berdasarkan field assigned (jika ada, berarti sudah ditambahkan)
+        const mappedMembers: Member[] = apiMembers.map((tm) => ({
+          id: tm.id,
+          name: tm.name,
+          role: tm.role,
+          status: tm.status,
+          isAdded: !!tm.assigned, // jika assigned bernilai truthy, maka isAdded true
+        }));
+        setMembers(mappedMembers);
+        setInitialMembers(mappedMembers);
+      } catch (error) {
+        console.error("Error fetching team members:", error);
+      }
     };
 
     fetchMembers();
   }, []);
+
+  // Utility untuk membandingkan dua array berdasarkan properti isAdded
+  const isEqual = (arr1: Member[], arr2: Member[]) => {
+    return arr1.every((member, index) => member.isAdded === arr2[index].isAdded);
+  };
 
   const toggleMember = (id: number) => {
     setMembers((prev) => {
       const updatedMembers = prev.map((member) =>
         member.id === id ? { ...member, isAdded: !member.isAdded } : member
       );
-      setIsChanged(!isEqual(updatedMembers, initialMembers)); // Check if there's a change
+      setIsChanged(!isEqual(updatedMembers, initialMembers));
       return updatedMembers;
     });
   };
@@ -46,53 +59,73 @@ const AddTeamProject: React.FC = () => {
     setIsEditMode(true);
   };
 
-  const handleSubmit = () => {
+  // Saat submit, update perubahan ke backend untuk tiap member yang berubah isAdded-nya.
+  const handleSubmit = async () => {
     setIsEditMode(false);
-    const sortedMembers = [...members].sort((a, b) => (a.isAdded < b.isAdded ? 1 : -1)); // Sort members after submit
-    setMembers(sortedMembers); // Update members with sorted order
-    setInitialMembers(sortedMembers); // Update initial members with sorted order
-    setIsChanged(false); // Reset the change state
-    console.log("Updated Members:", sortedMembers);
+    // Mengurutkan member: member yang sudah ditambahkan akan berada di urutan atas
+    const sortedMembers = [...members].sort((a, b) => (a.isAdded < b.isAdded ? 1 : -1));
+    // Identifikasi member yang statusnya berubah dibandingkan dengan kondisi awal
+    const updatedMembers = sortedMembers.filter(
+      (member, index) => member.isAdded !== initialMembers[index].isAdded
+    );
 
-    // Menambahkan notifikasi success setelah submit
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-      },
-    });
-  
-    Toast.fire({
-      icon: "success",
-      title: "Team has been changed", // Pesan yang muncul
-      background: "rgb(0, 208, 255)", // Warna biru untuk background
-      color: "#000000", // Warna teks agar terlihat jelas
-    });
+    try {
+      // Update setiap member yang berubah menggunakan teamApi.updateTeamMember
+      // Disini kita update field assigned: jika member sudah ditambahkan, set ke "added", jika tidak, set sebagai string kosong.
+      await Promise.all(
+        updatedMembers.map((member) =>
+          teamApi.updateTeamMember(member.id, { assigned: member.isAdded ? "added" : "" })
+        )
+      );
+      // Setelah update berhasil, perbarui state initial dan reset flag perubahan
+      setMembers(sortedMembers);
+      setInitialMembers(sortedMembers);
+      setIsChanged(false);
+
+      console.log("Updated Members:", sortedMembers);
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+
+      Toast.fire({
+        icon: "success",
+        title: "Team has been changed",
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+    } catch (error) {
+      console.error("Error updating team members:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "There was an error updating team members. Please try again.",
+      });
+    }
   };
 
+  // Batalkan perubahan dan kembalikan ke kondisi awal
   const handleCancel = () => {
-    setMembers(initialMembers); // Revert to initial state if canceled
-    setIsChanged(false); // Reset the change state
+    setMembers(initialMembers);
+    setIsChanged(false);
   };
 
+  // Kembali ke mode tampilan tanpa menyimpan perubahan
   const handleBack = () => {
-    // Ensure no changes are retained when back is pressed
-    setMembers(initialMembers); // Revert to initial state
-    setIsEditMode(false); // Exit edit mode
-    setIsChanged(false); // Reset change state
+    setMembers(initialMembers);
+    setIsEditMode(false);
+    setIsChanged(false);
   };
 
-  const isEqual = (arr1: Member[], arr2: Member[]) => {
-    // Utility function to check if two arrays are equal
-    return arr1.every((member, index) => member.isAdded === arr2[index].isAdded);
-  };
-
-  // Sort members only after submitting
+  // Jika tidak dalam mode edit, urutkan member sehingga member yang sudah ditambahkan berada di atas
   const sortedMembers = isEditMode ? members : [...members].sort((a, b) => (a.isAdded < b.isAdded ? 1 : -1));
 
   return (
@@ -101,13 +134,9 @@ const AddTeamProject: React.FC = () => {
         <table className="w-full rounded-lg overflow-hidden">
           <thead>
             <tr className="bg-[#02CCFF] text-white text-center">
-              <th className="p-4 rounded-tl-lg border-b-4 border-white font-bold text-lg">
-                NAME
-              </th>
+              <th className="p-4 rounded-tl-lg border-b-4 border-white font-bold text-lg">NAME</th>
               <th className="p-4 border-b-4 border-white font-bold text-lg">ROLE</th>
-              <th className="p-4 rounded-tr-lg border-b-4 border-white font-bold text-lg">
-                STATUS
-              </th>
+              <th className="p-4 rounded-tr-lg border-b-4 border-white font-bold text-lg">STATUS</th>
             </tr>
           </thead>
           <tbody className="bg-white">
@@ -117,7 +146,7 @@ const AddTeamProject: React.FC = () => {
                 className="border-t text-center text-black font-bold hover:bg-gray-100 transition duration-200"
               >
                 <td className="p-4 relative">
-                  {/* Icon part */}
+                  {/* Icon untuk menambah atau menghapus member */}
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                     {isEditMode ? (
                       member.isAdded ? (
@@ -135,7 +164,6 @@ const AddTeamProject: React.FC = () => {
                       member.isAdded && <FiUser className="text-curawedaColor" />
                     )}
                   </div>
-                  {/* Name part */}
                   <div className="pl-10">{member.name}</div>
                 </td>
                 <td className="p-4">{member.role}</td>
@@ -148,7 +176,7 @@ const AddTeamProject: React.FC = () => {
         <p className="text-gray-500">No members available.</p>
       )}
 
-      {/* Edit Team Buttons */}
+      {/* Tombol untuk mode edit */}
       {isEditMode && (
         <div className="fixed bottom-10 right-10 flex gap-4">
           <button

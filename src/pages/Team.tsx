@@ -38,6 +38,29 @@ const DropdownAssigned: React.FC<AssignedDropdownProps> = ({ roles, onSubmit, on
   );
 };
 
+// Komponen reusable untuk input yang bisa diedit (digunakan untuk Role dan Status)
+interface EditableFieldProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  readOnly?: boolean;
+}
+
+const EditableField: React.FC<EditableFieldProps> = ({ label, value, onChange, readOnly = false }) => {
+  return (
+    <div className="mb-4">
+      <label className="block font-bold mb-2">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        readOnly={readOnly}
+        className="w-full border border-black bg-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+    </div>
+  );
+};
+
 const TeamTable = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -100,15 +123,16 @@ const TeamTable = () => {
     });
   };
 
-  // Fungsi update: mengirim role dan assigned ke backend (Name tidak diubah)
+  // Fungsi update: mengirim role, assigned, dan status ke backend (Name tidak diubah)
   const handleUpdateMember = async () => {
     if (!editingMember || editingMember.id === undefined) return;
     try {
       const updatedMember = await teamApi.updateTeamMember(editingMember.id, {
         role: editingMember.role,
         assigned: editingMember.assigned,
+        status: editingMember.status,
       });
-      // Lakukan merge data sehingga properti name dari state sebelumnya tetap ada
+      // Merge data sehingga properti name dari state sebelumnya tetap ada
       setTeamMembers((prev) =>
         prev.map((member) =>
           member.id === updatedMember.id
@@ -135,6 +159,7 @@ const TeamTable = () => {
                 <th className="p-4 text-left">NAME</th>
                 <th className="p-4 text-left">ROLE</th>
                 <th className="p-4 text-left">ASSIGNED</th>
+                <th className="p-4 text-left">STATUS</th>
                 <th className="p-4 text-right">&nbsp;</th>
               </tr>
             </thead>
@@ -144,6 +169,7 @@ const TeamTable = () => {
                   <td className="p-4 text-left font-medium">{member.name}</td>
                   <td className="p-4 text-left font-medium">{member.role}</td>
                   <td className="p-4 text-left font-medium">{member.assigned}</td>
+                  <td className="p-4 text-left font-medium">{member.status}</td>
                   <td className="p-4 text-right">
                     <button
                       className="text-green-500 hover:text-green-600"
@@ -170,27 +196,17 @@ const TeamTable = () => {
                 ✕
               </button>
               <h2 className="text-center text-2xl font-bold mb-4">Edit Team</h2>
-              <div className="mb-4">
-                <label className="block font-bold mb-2">Name</label>
-                <input
-                  type="text"
-                  value={editingMember.name}
-                  readOnly
-                  className="w-full border border-black bg-gray-100 rounded-full p-2 focus:outline-none"
-                />
-              </div>
-              {/* Field Role: Input text untuk edit role */}
-              <div className="mb-4">
-                <label className="block font-bold mb-2">Role</label>
-                <input
-                  type="text"
-                  value={editingMember.role}
-                  onChange={(e) =>
-                    setEditingMember({ ...editingMember, role: e.target.value })
-                  }
-                  className="w-full border border-black bg-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
+              <EditableField label="Name" value={editingMember.name} onChange={() => {}} readOnly />
+              <EditableField 
+                label="Role" 
+                value={editingMember.role} 
+                onChange={(value) => setEditingMember({ ...editingMember, role: value })}
+              />
+              <EditableField 
+                label="Status" 
+                value={editingMember.status} 
+                onChange={(value) => setEditingMember({ ...editingMember, status: value })}
+              />
               <div className="mb-4 relative">
                 <label className="block font-bold mb-2">Assigned</label>
                 <div
