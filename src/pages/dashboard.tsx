@@ -3,6 +3,7 @@ import LayoutProject from "../layout/layoutProject";
 import { InProgress, UpcomingProjects } from "../component/project";
 import Swal from "sweetalert2";
 import projectApi, { Project } from "../component/api/projectApi";
+import teamApi, { TeamMember } from "../component/api/TeamProjectApi";
 
 const Dashboard = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -22,6 +23,10 @@ const Dashboard = () => {
   const [erd_number, setNoErd] = useState("");
   const [client, setClientName] = useState("");
   const [description, setDescription] = useState("");
+
+  // State untuk dropdown PIC (dinamis dari teamApi)
+  const [selectedPic, setSelectedPic] = useState("");
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   // Fungsi untuk refresh data proyek dari API
   const refreshProjects = async () => {
@@ -43,6 +48,19 @@ const Dashboard = () => {
       }
     };
     fetchProjects();
+  }, []);
+
+  // Ambil data team members untuk dropdown PIC
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const data = await teamApi.getAllTeams();
+        setTeamMembers(data);
+      } catch (error) {
+        console.error("Error fetching team members", error);
+      }
+    };
+    fetchTeamMembers();
   }, []);
 
   useEffect(() => {
@@ -78,7 +96,7 @@ const Dashboard = () => {
       client: client,
       description: description, // Definition of project
       status: "upcoming", // default status
-      pic_id: 1,
+      pic_id: Number(selectedPic) || 1, // gunakan nilai dropdown PIC, default 1 jika kosong
       progress: 0, // default progress
     };
 
@@ -103,8 +121,7 @@ const Dashboard = () => {
       setNoErd("");
       setClientName("");
       setDescription("");
-      const data = await projectApi.getAllProjects();
-      setProjects(data);
+      setSelectedPic("");
       await refreshProjects();
     } catch (error) {
       Swal.fire({ icon: "error", title: "Failed to add project" });
@@ -129,12 +146,10 @@ const Dashboard = () => {
         projectApi.deleteProject(Number(id))
       );
       const results = await Promise.allSettled([...inProgressDeletions, ...upcomingDeletions]);
-      // Opsional: periksa hasil masing-masing jika diperlukan
       const hasError = results.some((result) => result.status === "rejected");
       if (hasError) {
         throw new Error("One or more deletions failed.");
       }
-      // Reset state dan refresh daftar proyek
       setSelectedProjects({ inProgress: [], upcoming: [] });
       setIsRemoveMode(false);
 
@@ -150,15 +165,12 @@ const Dashboard = () => {
         color: "#000000",
       });
 
-      const data = await projectApi.getAllProjects();
-      setProjects(data);
       await refreshProjects();
     } catch (error) {
       console.error(error);
       Swal.fire({ icon: "error", title: "Failed to remove project" });
     }
   };
-  
 
   const handleCancelRemove = () => {
     setSelectedProjects({ inProgress: [], upcoming: [] });
@@ -271,8 +283,8 @@ const Dashboard = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex flex-col items-center justify-between mb-4">
               <h3 className="text-2xl font-bold text-center">Add Project</h3>
               <button
@@ -299,14 +311,8 @@ const Dashboard = () => {
                     className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
                     onClick={toggleDropdown}
                   >
-                    <span
-                      className={`${
-                        startDate && endDate ? "text-black" : "text-gray-500"
-                      }`}
-                    >
-                      {startDate && endDate
-                        ? `${startDate} to ${endDate}`
-                        : "Select Periode"}
+                    <span className={`${startDate && endDate ? "text-black" : "text-gray-500"}`}>
+                      {startDate && endDate ? `${startDate} to ${endDate}` : "Select Periode"}
                     </span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -316,11 +322,7 @@ const Dashboard = () => {
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                   {isDropdownOpen && (
@@ -377,6 +379,22 @@ const Dashboard = () => {
                   value={client}
                   onChange={(e) => setClientName(e.target.value)}
                 />
+              </div>
+              {/* Dropdown PIC menggunakan data dari teamApi */}
+              <div>
+                <label className="block font-semibold mb-2">PIC</label>
+                <select
+                  value={selectedPic}
+                  onChange={(e) => setSelectedPic(e.target.value)}
+                  className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                >
+                  <option value="">Select PIC</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} - {member.role}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block font-semibold mb-2">

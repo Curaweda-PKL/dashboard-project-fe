@@ -209,7 +209,7 @@ const AddTeamProject: React.FC = () => {
           className="fixed bottom-10 right-10 bg-curawedaColor text-white font-semibold py-3 px-10 rounded-full shadow-lg hover:bg-[#029FCC] transition"
           onClick={handleEditMode}
         >
-          Edit Team
+          Tambah
         </button>
       )}
     </div>
