@@ -38,6 +38,16 @@
         "color": "white"
       },
       "instant": true
+    },
+    {
+      "name": "Account",
+      "path": "/account",
+      "icon": "FaLock",
+      "style": {
+        "backgroundColor": "green",
+        "color": "white"
+      },
+      "instant": true
     }
   ]
 
