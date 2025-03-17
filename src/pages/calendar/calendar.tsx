@@ -29,7 +29,10 @@ const CustomAppointment: React.FC<DxAppointmentProps> = (props) => {
   const now = new Date();
   let backgroundColor = "";
 
-  if (now > appointmentData.endDate) {
+  // Jika project belum dimulai (current date sebelum startDate), gunakan warna ungu
+  if (now < appointmentData.startDate) {
+    backgroundColor = "#800080"; // Warna ungu
+  } else if (now > appointmentData.endDate) {
     backgroundColor = "#B20000";
   } else {
     const diffDays =
