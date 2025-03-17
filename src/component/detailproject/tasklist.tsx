@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail";
 import Swal from "sweetalert2";
-import projectTaskApi from "../api/projectTaskApi"; // pastikan updateTaskDetail sudah ada di sini
+import projectTaskApi from "../api/projectTaskApi";
 import { useParams, useLocation } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
 
 // Definisi tipe sesuai backend
 export interface TaskDetail {
-  id?: number; // Opsional jika belum ada saat create
+  id?: number;
   module: string;
   weight: number;
   feature: string;
@@ -72,12 +72,9 @@ const TaskList: React.FC = () => {
   // State tasks dan modal
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  // Untuk hapus, simpan ID detail yang dipilih
   const [selectedDetailIds, setSelectedDetailIds] = useState<number[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  // Modal edit task detail
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  // State untuk form add task
   const [newTask, setNewTask] = useState<MinimalTaskForm>({
     module: "",
     weight: 0,
@@ -86,8 +83,9 @@ const TaskList: React.FC = () => {
     percentage: 0,
     status: "Pending",
   });
-  // State untuk form edit task detail, termasuk projectName (read-only)
-  const [editDetail, setEditDetail] = useState<(MinimalTaskForm & { id: number; projectName: string }) | null>(null);
+  const [editDetail, setEditDetail] = useState<
+    (MinimalTaskForm & { id: number; projectName: string }) | null
+  >(null);
 
   // Fetch tasks dari API
   useEffect(() => {
@@ -131,14 +129,12 @@ const TaskList: React.FC = () => {
     setSelectedDetailIds([]);
   };
 
-  // Handler checkbox: simpan detail id yang dipilih
   const handleCheckboxChange = (detailId: number) => {
     setSelectedDetailIds((prev) =>
       prev.includes(detailId) ? prev.filter((id) => id !== detailId) : [...prev, detailId]
     );
   };
 
-  // Handler hapus detail terpilih
   const handleRemoveSelectedDetails = async () => {
     Swal.fire({
       title: "Are you sure?",
@@ -186,10 +182,8 @@ const TaskList: React.FC = () => {
     });
   };
 
-  // Fungsi untuk membuka modal edit dan menyimpan data detail beserta id
   const openEditModal = (detail: TaskDetail) => {
     if (!detail.id) {
-      // Tampilkan peringatan atau hentikan eksekusi jika id tidak tersedia
       Swal.fire({
         icon: "error",
         title: "Task detail ID is missing.",
@@ -203,14 +197,12 @@ const TaskList: React.FC = () => {
     }
     setEditDetail({
       ...detail,
-      id: detail.id!, // gunakan non-null assertion karena sudah dicek
+      id: detail.id!,
       projectName: projectData.projectName,
     });
     setIsEditModalOpen(true);
   };
-  
 
-  // Fungsi untuk update task detail
   const handleUpdateTaskDetail = async () => {
     if (!editDetail) return;
     try {
@@ -244,7 +236,6 @@ const TaskList: React.FC = () => {
     }
   };
 
-  // Fungsi untuk menambahkan task (create)
   const handleAddTask = async () => {
     try {
       const payloadForApi = {
@@ -321,7 +312,7 @@ const TaskList: React.FC = () => {
               <th className="p-4 border-b">MODULE</th>
               <th className="p-4 border-b">WEIGHT</th>
               <th className="p-4 border-b">FEATURE</th>
-              <th className="p-4 border-b">TASK</th>
+              {/* Kolom TASK dihapus */}
               <th className="p-4 border-b">PERCENTAGE</th>
               <th className="p-4 border-b">STATUS</th>
               <th className="p-4 border-b"></th>
@@ -332,7 +323,7 @@ const TaskList: React.FC = () => {
               if (!task.task_details || task.task_details.length === 0) {
                 return (
                   <tr key={`no-detail-${taskIndex}`}>
-                    <td colSpan={isEditing ? 8 : 7}>No details found</td>
+                    <td colSpan={isEditing ? 7 : 6}>No details found</td>
                   </tr>
                 );
               }
@@ -356,7 +347,7 @@ const TaskList: React.FC = () => {
                   <td className="p-4">{detail.module || "-"}</td>
                   <td className="p-4">{detail.weight !== undefined ? detail.weight : "-"}</td>
                   <td className="p-4">{detail.feature || "-"}</td>
-                  <td className="p-4">{detail.task || "-"}</td>
+                  {/* Kolom TASK dihapus */}
                   <td className="p-4">{detail.percentage !== undefined ? detail.percentage : "-"}</td>
                   <td className="p-4">{detail.status || "-"}</td>
                   <td className="p-4">
@@ -373,40 +364,41 @@ const TaskList: React.FC = () => {
             })}
           </tbody>
         </table>
-        <div className="flex justify-between mt-6">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-gray-500 font-bold transition duration-200"
-          >
-            Add more task...
-          </button>
-          <div className="fixed bottom-10 right-10 flex gap-4">
-            {!isEditing ? (
-              <button
-                className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
-                onClick={toggleEditingMode}
-              >
-                Remove
-              </button>
-            ) : (
-              <>
-                <button
-                  className="bg-[#6D6D6D] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
-                  onClick={toggleEditingMode}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
-                  onClick={handleRemoveSelectedDetails}
-                >
-                  Remove
-                </button>
-              </>
-            )}
-          </div>
-        </div>
       </div>
+      
+      {/* Fixed container untuk tombol "Add Task" dan "Remove" */}
+      <div className="fixed bottom-10 right-10 flex gap-4">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-curawedaColor text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#029FCC] transition duration-200"
+        >
+          Add task
+        </button>
+        {!isEditing ? (
+          <button
+            className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+            onClick={toggleEditingMode}
+          >
+            Remove
+          </button>
+        ) : (
+          <>
+            <button
+              className="bg-[#6D6D6D] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
+              onClick={toggleEditingMode}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+              onClick={handleRemoveSelectedDetails}
+            >
+              Remove
+            </button>
+          </>
+        )}
+      </div>
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
@@ -483,6 +475,8 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Jika ingin menyimpan task description sebagai properti, field ini tetap ada,
+                  namun jika tidak diperlukan bisa dihapus dari payload API */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Task Description
@@ -571,7 +565,6 @@ const TaskList: React.FC = () => {
               }}
               className="flex flex-col gap-4"
             >
-              {/* Urutan sama dengan form add */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Module Name
@@ -629,6 +622,7 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Kolom Task Description juga tetap ada di modal edit, jika memang masih ingin diedit */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
                   Task Description
