@@ -1,15 +1,17 @@
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { FaUser, FaCalendarMinus } from "react-icons/fa6";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { MdExpandMore } from "react-icons/md";
 import { TbMessageFilled } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
+import { FaLock } from "react-icons/fa";
+import Swal from "sweetalert2";
 import NotificationsPopup from "../component/notificationsPopup";
 import iconMap from "./iconMap";
 import sidebarLinks from "../layout/sidebar.json";
 import { UserSummary } from "../component/api/usersApi";
-import usersApi from "../component/api/usersApi"; // Default import
+import usersApi from "../component/api/usersApi";
 
 interface SidebarLink {
   name: string;
@@ -25,6 +27,8 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
   const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Fungsi rekursif untuk mendapatkan judul halaman dari sidebarLinks
   const getPageTitle = (links: SidebarLink[], path: string): string => {
@@ -77,6 +81,42 @@ const Layout = () => {
     getUserData();
   }, []);
 
+  // Menutup dropdown jika klik di luar area dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    setShowProfileDropdown(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#B20000",
+      cancelButtonColor: "#6D6D6D",
+      confirmButtonText: "Log Out",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.setItem("logoutSuccess", "true");
+        navigate("/auth/login");
+      } else {
+        console.log("Canceled logout");
+      }
+    });
+  };
+
   const renderSubLinks = useCallback(
     (link: SidebarLink) => {
       const isOpen = !!openSubmenus[link.name];
@@ -106,6 +146,7 @@ const Layout = () => {
                   {link.name === "Messages" && <TbMessageFilled className="mr-2" />}
                   {link.name === "Calendar" && <FaCalendarMinus className="mr-2" />}
                   {link.name === "Settings" && <IoMdSettings className="mr-2" />}
+                  {link.name === "Account" && <FaLock className="mr-2" />}
                   {link.name}
                 </NavLink>
               ) : (
@@ -191,10 +232,11 @@ const Layout = () => {
                   </button>
                 </div>
                 <div className="border-l-2 h-12 mx-4 border-gray-300"></div>
-                <details className="dropdown dropdown-end">
-                  <summary
-                    className="btn btn-ghost border"
-                    onClick={() => navigate("/settings")}
+                {/* Dropdown Profile */}
+                <div className="relative" ref={profileDropdownRef}>
+                  <button
+                    className="btn btn-ghost border flex items-center"
+                    onClick={() => setShowProfileDropdown((prev) => !prev)}
                   >
                     <div className="avatar">
                       <div className="w-12 border border-black rounded-full">
@@ -205,16 +247,38 @@ const Layout = () => {
                         />
                       </div>
                     </div>
-                    <div className="text-right mr-4">
+                    <div className="hidden lg:block text-left ml-4">
                       <p className="text-lg font-semibold lg:text-xl">
                         {currentUser?.name}
                       </p>
-                      <p className="text-sm">
-                        {currentUser?.email}
-                      </p>
+                      <p className="text-sm">{currentUser?.email}</p>
                     </div>
-                  </summary>
-                </details>
+                    <MdExpandMore className="ml-2" />
+                  </button>
+                  {showProfileDropdown && (
+                    <ul className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                      <li>
+                        <button
+                          className="w-full text-left p-2 hover:bg-blue-200"
+                          onClick={() => {
+                            setShowProfileDropdown(false);
+                            navigate("/settings");
+                          }}
+                        >
+                          Settings
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className="w-full text-left p-2 hover:bg-blue-200"
+                          onClick={handleLogout}
+                        >
+                          Log Out
+                        </button>
+                      </li>
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
           </div>
