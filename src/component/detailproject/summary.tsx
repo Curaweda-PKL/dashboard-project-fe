@@ -457,7 +457,14 @@ const Summary: React.FC = () => {
         </table>
       </div>
 
+      {/* Fixed container untuk tombol Add summary dan Remove/Cancel */}
       <div className="fixed bottom-10 right-10 flex gap-4">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-curawedaColor text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-curawedaColor transition duration-200"
+        >
+          Add summary
+        </button>
         {!isEditing ? (
           <button
             className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
@@ -482,13 +489,6 @@ const Summary: React.FC = () => {
           </>
         )}
       </div>
-
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-6 text-gray-500 font-bold px-3 rounded-full shadow-lg transition duration-200"
-      >
-        Add more summary
-      </button>
 
       {/* Modal Add Summary */}
       {isModalOpen && (
@@ -602,7 +602,7 @@ const Summary: React.FC = () => {
                           onClick={() =>
                             setNewSummary({ ...newSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"
+                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-curawedaColor"
                         >
                           Submit
                         </button>
@@ -633,7 +633,7 @@ const Summary: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="bg-curawedaColor text-white px-4 py-2 rounded-md hover:bg-curawedaColor"
                 >
                   Submit
                 </button>
@@ -755,7 +755,7 @@ const Summary: React.FC = () => {
                           onClick={() =>
                             setEditSummary({ ...editSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"
+                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-curawedaColor"
                         >
                           Submit
                         </button>
@@ -786,7 +786,7 @@ const Summary: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="bg-curawedaColor text-white px-4 py-2 rounded-md hover:bg-curawedaColor"
                 >
                   Submit
                 </button>
