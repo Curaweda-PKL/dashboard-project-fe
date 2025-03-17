@@ -7,6 +7,22 @@ export interface UserSummary {
   // Tambahkan field lain yang diperlukan
 }
 
+// Fungsi helper untuk mengambil email dari token JWT
+function getEmailFromToken(): string | null {
+  const token = authApi.getAccessToken();
+  if (!token) return null;
+  try {
+    // Token JWT biasanya memiliki tiga bagian yang dipisahkan oleh titik.
+    const payloadBase64 = token.split(".")[1];
+    const decodedPayload = atob(payloadBase64);
+    const payload = JSON.parse(decodedPayload);
+    return payload.email || null;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+}
+
 const usersApi = (() => {
   const BASE_URL = "http://localhost:8080/api";
 
@@ -20,7 +36,10 @@ const usersApi = (() => {
     try {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/users/${userId}`);
       const data = processResponse(result);
-      console.log("Fetched user data:", data); // Tambahkan komen data
+      // Pastikan email yang ditampilkan adalah email dari token login
+      const loginEmail = getEmailFromToken();
+      data.email = loginEmail || data.email;
+      console.log("Fetched user data:", data);
       return data;
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -35,7 +54,10 @@ const usersApi = (() => {
     try {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/users/me`);
       const data = processResponse(result);
-      console.log("Fetched current user data:", data); // Tambahkan komen data
+      // Override email dengan email dari token login
+      const loginEmail = getEmailFromToken();
+      data.email = loginEmail || data.email;
+      console.log("Fetched current user data:", data);
       return data;
     } catch (error) {
       console.error("Error fetching current user:", error);
@@ -50,7 +72,11 @@ const usersApi = (() => {
     const userJson = localStorage.getItem("currentUser");
     if (userJson) {
       try {
-        return JSON.parse(userJson);
+        const user = JSON.parse(userJson);
+        // Override email dengan email dari token jika tersedia
+        const loginEmail = getEmailFromToken();
+        user.email = loginEmail || user.email;
+        return user;
       } catch (error) {
         console.error("Error parsing user from storage:", error);
         return null;
@@ -81,4 +107,3 @@ const usersApi = (() => {
 })();
 
 export default usersApi;
-
