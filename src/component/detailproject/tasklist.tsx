@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import projectTaskApi from "../api/projectTaskApi";
 import { useParams, useLocation } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
+import projectApi from "../api/projectApi";
+import teamApi from "../api/TeamApi";
 
 // Definisi tipe sesuai backend
 export interface TaskDetail {
@@ -58,16 +60,46 @@ const TaskList: React.FC = () => {
     client?: string;
   }) || {};
 
+  // Jika ada routeState, update sebagian projectData (kecuali pic akan diupdate dari API)
   useEffect(() => {
     if (routeState && routeState.projectName) {
-      setProjectData({
-        projectName: routeState.projectName,
-        pic: routeState.pm || "Default PM",
-        date: routeState.date || "Default Date",
-        client: routeState.client || "Default Client",
-      });
+      setProjectData(prev => ({
+        ...prev,
+        projectName: routeState.projectName ?? prev.projectName,
+        date: routeState.date ?? prev.date,
+        client: routeState.client ?? prev.client,
+      }));
     }
   }, [routeState]);
+
+  // UseEffect untuk mengambil project detail dan team members untuk mendapatkan PIC
+  useEffect(() => {
+    if (!projectId) return;
+    const fetchProjectData = async () => {
+      try {
+        // Mengambil data project
+        const projectDetails = await projectApi.getProjectById(Number(projectId));
+        // Mengambil seluruh team untuk menemukan PIC berdasarkan pic_id
+        const teams = await teamApi.getAllTeams();
+        const picMember = teams.find(member => member.id === projectDetails.pic_id);
+        const picName = picMember ? picMember.name : "Unknown";
+        // Format tanggal untuk display
+        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(
+          projectDetails.end_date
+        ).toLocaleDateString()}`;
+        // Update projectData, gabungkan dengan routeState jika ada
+        setProjectData({
+          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+          pic: picName,
+          date: routeState.date ?? formattedDate,
+          client: routeState.client ?? projectDetails.client ?? "Default Client",
+        });
+      } catch (err) {
+        console.error("Error fetching project data", err);
+      }
+    };
+    fetchProjectData();
+  }, [projectId, routeState]);
 
   // State tasks dan modal
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
@@ -95,14 +127,16 @@ const TaskList: React.FC = () => {
         console.log("Fetched tasks:", data);
         if (Array.isArray(data)) {
           setTasks(data);
+          // Jika routeState tidak ada dan data task tersedia, ambil data project dari task pertama
           if (!routeState?.projectName && data.length > 0) {
             const firstTask = data[0];
-            setProjectData({
-              projectName: firstTask.projectName || "Default Project Name",
-              pic: firstTask.pic || "Default PM",
-              date: firstTask.date || "Default Date",
-              client: firstTask.client || "Default Client",
-            });
+            setProjectData(prev => ({
+              ...prev,
+              projectName: firstTask.projectName ?? prev.projectName,
+              // Properti pic tidak diupdate di sini agar tetap konsisten dari API project dan team
+              date: firstTask.date ?? prev.date,
+              client: firstTask.client ?? prev.client,
+            }));
           }
         } else {
           console.error("Data fetched is not an array:", data);
@@ -131,7 +165,9 @@ const TaskList: React.FC = () => {
 
   const handleCheckboxChange = (detailId: number) => {
     setSelectedDetailIds((prev) =>
-      prev.includes(detailId) ? prev.filter((id) => id !== detailId) : [...prev, detailId]
+      prev.includes(detailId)
+        ? prev.filter((id) => id !== detailId)
+        : [...prev, detailId]
     );
   };
 

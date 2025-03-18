@@ -9,6 +9,8 @@ import summaryServiceAPI, {
   ProjectSummaryResponse,
   ProjectSummary,
 } from "../api/summaryApi";
+import projectApi from "../api/projectApi";
+import teamApi from "../api/TeamApi";
 
 const Summary: React.FC = () => {
   const { projectId } = useParams<{ projectId?: string }>();
@@ -30,16 +32,44 @@ const Summary: React.FC = () => {
     client?: string;
   }) || {};
 
+  // Jika ada routeState, update projectData untuk properti selain pic
   useEffect(() => {
     if (routeState && routeState.projectName) {
-      setProjectData({
-        projectName: routeState.projectName,
-        pic: routeState.pm || "Default PM",
-        date: routeState.date || "Default Date",
-        client: routeState.client || "Default Client",
-      });
+      setProjectData((prev) => ({
+        ...prev,
+        projectName: routeState.projectName ?? prev.projectName,
+        date: routeState.date ?? prev.date,
+        client: routeState.client ?? prev.client,
+      }));
     }
   }, [routeState]);
+
+  // UseEffect untuk mengambil data project dan team members guna mendapatkan nama PIC
+  useEffect(() => {
+    if (!projectId) return;
+    const fetchProjectData = async () => {
+      try {
+        const projectDetails = await projectApi.getProjectById(Number(projectId));
+        const teams = await teamApi.getAllTeams();
+        const picMember = teams.find((member) => member.id === projectDetails.pic_id);
+        const picName = picMember ? picMember.name : "Unknown";
+        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(
+          projectDetails.end_date
+        ).toLocaleDateString()}`;
+
+        setProjectData((prev) => ({
+          ...prev,
+          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+          pic: picName,
+          date: routeState.date ?? formattedDate,
+          client: routeState.client ?? projectDetails.client ?? "Default Client",
+        }));
+      } catch (error) {
+        console.error("Error fetching project data", error);
+      }
+    };
+    fetchProjectData();
+  }, [projectId, routeState]);
 
   // State untuk menyimpan summary details yang didapat dari API
   const [summaries, setSummaries] = useState<SummaryDetail[]>([]);
@@ -795,7 +825,7 @@ const Summary: React.FC = () => {
           </div>
         </div>
       )}
-
+      
       {/* Status Summary Table */}
       <div className="absolute bottom-0 p-4 text-center">
         <table className="border border-black text-black font-bold">

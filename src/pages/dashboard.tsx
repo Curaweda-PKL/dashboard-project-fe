@@ -363,7 +363,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">No ERD</label>
+                <label className="block font-semibold mb-2">No PRD</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"

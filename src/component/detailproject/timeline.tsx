@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import HeaderDetail from "./headerdetail";
 import { useLocation, useParams } from "react-router-dom";
 import projectTimelineAPI, { ProjectTimeline, TimelineDetail } from "../api/timelineApi";
+import projectApi from "../api/projectApi";
+import teamApi from "../api/TeamApi";
 
 /*** 1. Interface data ***/
 // Ditambahkan properti id agar sinkron dengan data API (jika tersedia)
@@ -137,6 +139,30 @@ const Timeline: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+        
+        // Fetch project data first to get pic_id
+        const projectDetails = await projectApi.getProjectById(parseInt(projectId));
+        console.log("Project details:", projectDetails);
+        
+        // Fetch team members
+        const teams = await teamApi.getAllTeams();
+        console.log("Team members:", teams);
+        
+        // Find the team member that matches the pic_id
+        const picMember = teams.find(member => member.id === projectDetails.pic_id);
+        const picName = picMember ? picMember.name : "Unknown";
+        
+        // Format the date untuk display
+        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(projectDetails.end_date).toLocaleDateString()}`;
+        
+        // Set project data dengan nilai dari API
+        setProjectData({
+          projectName: projectDetails.title || "Default Project Name",
+          pic: picName,
+          date: formattedDate,
+          client: projectDetails.client || "Default Client",
+        });
+        
         // Memanggil getAllTimelines dengan projectId
         const timelineDataArray = await projectTimelineAPI.getAllTimelines(parseInt(projectId));
         console.log("Timeline data received:", timelineDataArray);
@@ -154,22 +180,23 @@ const Timeline: React.FC = () => {
         }
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching timeline data:", err);
-        setError("Gagal mengambil data timeline. Silakan coba lagi nanti.");
+        console.error("Error fetching data:", err);
+        setError("Gagal mengambil data. Silakan coba lagi nanti.");
         setLoading(false);
       }
     };
+    
     fetchTimelineData();
   }, [projectId]);
 
   useEffect(() => {
     if (routeState && routeState.projectName) {
-      setProjectData({
-        projectName: routeState.projectName,
-        pic: routeState.pic || "Default PM",
-        date: routeState.date || "Default Date",
-        client: routeState.client || "Default Client",
-      });
+      setProjectData(prevData => ({
+        ...prevData,
+        projectName: routeState.projectName || prevData.projectName,
+        client: routeState.client || prevData.client,
+        // Jangan override pic dan date jika sudah ada dari API
+      }));
     }
   }, [routeState]);
 
