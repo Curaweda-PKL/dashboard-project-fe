@@ -7,6 +7,7 @@ import LoginPage from "./pages/Auth/loginPage";
 import LoginLayout from "./layout/layoutLogin";
 import NotFound from "./pages/notFound";
 import Setting from "./pages/Setting";
+import AccountList from "./pages/Account"; // Import file Account.tsx
 import MyAccount from "./component/myAccount";
 import Profiles from "./component/profiles";
 import LogOut from "./component/logOut";
@@ -42,6 +43,8 @@ const App: React.FC = () => {
             <Route path="profiles" element={<Profiles />} /> {/* Profiles di bawah Settings */}
             <Route path="logOut" element={<LogOut />} /> {/* Menutup Pop Up dan Kembali */}
           </Route>
+
+          <Route path="/account" element={<AccountList />} />
 
           {/* Route Task List */}
           <Route path="/project/:projectId/task" element={<TaskList />} />
