@@ -183,7 +183,7 @@ const Popup: React.FC<PopupProps> = ({
             <strong>Contract Number:</strong> {projectDetails.contract_number}
           </p>
           <p>
-            <strong>No ERD:</strong> {projectDetails.erd_number}
+            <strong>No PRD:</strong> {projectDetails.erd_number}
           </p>
           <p>
             <strong>Definition of Project:</strong>
@@ -365,7 +365,7 @@ export const PopupEdit: React.FC<PopupEditProps> = ({
             />
           </div>
           <div>
-            <label className="block font-semibold mb-2">No ERD</label>
+            <label className="block font-semibold mb-2">No PRD</label>
             <input
               type="text"
               className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
