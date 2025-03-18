@@ -44,7 +44,7 @@ const TaskList: React.FC = () => {
   // State untuk detail project (tampilan)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pm: "Default PM",
+    pic: "Default PM",
     date: "Default Date",
     client: "Default Client",
   });
@@ -62,7 +62,7 @@ const TaskList: React.FC = () => {
     if (routeState && routeState.projectName) {
       setProjectData({
         projectName: routeState.projectName,
-        pm: routeState.pm || "Default PM",
+        pic: routeState.pm || "Default PM",
         date: routeState.date || "Default Date",
         client: routeState.client || "Default Client",
       });
@@ -99,7 +99,7 @@ const TaskList: React.FC = () => {
             const firstTask = data[0];
             setProjectData({
               projectName: firstTask.projectName || "Default Project Name",
-              pm: firstTask.pm || "Default PM",
+              pic: firstTask.pic || "Default PM",
               date: firstTask.date || "Default Date",
               client: firstTask.client || "Default Client",
             });
@@ -295,7 +295,7 @@ const TaskList: React.FC = () => {
           <strong>Project :</strong> {projectData.projectName}
         </p>
         <p>
-          <strong>PM :</strong> {projectData.pm}
+          <strong>PIC :</strong> {projectData.pic}
         </p>
         <p>
           <strong>Date :</strong> {projectData.date}

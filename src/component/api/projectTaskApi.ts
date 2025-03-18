@@ -21,7 +21,7 @@ export interface ProjectTask {
   task_details?: TaskDetail[];
 
   projectName?: string;
-  pm?: string;
+  pic?: string;
   date?: string;
   client?: string;
 }
