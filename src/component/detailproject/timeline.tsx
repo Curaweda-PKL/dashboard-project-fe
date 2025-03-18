@@ -110,14 +110,14 @@ const Timeline: React.FC = () => {
   const location = useLocation();
   const routeState = (location.state as {
     projectName?: string;
-    pm?: string;
+    pic?: string;
     date?: string;
     client?: string;
   }) || {};
 
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pm: "Default PM",
+    pic: "Default PM",
     date: "Default Date",
     client: "Default Client",
   });
@@ -166,7 +166,7 @@ const Timeline: React.FC = () => {
     if (routeState && routeState.projectName) {
       setProjectData({
         projectName: routeState.projectName,
-        pm: routeState.pm || "Default PM",
+        pic: routeState.pic || "Default PM",
         date: routeState.date || "Default Date",
         client: routeState.client || "Default Client",
       });
@@ -366,7 +366,7 @@ const Timeline: React.FC = () => {
           <strong>Project :</strong> {projectData.projectName}
         </p>
         <p>
-          <strong>PM :</strong> {projectData.pm}
+          <strong>PIC :</strong> {projectData.pic}
         </p>
         <p>
           <strong>Date :</strong> {projectData.date}
