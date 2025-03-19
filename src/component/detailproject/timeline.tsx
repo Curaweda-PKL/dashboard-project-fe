@@ -3,7 +3,7 @@ import HeaderDetail from "./headerdetail";
 import { useLocation, useParams } from "react-router-dom";
 import projectTimelineAPI, { ProjectTimeline, TimelineDetail } from "../api/timelineApi";
 import projectApi from "../api/projectApi";
-import teamApi from "../api/TeamApi";
+// import teamApi from "../api/TeamApi";
 
 /*** 1. Interface data ***/
 // Ditambahkan properti id agar sinkron dengan data API (jika tersedia)
@@ -145,12 +145,12 @@ const Timeline: React.FC = () => {
         console.log("Project details:", projectDetails);
         
         // Fetch team members
-        const teams = await teamApi.getAllTeams();
-        console.log("Team members:", teams);
+        // const teams = await teamApi.getAllTeams();
+        // console.log("Team members:", teams);
         
         // Find the team member that matches the pic_id
-        const picMember = teams.find(member => member.id === projectDetails.pic_id);
-        const picName = picMember ? picMember.name : "Unknown";
+        // const picMember = teams.find(member => member.id === projectDetails.pic_id);
+        // const picName = picMember ? picMember.name : "Unknown";
         
         // Format the date untuk display
         const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(projectDetails.end_date).toLocaleDateString()}`;
@@ -158,7 +158,7 @@ const Timeline: React.FC = () => {
         // Set project data dengan nilai dari API
         setProjectData({
           projectName: projectDetails.title || "Default Project Name",
-          pic: picName,
+          pic: "",
           date: formattedDate,
           client: projectDetails.client || "Default Client",
         });
@@ -191,10 +191,10 @@ const Timeline: React.FC = () => {
 
   useEffect(() => {
     if (routeState && routeState.projectName) {
-      setProjectData(prevData => ({
-        ...prevData,
-        projectName: routeState.projectName || prevData.projectName,
-        client: routeState.client || prevData.client,
+      setProjectData(prev => ({
+        ...prev,
+        projectName: routeState.projectName || prev.projectName,
+        client: routeState.client || prev.client,
         // Jangan override pic dan date jika sudah ada dari API
       }));
     }
@@ -213,20 +213,26 @@ const Timeline: React.FC = () => {
         return;
       }
       setOpenDropdownIndex(null);
-      // Kirim newStatus langsung tanpa transformasi (pastikan sesuai validasi backend)
-      const updatedTimeline = await projectTimelineAPI.updateTimelineDetailStatus(
+      // Update status detail
+      await projectTimelineAPI.updateTimelineDetailStatus(
         timelineData.project_id,
         moduleDetail.id,
         newStatus
       );
-      setTimelineData(updatedTimeline);
-      const mappedModules = mapBackendDataToModules(updatedTimeline);
-      setModules(mappedModules);
+      // Setelah update, panggil ulang API untuk mendapatkan data timeline lengkap
+      const refreshedTimelineArray = await projectTimelineAPI.getAllTimelines(timelineData.project_id);
+      if (refreshedTimelineArray && refreshedTimelineArray.length > 0) {
+        const refreshedTimeline = refreshedTimelineArray[0];
+        setTimelineData(refreshedTimeline);
+        const mappedModules = mapBackendDataToModules(refreshedTimeline);
+        setModules(mappedModules);
+      }
     } catch (err) {
       console.error("Error updating module status:", err);
       setError("Gagal memperbarui status. Silakan coba lagi nanti.");
     }
   };
+  
 
   const renderCombinedTable = () => {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];

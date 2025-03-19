@@ -186,13 +186,13 @@ const projectTimelineAPI = {
     newStatus: string
   ): Promise<ProjectTimeline> => {
     try {
-      // Jika backend mengharapkan payload terbungkus dalam "timeline_detail"
-      const payload = { timeline_detail: { status: newStatus } };
+      // Kirim payload yang langsung berisi status, tanpa nested "timeline_detail"
+      const payload = { status: newStatus };
       console.log("Sending payload:", payload);
       const response = await fetch(
         `${API_BASE_URL}/${projectId}/timeline-detail/${detailId}`,
         {
-          method: "PATCH",
+          method: "PATCH", // atau PUT, sesuai dengan endpoint backend Anda
           headers: getAuthHeaders(),
           body: JSON.stringify(payload),
         }
@@ -208,6 +208,6 @@ const projectTimelineAPI = {
       throw error;
     }
   },
-};
+};  
 
 export default projectTimelineAPI;
