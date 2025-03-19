@@ -4,10 +4,9 @@ import authApi from "./authApi";
 // Tipe detail
 export interface TaskDetail {
   module: string;
-  weight: number;
   feature: string;
-  task: string;
-  percentage: number;
+  start_date: Date;
+  end_date: Date;
   status: string;
 }
 
@@ -120,7 +119,7 @@ const projectTaskApi = {
 
   updateTaskDetail: async (projectId: number, detailId: number, payload: TaskDetail): Promise<any> => {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task-detail/${detailId}`, {
-      method: "PUT", // atau PATCH sesuai API Anda
+      method: "PATCH", // atau PATCH sesuai API Anda
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });

@@ -11,10 +11,9 @@ import teamApi from "../api/TeamApi";
 export interface TaskDetail {
   id?: number;
   module: string;
-  weight: number;
   feature: string;
-  task: string;
-  percentage: number;
+  start_date: Date;
+  end_date: Date;
   status: string;
 }
 
@@ -33,10 +32,9 @@ export interface ProjectTask {
 // Interface untuk form input "Add Task" dan "Edit Task Detail"
 interface MinimalTaskForm {
   module: string;
-  weight: number;
   feature: string;
-  task: string;
-  percentage: number;
+  start_date: Date;
+  end_date: Date;
   status: string;
 }
 
@@ -109,10 +107,9 @@ const TaskList: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [newTask, setNewTask] = useState<MinimalTaskForm>({
     module: "",
-    weight: 0,
     feature: "",
-    task: "",
-    percentage: 0,
+    start_date: new Date(),
+    end_date: new Date(),
     status: "Pending",
   });
   const [editDetail, setEditDetail] = useState<
@@ -279,9 +276,8 @@ const TaskList: React.FC = () => {
           {
             module: newTask.module,
             feature: newTask.feature,
-            task: newTask.task,
-            weight: newTask.weight,
-            percentage: newTask.percentage,
+            start_date: newTask.start_date,
+            end_date: newTask.end_date,
             status: newTask.status || "Pending",
           },
         ],
@@ -302,10 +298,9 @@ const TaskList: React.FC = () => {
       });
       setNewTask({
         module: "",
-        weight: 0,
         feature: "",
-        task: "",
-        percentage: 0,
+        start_date: new Date(),
+        end_date: new Date(),
         status: "Pending",
       });
       setIsModalOpen(false);
@@ -346,10 +341,9 @@ const TaskList: React.FC = () => {
             <tr className="bg-[#02CCFF] text-white text-center">
               {isEditing && <th className="p-4"></th>}
               <th className="p-4 border-b">MODULE</th>
-              <th className="p-4 border-b">WEIGHT</th>
               <th className="p-4 border-b">FEATURE</th>
-              {/* Kolom TASK dihapus */}
-              <th className="p-4 border-b">PERCENTAGE</th>
+              <th className="p-4 border-b">START DATE</th>
+              <th className="p-4 border-b">END DATE</th>
               <th className="p-4 border-b">STATUS</th>
               <th className="p-4 border-b"></th>
             </tr>
@@ -381,10 +375,9 @@ const TaskList: React.FC = () => {
                     </td>
                   )}
                   <td className="p-4">{detail.module || "-"}</td>
-                  <td className="p-4">{detail.weight !== undefined ? detail.weight : "-"}</td>
                   <td className="p-4">{detail.feature || "-"}</td>
-                  {/* Kolom TASK dihapus */}
-                  <td className="p-4">{detail.percentage !== undefined ? detail.percentage : "-"}</td>
+                  <td className="p-4">{detail.start_date ? new Date(detail.start_date).toLocaleDateString() : "-"}</td>
+                  <td className="p-4">{detail.end_date ? new Date(detail.end_date).toLocaleDateString() : "-"}</td>
                   <td className="p-4">{detail.status || "-"}</td>
                   <td className="p-4">
                     <button
@@ -481,24 +474,6 @@ const TaskList: React.FC = () => {
               </div>
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Weight
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newTask.weight}
-                  onChange={(e) =>
-                    setNewTask({
-                      ...newTask,
-                      weight: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-lg text-black font-semibold mb-1">
                   Feature
                 </label>
                 <input
@@ -511,17 +486,15 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Jika ingin menyimpan task description sebagai properti, field ini tetap ada,
-                  namun jika tidak diperlukan bisa dihapus dari payload API */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Task Description
+                  Start Date
                 </label>
                 <input
-                  type="text"
-                  value={newTask.task}
+                  type="date"
+                  value={newTask.start_date ? new Date(newTask.start_date).toISOString().slice(0, 10) : ""}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, task: e.target.value })
+                    setNewTask({ ...newTask, start_date: new Date(e.target.value) })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
@@ -529,14 +502,13 @@ const TaskList: React.FC = () => {
               </div>
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Percentage
+                  End Date
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
-                  value={newTask.percentage}
+                  type="date"
+                  value={newTask.end_date ? new Date(newTask.end_date).toISOString().slice(0, 10) : ""}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, percentage: parseFloat(e.target.value) })
+                    setNewTask({ ...newTask, end_date: new Date(e.target.value) })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
@@ -546,19 +518,14 @@ const TaskList: React.FC = () => {
                 <label className="block text-lg text-black font-semibold mb-1">
                   Status
                 </label>
-                <select
-                  value={newTask.status}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, status: e.target.value })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                <input
+                  type="text"
+                  value="Pending"
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
+                />
               </div>
+
               <div className="flex justify-between mt-4">
                 <button
                   type="button"
@@ -628,24 +595,6 @@ const TaskList: React.FC = () => {
               </div>
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Weight
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={editDetail.weight}
-                  onChange={(e) =>
-                    setEditDetail({
-                      ...editDetail,
-                      weight: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-lg text-black font-semibold mb-1">
                   Feature
                 </label>
                 <input
@@ -658,16 +607,15 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Kolom Task Description juga tetap ada di modal edit, jika memang masih ingin diedit */}
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Task Description
+                  Start Date
                 </label>
                 <input
-                  type="text"
-                  value={editDetail.task}
+                  type="date"
+                  value={editDetail.start_date ? new Date(editDetail.start_date).toISOString().slice(0, 10) : ""}
                   onChange={(e) =>
-                    setEditDetail({ ...editDetail, task: e.target.value })
+                    setEditDetail({ ...editDetail, start_date: new Date(e.target.value) })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
@@ -675,17 +623,13 @@ const TaskList: React.FC = () => {
               </div>
               <div>
                 <label className="block text-lg text-black font-semibold mb-1">
-                  Percentage
+                  End Date
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
-                  value={editDetail.percentage}
+                  type="date"
+                  value={editDetail.end_date ? new Date(editDetail.end_date).toISOString().slice(0, 10) : ""}
                   onChange={(e) =>
-                    setEditDetail({
-                      ...editDetail,
-                      percentage: parseFloat(e.target.value),
-                    })
+                    setEditDetail({ ...editDetail, end_date: new Date(e.target.value) })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
@@ -695,19 +639,14 @@ const TaskList: React.FC = () => {
                 <label className="block text-lg text-black font-semibold mb-1">
                   Status
                 </label>
-                <select
-                  value={editDetail.status}
-                  onChange={(e) =>
-                    setEditDetail({ ...editDetail, status: e.target.value })
-                  }
-                  className="w-full border rounded-md p-2 bg-white"
-                  required
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                <input
+                  type="text"
+                  value="Pending"
+                  readOnly
+                  className="w-full border rounded-md p-2 bg-gray-200"
+                />
               </div>
+
               <div className="flex justify-between mt-4">
                 <button
                   type="button"
