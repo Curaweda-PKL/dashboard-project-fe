@@ -498,12 +498,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+          {/* Tombol untuk menuju halaman team dengan route: /project/${id}/team */}
           <div
             className="flex items-center justify-center w-8 h-8 bg-gray-300 text-white rounded-full cursor-pointer"
             style={{ backgroundColor: timeLeftColor }}
             onClick={(e) => {
               e.stopPropagation();
-              navigate("/addTeamProject", { state: { projectId: id } });
+              navigate(`/project/${id}/team`);
             }}
           >
             +
