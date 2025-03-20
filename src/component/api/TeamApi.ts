@@ -3,9 +3,16 @@ import authApi from "./authApi"; // Pastikan import authApi sesuai dengan lokasi
 export interface TeamMember {
   id: number;
   name: string;
-  role: string;
+  division: string;
   assigned: string;
   status: string; // Added status field
+}
+
+// Interface for team creation payload
+export interface TeamCreatePayload {
+  user_id: number;
+  division: string;
+  status?: string; // Optional, karena bisa memiliki nilai default di backend
 }
 
 const teamApi = (() => {
@@ -22,7 +29,7 @@ const teamApi = (() => {
   const mapTeamMember = (item: any): TeamMember => ({
     id: item.id,
     name: item.name || (item.user ? item.user.name : ""),
-    role: item.role,
+    division: item.division,
     assigned: item.assigned,
     status: item.status || "active", // Default status jika tidak ada
   });
@@ -34,7 +41,6 @@ const teamApi = (() => {
         headers: { "Content-Type": "application/json" },
       });
       const data = processResponse(result);
-      // Jika data null, kembalikan array kosong agar tabel di UI dikosongkan
       if (!data) return [];
       const resultArray = Array.isArray(data) ? data : data.result || [];
       return resultArray.map(mapTeamMember);
@@ -44,16 +50,36 @@ const teamApi = (() => {
     }
   }
 
+  // Create a new team member
+  async function createTeamMember(teamData: TeamCreatePayload): Promise<TeamMember> {
+    try {
+      console.log("Creating team member with data:", teamData);
+      const result = await authApi._fetchWithAuth(`${BASE_URL}/teams`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(teamData),
+      });
+      console.log("Response create:", result);
+      const data = processResponse(result);
+      if (!data) throw new Error("Response data is null");
+      return mapTeamMember(data);
+    } catch (error: any) {
+      console.error("Error creating team member:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to create team member"
+      );
+    }
+  }
+
   // Update team member berdasarkan ID menggunakan endpoint /teams/update/:id
   async function updateTeamMember(
     id: number,
     updateData: Partial<TeamMember>
   ): Promise<TeamMember> {
     try {
-      // Bangun payload dengan mapping yang sesuai (mengirim role, assigned, dan status)
       const formattedData: any = {};
-      if (updateData.role !== undefined) {
-        formattedData.role = updateData.role;
+      if (updateData.division !== undefined) {
+        formattedData.division = updateData.division;
       }
       if (updateData.assigned !== undefined) {
         formattedData.assigned = updateData.assigned;
@@ -61,19 +87,14 @@ const teamApi = (() => {
       if (updateData.status !== undefined) {
         formattedData.status = updateData.status;
       }
-
       console.log("Payload update:", formattedData);
-
-      // Gunakan endpoint sesuai dengan route back end: /teams/update/:id
       const updateUrl = `${BASE_URL}/teams/update/${id}`;
       const result = await authApi._fetchWithAuth(updateUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedData),
       });
-
       console.log("Response update:", result);
-
       const data = processResponse(result);
       if (!data) throw new Error("Response data is null");
       return mapTeamMember(data);
@@ -81,6 +102,24 @@ const teamApi = (() => {
       console.error(`Error updating team member ${id}:`, error);
       throw new Error(
         error instanceof Error ? error.message : "Failed to update team member"
+      );
+    }
+  }
+
+  // Delete team member by ID (sambung ke backend)
+  async function deleteTeamMember(id: number): Promise<TeamMember> {
+    try {
+      const deleteUrl = `${BASE_URL}/teams/delete/${id}`;
+      const result = await authApi._fetchWithAuth(deleteUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = processResponse(result);
+      return mapTeamMember(data);
+    } catch (error: any) {
+      console.error(`Error deleting team member ${id}:`, error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to delete team member"
       );
     }
   }
@@ -106,9 +145,11 @@ const teamApi = (() => {
 
   return {
     getAllTeams,
+    createTeamMember,
     updateTeamMember,
     updateTeamStatus,
-    getTeamsByStatus
+    getTeamsByStatus,
+    deleteTeamMember,
   };
 })();
 

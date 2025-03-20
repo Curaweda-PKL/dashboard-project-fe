@@ -391,7 +391,7 @@ const Dashboard = () => {
                   <option value="">Select PIC</option>
                   {teamMembers.map((member) => (
                     <option key={member.id} value={member.id}>
-                      {member.name} - {member.role}
+                      {member.name}
                     </option>
                   ))}
                 </select>
