@@ -28,6 +28,14 @@ const Dashboard = () => {
   const [selectedPic, setSelectedPic] = useState("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   // Fungsi untuk refresh data proyek dari API
   const refreshProjects = async () => {
     try {
@@ -221,7 +229,7 @@ const Dashboard = () => {
       <div className="bg-gray-100 shadow-md rounded-lg p-6 border border-gray-300 mb-8 sticky top-0 z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-4xl font-bold">Projects</h2>
-          <span className="text-black font-bold text-2xl">22 July 2024</span>
+          <span className="text-black font-bold text-2xl">{formatDate(new Date())}</span>
         </div>
 
         <div className="flex items-center justify-between">

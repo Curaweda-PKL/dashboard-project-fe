@@ -6,7 +6,6 @@ import projectApi from "../api/projectApi";
 // import teamApi from "../api/TeamApi";
 
 /*** 1. Interface data ***/
-// Ditambahkan properti id agar sinkron dengan data API (jika tersedia)
 interface Module {
   id?: number; // ID timeline detail untuk update status
   name: string;
@@ -239,7 +238,10 @@ const Timeline: React.FC = () => {
     const weeks = [1, 2, 3, 4];
     return (
       <table className="min-w-max text-center border-collapse rounded-lg mb-8">
-        <thead className="sticky top-0 bg-[#02CCFF]">
+        <thead
+          className="sticky top-0 bg-[#02CCFF]"
+          style={{ zIndex: 10 }} // pastikan header berada di atas overlay
+        >
           <tr>
             <th className="p-4 text-white min-w-[200px]">MODULE</th>
             <th className="p-4 text-white min-w-[150px]">START DATE</th>
@@ -344,13 +346,8 @@ const Timeline: React.FC = () => {
       <>
         {modules.map((module, rowIndex) => {
           const { left, width } = computeTimelinePosition(module.startDate, module.endDate);
-          const moduleIndex = rowIndex % 3;
-          const verticalOffset = moduleIndex * 25 - 25;
-          const top =
-            HEADER_HEIGHT +
-            rowIndex * ROW_HEIGHT +
-            (ROW_HEIGHT - PILL_HEIGHT) / 2 +
-            verticalOffset;
+          const verticalOffset = rowIndex * 25;
+          const top = HEADER_HEIGHT + rowIndex * ROW_HEIGHT + (ROW_HEIGHT - PILL_HEIGHT) - 40 + verticalOffset;
           const finalLeft = left + PILL_LEFT_OFFSET;
           const finalWidth = Math.max(0, width - PILL_RIGHT_OFFSET);
           return (
@@ -363,6 +360,7 @@ const Timeline: React.FC = () => {
                 width: `${finalWidth}px`,
                 height: `${PILL_HEIGHT}px`,
                 whiteSpace: "nowrap",
+                zIndex: 1 // pastikan overlay berada di belakang header
               }}
             >
               {module.timeline}
@@ -408,7 +406,7 @@ const Timeline: React.FC = () => {
           <strong>Client :</strong> {projectData.client}
         </p>
       </div>
-      <div className="overflow-x-auto relative">
+      <div className="relative">
         {renderCombinedTable()}
         {modules.length > 0 && renderTimelineOverlay()}
       </div>
