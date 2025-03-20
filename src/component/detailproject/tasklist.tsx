@@ -110,7 +110,7 @@ const TaskList: React.FC = () => {
     feature: "",
     start_date: new Date(),
     end_date: new Date(),
-    status: "Pending",
+    status: "PENDING",
   });
   const [editDetail, setEditDetail] = useState<
     (MinimalTaskForm & { id: number; projectName: string }) | null
@@ -278,7 +278,7 @@ const TaskList: React.FC = () => {
             feature: newTask.feature,
             start_date: newTask.start_date,
             end_date: newTask.end_date,
-            status: newTask.status || "Pending",
+            status: newTask.status || "PENDING",
           },
         ],
       };
@@ -520,7 +520,7 @@ const TaskList: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value="Pending"
+                  value="PENDING"
                   readOnly
                   className="w-full border rounded-md p-2 bg-gray-200"
                 />
@@ -641,7 +641,7 @@ const TaskList: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value="Pending"
+                  value="PENDING"
                   readOnly
                   className="w-full border rounded-md p-2 bg-gray-200"
                 />
