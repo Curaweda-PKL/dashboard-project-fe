@@ -6,7 +6,7 @@ import teamApi from "./api/TeamProjectApi";// Pastikan path sesuai dengan lokasi
 interface Member {
   id: number;
   name: string;
-  role: string;
+  division: string;
   status: string;
   isAdded: boolean; // Menandakan apakah member sudah ditambahkan ke proyek
 }
@@ -26,7 +26,7 @@ const AddTeamProject: React.FC = () => {
         const mappedMembers: Member[] = apiMembers.map((tm) => ({
           id: tm.id,
           name: tm.name,
-          role: tm.role,
+          division: tm.division,
           status: tm.status,
           isAdded: !!tm.assigned, // jika assigned bernilai truthy, maka isAdded true
         }));
@@ -166,7 +166,7 @@ const AddTeamProject: React.FC = () => {
                   </div>
                   <div className="pl-10">{member.name}</div>
                 </td>
-                <td className="p-4">{member.role}</td>
+                <td className="p-4">{member.division}</td>
                 <td className="p-4">{member.status}</td>
               </tr>
             ))}

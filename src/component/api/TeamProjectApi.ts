@@ -3,7 +3,7 @@ import authApi from "./authApi"; // Pastikan import authApi sesuai dengan lokasi
 export interface TeamMember {
   id: number;
   name: string;
-  role: string;
+  division: string;
   assigned: string;
   status: string; // Added status field
 }
@@ -29,9 +29,9 @@ const teamApi = (() => {
   const mapTeamMember = (item: any): TeamMember => ({
     id: item.id,
     name: item.name || (item.user ? item.user.name : ""),
-    role: item.role,
+    division: item.division,
     assigned: item.assigned,
-    status: item.status || "active", // Default status jika tidak ada
+    status: item.status || "", // Default status jika tidak ada
   });
 
   // Map project team assignment response
@@ -67,8 +67,8 @@ const teamApi = (() => {
     try {
       // Bangun payload dengan mapping yang sesuai (mengirim role, assigned, dan status)
       const formattedData: any = {};
-      if (updateData.role !== undefined) {
-        formattedData.role = updateData.role;
+      if (updateData.division !== undefined) {
+        formattedData.division = updateData.division;
       }
       if (updateData.assigned !== undefined) {
         formattedData.assigned = updateData.assigned;

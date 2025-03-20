@@ -3,71 +3,103 @@ import Swal from "sweetalert2";
 import { FaPencilAlt } from "react-icons/fa";
 import accountApi from "../component/api/accountApi";
 
-// Tipe data Account
+// Interface Account (fixed phone_number type to match UserSummary)
 export interface Account {
   id?: number;
   name: string;
   email: string;
-  password: string;
+  phone_number?: string; // Changed from number to string
+  user_roles?: { roles: { id: number; name: string } }[];
+  user_permissions?: { permissions: { id: number; name: string } }[];
 }
 
+// Interface MinimalAccountForm
 interface MinimalAccountForm {
   name: string;
   email: string;
-  password: string;
 }
 
+// Tambahkan phone_number sebagai string karena input number mengembalikan string
+interface CreateAccountForm extends MinimalAccountForm {
+  password: string;
+  role: string;
+  permission: string;
+  phone_number: string;
+}
+
+interface EditableAccountForm extends MinimalAccountForm {
+  role: string;
+  permission: string;
+  phone_number: string;
+}
+
+const roleOptions = ["User", "Project Manager Lead", "Super Admin"];
+const permissionOptions = ["UserManagement", "ListProject"];
+
 const AccountList: React.FC = () => {
-  // State untuk list account
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  const [newAccount, setNewAccount] = useState<MinimalAccountForm>({
+
+  const [newAccount, setNewAccount] = useState<CreateAccountForm>({
     name: "",
     email: "",
     password: "",
+    role: "",
+    permission: "",
+    phone_number: "",
   });
-  const [editAccount, setEditAccount] = useState<(MinimalAccountForm & { id: number }) | null>(null);
 
-  // Fetch data account dari API
+  const [editAccount, setEditAccount] = useState<(EditableAccountForm & { id: number }) | null>(null);
+
+  const fetchAccounts = async () => {
+    try {
+      const users = await accountApi.getAllUser();
+      setAccounts(users);
+    } catch (error) {
+      console.error("Failed to fetch accounts:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to load accounts",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    }
+  };
+
   useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const data = await accountApi.getAllAccounts();
-        setAccounts(data);
-      } catch (error) {
-        console.error("Failed to fetch accounts:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Failed to load accounts",
-          toast: true,
-          position: "top-end",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-      }
-    };
     fetchAccounts();
   }, []);
 
-  // Toggle mode editing (untuk hapus)
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
     setSelectedIds([]);
   };
 
-  // Handle checkbox perubahan
   const handleCheckboxChange = (id: number) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((prevId) => prevId !== id) : [...prev, id]
     );
   };
 
-  // Hapus account yang terpilih
   const handleRemoveSelected = async () => {
-    Swal.fire({
+    if (selectedIds.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "No account selected",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+      return;
+    }
+
+    const confirmResult = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -75,44 +107,36 @@ const AccountList: React.FC = () => {
       confirmButtonColor: "#09ABCA",
       cancelButtonColor: "#6A6A6A",
       confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          for (const id of selectedIds) {
-            await accountApi.deleteAccount(id);
-          }
-          const refreshedData = await accountApi.getAllAccounts();
-          setAccounts(refreshedData);
-          setSelectedIds([]);
-          setIsEditing(false);
-          Swal.fire({
-            icon: "success",
-            title: "Account(s) has been removed",
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: "rgb(0, 208, 255)",
-            color: "#000000",
-          });
-        } catch (error) {
-          console.error("Error deleting accounts:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Failed to delete selected account(s)",
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-          });
-        }
-      }
     });
+
+    if (confirmResult.isConfirmed) {
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          try {
+            await accountApi.deleteUser(id);
+          } catch (err) {
+            console.error(`Error deleting id ${id}:`, err);
+          }
+          return true;
+        })
+      );
+      await fetchAccounts();
+      setSelectedIds([]);
+      setIsEditing(false);
+      Swal.fire({
+        icon: "success",
+        title: "Account(s) has been removed",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+    }
   };
 
-  // Buka modal edit dan set data akun yang akan diedit
   const openEditModal = (account: Account) => {
     if (!account.id) {
       Swal.fire({
@@ -129,22 +153,31 @@ const AccountList: React.FC = () => {
       id: account.id,
       name: account.name,
       email: account.email,
-      password: account.password,
+      // No need to convert phone_number to string, it's already a string
+      phone_number: account.phone_number || "",
+      role:
+        account.user_roles && account.user_roles.length > 0
+          ? account.user_roles[0].roles.name
+          : "",
+      permission:
+        account.user_permissions && account.user_permissions.length > 0
+          ? account.user_permissions[0].permissions.name
+          : "",
     });
     setIsEditModalOpen(true);
   };
 
-  // Update akun melalui API
   const handleUpdateAccount = async () => {
     if (!editAccount) return;
     try {
-      await accountApi.updateAccount(editAccount.id, {
+      await accountApi.updateUser(editAccount.id, {
         name: editAccount.name,
         email: editAccount.email,
-        password: editAccount.password,
+        role: editAccount.role,
+        permission: editAccount.permission,
+        phone_number: editAccount.phone_number,
       });
-      const refreshedData = await accountApi.getAllAccounts();
-      setAccounts(refreshedData);
+      await fetchAccounts();
       setIsEditModalOpen(false);
       Swal.fire({
         icon: "success",
@@ -171,12 +204,10 @@ const AccountList: React.FC = () => {
     }
   };
 
-  // Tambah akun baru melalui API
   const handleAddAccount = async () => {
     try {
-      await accountApi.createAccount(newAccount);
-      const refreshedData = await accountApi.getAllAccounts();
-      setAccounts(refreshedData);
+      await accountApi.createUser(newAccount);
+      await fetchAccounts();
       Swal.fire({
         icon: "success",
         title: "Account has been added",
@@ -192,6 +223,9 @@ const AccountList: React.FC = () => {
         name: "",
         email: "",
         password: "",
+        role: "",
+        permission: "",
+        phone_number: "",
       });
       setIsModalOpen(false);
     } catch (error) {
@@ -217,8 +251,8 @@ const AccountList: React.FC = () => {
             <tr className="bg-[#02CCFF] text-white">
               {isEditing && <th className="p-4"></th>}
               <th className="p-4 border-b">NAME</th>
+              <th className="p-4 border-b">PHONE NUMBER</th>
               <th className="p-4 border-b">EMAIL</th>
-              <th className="p-4 border-b">PASSWORD</th>
               <th className="p-4 border-b"></th>
             </tr>
           </thead>
@@ -248,8 +282,8 @@ const AccountList: React.FC = () => {
                     </td>
                   )}
                   <td className="p-4">{account.name || "-"}</td>
+                  <td className="p-4">{account.phone_number || "-"}</td>
                   <td className="p-4">{account.email || "-"}</td>
-                  <td className="p-4">{account.password || "-"}</td>
                   <td className="p-4">
                     <button
                       onClick={() => openEditModal(account)}
@@ -266,7 +300,6 @@ const AccountList: React.FC = () => {
         </table>
       </div>
 
-      {/* Tombol Add Account dan Remove */}
       <div className="fixed bottom-10 right-10 flex gap-4">
         <button
           onClick={() => setIsModalOpen(true)}
@@ -299,7 +332,6 @@ const AccountList: React.FC = () => {
         )}
       </div>
 
-      {/* Modal untuk Add Account */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
@@ -318,9 +350,13 @@ const AccountList: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg font-semibold mb-1">Name</label>
+                <label htmlFor="new-name" className="block text-lg font-semibold mb-1">
+                  Name
+                </label>
                 <input
                   type="text"
+                  id="new-name"
+                  name="name"
                   value={newAccount.name}
                   onChange={(e) =>
                     setNewAccount({ ...newAccount, name: e.target.value })
@@ -330,9 +366,13 @@ const AccountList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-semibold mb-1">Email</label>
+                <label htmlFor="new-email" className="block text-lg font-semibold mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
+                  id="new-email"
+                  name="email"
                   value={newAccount.email}
                   onChange={(e) =>
                     setNewAccount({ ...newAccount, email: e.target.value })
@@ -342,9 +382,29 @@ const AccountList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-semibold mb-1">Password</label>
+                <label htmlFor="new-phone_number" className="block text-lg font-semibold mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="number"
+                  id="new-phone_number"
+                  name="phone_number"
+                  value={newAccount.phone_number}
+                  onChange={(e) =>
+                    setNewAccount({ ...newAccount, phone_number: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="new-password" className="block text-lg font-semibold mb-1">
+                  Password
+                </label>
                 <input
                   type="password"
+                  id="new-password"
+                  name="password"
                   value={newAccount.password}
                   onChange={(e) =>
                     setNewAccount({ ...newAccount, password: e.target.value })
@@ -352,6 +412,54 @@ const AccountList: React.FC = () => {
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
+              </div>
+              <div>
+                <label htmlFor="new-role" className="block text-lg font-semibold mb-1">
+                  Role
+                </label>
+                <select
+                  id="new-role"
+                  name="role"
+                  value={newAccount.role}
+                  onChange={(e) =>
+                    setNewAccount({ ...newAccount, role: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Role
+                  </option>
+                  {roleOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="new-permission" className="block text-lg font-semibold mb-1">
+                  Permission
+                </label>
+                <select
+                  id="new-permission"
+                  name="permission"
+                  value={newAccount.permission}
+                  onChange={(e) =>
+                    setNewAccount({ ...newAccount, permission: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Permission
+                  </option>
+                  {permissionOptions.map((perm) => (
+                    <option key={perm} value={perm}>
+                      {perm}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-between mt-4">
                 <button
@@ -373,7 +481,6 @@ const AccountList: React.FC = () => {
         </div>
       )}
 
-      {/* Modal untuk Edit Account */}
       {isEditModalOpen && editAccount && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
@@ -395,9 +502,13 @@ const AccountList: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg font-semibold mb-1">Name</label>
+                <label htmlFor="edit-name" className="block text-lg font-semibold mb-1">
+                  Name
+                </label>
                 <input
                   type="text"
+                  id="edit-name"
+                  name="name"
                   value={editAccount.name}
                   onChange={(e) =>
                     setEditAccount({ ...editAccount, name: e.target.value })
@@ -407,9 +518,13 @@ const AccountList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-semibold mb-1">Email</label>
+                <label htmlFor="edit-email" className="block text-lg font-semibold mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
+                  id="edit-email"
+                  name="email"
                   value={editAccount.email}
                   onChange={(e) =>
                     setEditAccount({ ...editAccount, email: e.target.value })
@@ -419,16 +534,68 @@ const AccountList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-semibold mb-1">Password</label>
+                <label htmlFor="edit-phone_number" className="block text-lg font-semibold mb-1">
+                  Phone Number
+                </label>
                 <input
-                  type="password"
-                  value={editAccount.password}
+                  type="number"
+                  id="edit-phone_number"
+                  name="phone_number"
+                  value={editAccount.phone_number}
                   onChange={(e) =>
-                    setEditAccount({ ...editAccount, password: e.target.value })
+                    setEditAccount({ ...editAccount, phone_number: e.target.value })
                   }
                   className="w-full border rounded-md p-2 bg-white"
                   required
                 />
+              </div>
+              <div>
+                <label htmlFor="edit-role" className="block text-lg font-semibold mb-1">
+                  Role
+                </label>
+                <select
+                  id="edit-role"
+                  name="role"
+                  value={editAccount.role}
+                  onChange={(e) =>
+                    setEditAccount({ ...editAccount, role: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Role
+                  </option>
+                  {roleOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="edit-permission" className="block text-lg font-semibold mb-1">
+                  Permission
+                </label>
+                <select
+                  id="edit-permission"
+                  name="permission"
+                  value={editAccount.permission}
+                  onChange={(e) =>
+                    setEditAccount({ ...editAccount, permission: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Permission
+                  </option>
+                  {permissionOptions.map((perm) => (
+                    <option key={perm} value={perm}>
+                      {perm}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-between mt-4">
                 <button
