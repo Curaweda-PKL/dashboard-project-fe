@@ -53,7 +53,7 @@ const App: React.FC = () => {
           <Route path="/project/:projectId/summary" element={<Summary />} />
 
           {/* Route Add Team Project */}
-          <Route path="/addTeamProject" element={<AddTeamProject />} />
+          <Route path="/project/:projectId/team" element={<AddTeamProject />} />
           <Route path="/project/:projectId/timeline" element={<Timeline />} />
         </Route>
 
