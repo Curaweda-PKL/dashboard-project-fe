@@ -240,7 +240,11 @@ const TeamTable: React.FC = () => {
         division: newMemberData.division,
         status: newMemberData.status,
       };
-      const createdMember = await teamApi.createTeamMember(payload);
+      let createdMember = await teamApi.createTeamMember(payload);
+      // Jika properti name tidak ada dari response API, tambahkan dari state newMemberData
+      if (!createdMember.name) {
+        createdMember = { ...createdMember, name: newMemberData.userName };
+      }
       setTeamMembers((prev) => [...prev, createdMember]);
       Swal.fire({
         icon: "success",
@@ -332,7 +336,6 @@ const TeamTable: React.FC = () => {
                 value={editingMember.status}
                 onChange={(value) => setEditingMember({ ...editingMember, status: value })}
               />
-              {/* Field Assigned dihapus */}
               <div className="flex justify-center">
                 <button
                   onClick={handleUpdateMember}
@@ -360,7 +363,7 @@ const TeamTable: React.FC = () => {
               <div className="mb-4 relative">
                 <label className="block font-bold mb-2">Name *</label>
                 <div
-                  onClick={() => setActiveDropdown("Name")}
+                  onClick={() => setActiveDropdown("user")}
                   className="border border-black p-2 rounded-full cursor-pointer flex justify-between items-center"
                 >
                   {newMemberData.userName || "Select Name"}
