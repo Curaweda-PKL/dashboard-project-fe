@@ -3,7 +3,7 @@ import HeaderDetail from "./headerdetail";
 import { useLocation, useParams } from "react-router-dom";
 import projectTimelineAPI, { ProjectTimeline, TimelineDetail } from "../api/timelineApi";
 import projectApi from "../api/projectApi";
-// import teamApi from "../api/TeamApi";
+import teamApi from "../api/TeamApi"; // Add import for TeamApi
 
 /*** 1. Interface data ***/
 interface Module {
@@ -143,13 +143,13 @@ const Timeline: React.FC = () => {
         const projectDetails = await projectApi.getProjectById(parseInt(projectId));
         console.log("Project details:", projectDetails);
         
-        // Fetch team members
-        // const teams = await teamApi.getAllTeams();
-        // console.log("Team members:", teams);
+        // Fetch team members - uncomment this section and implement like in TaskList
+        const teams = await teamApi.getAllTeams();
+        console.log("Team members:", teams);
         
         // Find the team member that matches the pic_id
-        // const picMember = teams.find(member => member.id === projectDetails.pic_id);
-        // const picName = picMember ? picMember.name : "Unknown";
+        const picMember = teams.find(member => member.id === projectDetails.pic_id);
+        const picName = picMember ? picMember.name : "Unknown";
         
         // Format the date untuk display
         const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(projectDetails.end_date).toLocaleDateString()}`;
@@ -157,7 +157,7 @@ const Timeline: React.FC = () => {
         // Set project data dengan nilai dari API
         setProjectData({
           projectName: projectDetails.title || "Default Project Name",
-          pic: "",
+          pic: picName, // Set the PIC name from team member data
           date: formattedDate,
           client: projectDetails.client || "Default Client",
         });
@@ -194,7 +194,8 @@ const Timeline: React.FC = () => {
         ...prev,
         projectName: routeState.projectName || prev.projectName,
         client: routeState.client || prev.client,
-        // Jangan override pic dan date jika sudah ada dari API
+        // Don't override pic from route state, as we want to use the one from API
+        // pic: routeState.pic || prev.pic, 
       }));
     }
   }, [routeState]);
