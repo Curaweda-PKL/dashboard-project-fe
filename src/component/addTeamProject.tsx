@@ -12,7 +12,7 @@ interface Member extends Omit<TeamMember, "assigned"> {
 
 const AddTeamProject: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [initialMembers, setInitialMembers] = useState<Member[]>([]);
@@ -254,51 +254,47 @@ const AddTeamProject: React.FC = () => {
 
   return (
     <div className="p-6 relative">
-      {sortedMembers.length > 0 ? (
-        <table className="w-full rounded-lg overflow-hidden">
-          <thead>
-            <tr className="bg-[#02CCFF] text-white text-center">
-              <th className="p-4 rounded-tl-lg border-b-4 border-white font-bold text-lg">NAME</th>
-              <th className="p-4 border-b-4 border-white font-bold text-lg">ROLE</th>
-              <th className="p-4 rounded-tr-lg border-b-4 border-white font-bold text-lg">STATUS</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {sortedMembers.map((member) => (
-              <tr
-                key={member.id}
-                className="border-t text-center text-black font-bold hover:bg-gray-100 transition duration-200"
-              >
-                <td className="p-4 relative">
-                  {/* Icon untuk menambah atau menghapus anggota */}
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                    {isEditMode ? (
-                      member.isAdded ? (
-                        <FiUserMinus
-                          className="text-[#B20000] cursor-pointer"
-                          onClick={() => toggleMember(member.id)}
-                        />
-                      ) : (
-                        <FiUserPlus
-                          className="text-[#0AB239] cursor-pointer"
-                          onClick={() => toggleMember(member.id)}
-                        />
-                      )
+      <table className="w-full rounded-lg overflow-hidden">
+        <thead>
+          <tr className="bg-[#02CCFF] text-white text-center">
+            <th className="p-4 rounded-tl-lg border-b-4 border-white font-bold text-lg">NAME</th>
+            <th className="p-4 border-b-4 border-white font-bold text-lg">ROLE</th>
+            <th className="p-4 rounded-tr-lg border-b-4 border-white font-bold text-lg">STATUS</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white">
+          {sortedMembers.map((member) => (
+            <tr
+              key={member.id}
+              className="border-t text-center text-black font-bold hover:bg-gray-100 transition duration-200"
+            >
+              <td className="p-4 relative">
+                {/* Icon untuk menambah atau menghapus anggota */}
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  {isEditMode ? (
+                    member.isAdded ? (
+                      <FiUserMinus
+                        className="text-[#B20000] cursor-pointer"
+                        onClick={() => toggleMember(member.id)}
+                      />
                     ) : (
-                      member.isAdded && <FiUser className="text-curawedaColor" />
-                    )}
-                  </div>
-                  <div className="pl-10">{member.name}</div>
-                </td>
-                <td className="p-4">{member.division}</td>
-                <td className="p-4">{member.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p className="text-gray-500">No members available.</p>
-      )}
+                      <FiUserPlus
+                        className="text-[#0AB239] cursor-pointer"
+                        onClick={() => toggleMember(member.id)}
+                      />
+                    )
+                  ) : (
+                    member.isAdded && <FiUser className="text-curawedaColor" />
+                  )}
+                </div>
+                <div className="pl-10">{member.name}</div>
+              </td>
+              <td className="p-4">{member.division}</td>
+              <td className="p-4">{member.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* Tombol-tombol untuk mode edit */}
       {isEditMode && (
