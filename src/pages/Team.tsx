@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import teamApi, { TeamMember, TeamCreatePayload } from "../component/api/TeamApi";
 import accountApi, { UserSummary } from "../component/api/accountApi";
 
-// Komponen UserDropdown untuk memilih user berdasarkan name
+// Komponen UserDropdown untuk memilih user berdasarkan name (tidak menampilkan ID)
 interface UserDropdownProps {
   users: UserSummary[];
   onSubmit: (selectedUser: UserSummary) => void;
@@ -34,7 +34,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ users, onSubmit, onClose })
             }}
             className="py-2 text-center cursor-pointer border-b text-gray-700 hover:bg-gray-100 hover:font-bold"
           >
-            {user.name} (ID: {user.id})
+            {user.name}
           </div>
         ))}
       </div>
@@ -314,7 +314,7 @@ const TeamTable: React.FC = () => {
           !loading && <p>No team members found</p>
         )}
 
-        {/* Edit Modal */}
+        {/* Edit Modal */} 
         {showEditModal && editingMember && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
@@ -329,12 +329,12 @@ const TeamTable: React.FC = () => {
               <EditableField
                 label="Divisi"
                 value={editingMember.division}
-                onChange={(value) => setEditingMember({ ...editingMember, division: value })}
+                onChange={(value) => setEditingMember({ ...editingMember, division: value })}  
               />
               <EditableField
                 label="Status"
                 value={editingMember.status}
-                onChange={(value) => setEditingMember({ ...editingMember, status: value })}
+                onChange={(value) => setEditingMember({ ...editingMember, status: value })}  
               />
               <div className="flex justify-center">
                 <button
@@ -348,7 +348,7 @@ const TeamTable: React.FC = () => {
           </div>
         )}
 
-        {/* Create Modal with User Dropdown */}
+        {/* Create Modal with User Dropdown */} 
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
@@ -359,9 +359,9 @@ const TeamTable: React.FC = () => {
                 ✕
               </button>
               <h2 className="text-center text-2xl font-bold mb-4">Create Team Member</h2>
-              {/* User Dropdown */}
+              {/* User Dropdown */} 
               <div className="mb-4 relative">
-                <label className="block font-bold mb-2">Name *</label>
+                <label className="block font-bold mb-2">Name</label>
                 <div
                   onClick={() => setActiveDropdown("user")}
                   className="border border-black p-2 rounded-full cursor-pointer flex justify-between items-center"
@@ -373,11 +373,7 @@ const TeamTable: React.FC = () => {
                   <UserDropdown
                     users={users}
                     onSubmit={(selectedUser) => {
-                      setNewMemberData({
-                        ...newMemberData,
-                        user_id: selectedUser.id,
-                        userName: selectedUser.name,
-                      });
+                      setNewMemberData({ ...newMemberData, user_id: selectedUser.id, userName: selectedUser.name });
                       setActiveDropdown(null);
                     }}
                     onClose={() => setActiveDropdown(null)}
@@ -406,7 +402,7 @@ const TeamTable: React.FC = () => {
           </div>
         )}
 
-        {/* Tombol Add Team & Remove di bawah kanan */}
+        {/* Tombol Add Team & Remove di bawah kanan */} 
         <div className="fixed bottom-10 right-10 flex gap-4">
           <button
             onClick={() => setShowCreateModal(true)}
