@@ -13,7 +13,7 @@ const HeaderDetail: React.FC = () => {
       <Link 
         to={`/project/${projectId}/task`}
         state={{ projectName, pm, date, client }}
-        className={`py-2 px-5 font-bold rounded-full shadow-md ${
+        className={`py-2 px-5 font-bold rounded-full  ${
           location.pathname.includes("/task") ? "bg-[#02CCFF] text-white" : "bg-[#6A6A6A] text-white"
         }`}
       >

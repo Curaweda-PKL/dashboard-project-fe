@@ -228,8 +228,8 @@ const Dashboard = () => {
     <LayoutProject>
       <div className="bg-gray-100 shadow-md rounded-lg p-6 border border-gray-300 mb-8 sticky top-0 z-10">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-4xl font-bold">Projects</h2>
-          <span className="text-black font-bold text-2xl">{formatDate(new Date())}</span>
+          <h2 className="text-4xl font-semibold">Projects</h2>
+          <span className="text-black font-semibold text-2xl">{formatDate(new Date())}</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -239,8 +239,8 @@ const Dashboard = () => {
                 key={index}
                 className="flex flex-col items-start text-start pl-3 border-l-2 border-black"
               >
-                <p className="text-3xl font-bold mb-2">{item.count}</p>
-                <p className="text-black text-[20px] font-semibold whitespace-nowrap">
+                <p className="text-3xl font-semibold mb-2">{item.count}</p>
+                <p className="text-black text-[20px]  whitespace-nowrap">
                   {item.label}
                 </p>
               </div>
@@ -249,13 +249,13 @@ const Dashboard = () => {
 
           <div className="flex flex-col items-end gap-4 ml-8">
             <button
-              className="bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-curawedaColor hover:bg-[#029FCC] text-white font-semibold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => setIsModalOpen(true)}
             >
               Add Project
             </button>
             <button
-              className="bg-[#B20000] hover:bg-red-900 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+              className="bg-[#B20000] hover:bg-red-900 text-white font-semibold px-8 py-3 rounded-full hover:scale-105 w-full"
               onClick={() => {
                 setIsRemoveMode((prev) => !prev);
                 if (isRemoveMode) {
@@ -294,7 +294,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex flex-col items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text-center">Add Project</h3>
+              <h3 className="text-2xl font-semibold text-center">Add Project</h3>
               <button
                 className="text-gray-600 hover:text-gray-900 self-end"
                 onClick={() => setIsModalOpen(false)}
@@ -304,7 +304,7 @@ const Dashboard = () => {
             </div>
             <form className="space-y-4" onSubmit={handleAddProjectSubmit}>
               <div>
-                <label className="block font-semibold mb-2">Project Name</label>
+                <label className="block  mb-2">Project Name</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -313,7 +313,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Periode</label>
+                <label className="block  mb-2">Periode</label>
                 <div className="relative">
                   <div
                     className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
@@ -342,7 +342,7 @@ const Dashboard = () => {
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
                         />
-                        <span className="font-semibold">to</span>
+                        <span className="">to</span>
                         <input
                           type="date"
                           className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -351,7 +351,7 @@ const Dashboard = () => {
                         />
                       </div>
                       <button
-                        className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-4 py-2 rounded-full w-full"
+                        className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-semibold px-4 py-2 rounded-full w-full"
                         onClick={() => setIsDropdownOpen(false)}
                         type="button"
                       >
@@ -362,7 +362,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div>
-                <label className="block font-semibold mb-2">Contract Number</label>
+                <label className="block  mb-2">Contract Number</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -371,7 +371,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">No PRD</label>
+                <label className="block  mb-2">No PRD</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -380,7 +380,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Client Name</label>
+                <label className="block  mb-2">Client Name</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -390,7 +390,7 @@ const Dashboard = () => {
               </div>
               {/* Dropdown PIC menggunakan data dari teamApi */}
               <div>
-                <label className="block font-semibold mb-2">PIC</label>
+                <label className="block  mb-2">PIC</label>
                 <select
                   value={selectedPic}
                   onChange={(e) => setSelectedPic(e.target.value)}
@@ -405,7 +405,7 @@ const Dashboard = () => {
                 </select>
               </div>
               <div>
-                <label className="block font-semibold mb-2">
+                <label className="block  mb-2">
                   Definition of Project
                 </label>
                 <textarea
@@ -417,7 +417,7 @@ const Dashboard = () => {
               </div>
               <button
                 type="submit"
-                className="bg-curawedaColor hover:bg-[#029FCC] text-white font-bold px-6 py-2 rounded-full w-full"
+                className="bg-curawedaColor hover:bg-[#029FCC] text-white font-semibold px-6 py-2 rounded-full w-full"
               >
                 Submit
               </button>
@@ -433,7 +433,7 @@ const Dashboard = () => {
         >
           <button
             onClick={handleConfirmRemove}
-            className="bg-[#B20000] hover:bg-red-900 text-white font-bold px-8 py-3 rounded-full hover:scale-105 w-full"
+            className="bg-[#B20000] hover:bg-red-900 text-white font-semibold px-8 py-3 rounded-full hover:scale-105 w-full"
             style={{ animation: "slideUp 0.5s ease-out" }}
           >
             Remove Project

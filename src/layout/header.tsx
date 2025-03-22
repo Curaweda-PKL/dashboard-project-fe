@@ -13,12 +13,16 @@ import sidebarLinks from "../layout/sidebar.json";
 import { UserSummary } from "../component/api/usersApi";
 import usersApi from "../component/api/usersApi";
 
+// Interface untuk item sidebar
 interface SidebarLink {
   name: string;
   path?: string;
   icon: keyof typeof iconMap;
   children?: SidebarLink[];
 }
+
+// Daftar nama link yang ingin dikelompokkan (akan diberi jarak antar item)
+const groupLinks = ["Team", "Messages", "Calendar", "Settings", "Account"];
 
 const Layout = () => {
   const location = useLocation();
@@ -84,10 +88,7 @@ const Layout = () => {
   // Menutup dropdown jika klik di luar area dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target as Node)
-      ) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setShowProfileDropdown(false);
       }
     };
@@ -117,12 +118,16 @@ const Layout = () => {
     });
   };
 
+  // Render item sidebar, dengan grup untuk link tertentu
   const renderSubLinks = useCallback(
     (link: SidebarLink) => {
       const isOpen = !!openSubmenus[link.name];
       const IconComponent = iconMap[link.icon];
+      // Jika link termasuk dalam grup, beri margin atas ekstra
+      const containerClasses = groupLinks.includes(link.name) ? "mt-4" : "";
+
       return (
-        <li key={link.name} className="flex flex-col text-xl">
+        <li key={link.name} className={`flex flex-col text-lg font-semibold ${containerClasses}`}>
           <div
             className={`flex items-center justify-between cursor-pointer p-2 rounded-full ${
               isOpen ? "bg-white text-black shadow-md" : ""
@@ -134,10 +139,8 @@ const Layout = () => {
                 <NavLink
                   to={link.path}
                   className={({ isActive }) =>
-                    `flex items-center p-2 rounded-full w-full ${
-                      isActive
-                        ? "bg-[#02CCFF] text-black font-semibold"
-                        : "text-black hover:bg-blue-200"
+                    `flex items-center p-2 rounded-full w-full text-lg font-semibold ${
+                      isActive ? "bg-[#02CCFF] text-black" : "text-black hover:bg-blue-200"
                     }`
                   }
                 >
@@ -150,16 +153,14 @@ const Layout = () => {
                   {link.name}
                 </NavLink>
               ) : (
-                <span className="flex items-center">
+                <span className="flex items-center text-lg font-semibold">
                   {IconComponent && <IconComponent className="mr-2" />}
                   {link.name}
                 </span>
               )}
             </div>
             {link.children && (
-              <MdExpandMore
-                className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-              />
+              <MdExpandMore className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
             )}
           </div>
           {link.children && isOpen && (
@@ -171,10 +172,8 @@ const Layout = () => {
                     <NavLink
                       to={subLink.path || ""}
                       className={({ isActive }) =>
-                        `block p-1 rounded-full ${
-                          isActive
-                            ? "text-[#76A8D8BF] font-semibold bg-[#02CCFF]"
-                            : "text-black hover:bg-blue-200"
+                        `block p-1 rounded-full text-lg font-semibold ${
+                          isActive ? "text-[#76A8D8BF] bg-[#02CCFF]" : "text-black hover:bg-blue-200"
                         }`
                       }
                     >
@@ -209,24 +208,19 @@ const Layout = () => {
                   viewBox="0 0 24 24"
                   className="inline-block w-6 h-6 stroke-current"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </label>
             </div>
             <div className="flex items-center justify-start">
-              <div className="text-5xl font-bold mr-8">{pageTitle}</div>
+              <div className="text-5xl font-semibold mr-8">{pageTitle}</div>
             </div>
             <div className="ml-auto">
               <div className="flex items-center justify-center">
                 <div className="indicator mr-10">
                   <button onClick={() => setShowNotifications(true)}>
-                    <IoNotificationsSharp size={30} className="text-2xl font-bold" />
-                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white mt-1 bg-teal-600">
+                    <IoNotificationsSharp size={30} className="text-l font-semibold" />
+                    <span className="indicator-item w-6 h-6 flex items-center justify-center rounded-full text-l font-semibold text-white mt-1 bg-teal-600">
                       99+
                     </span>
                   </button>
@@ -248,10 +242,8 @@ const Layout = () => {
                       </div>
                     </div>
                     <div className="hidden lg:block text-left ml-4">
-                      <p className="text-lg font-semibold lg:text-xl">
-                        {currentUser?.name}
-                      </p>
-                      <p className="text-sm">{currentUser?.email}</p>
+                      <p className="text-l font-semibold">{currentUser?.name}</p>
+                      <p className="text-l font-semibold">{currentUser?.email}</p>
                     </div>
                     <MdExpandMore className="ml-2" />
                   </button>
@@ -259,7 +251,7 @@ const Layout = () => {
                     <ul className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                       <li>
                         <button
-                          className="w-full text-left p-2 hover:bg-blue-200"
+                          className="w-full text-left p-2 hover:bg-blue-200 text-l font-semibold"
                           onClick={() => {
                             setShowProfileDropdown(false);
                             navigate("/settings");
@@ -270,7 +262,7 @@ const Layout = () => {
                       </li>
                       <li>
                         <button
-                          className="w-full text-left p-2 hover:bg-blue-200"
+                          className="w-full text-left p-2 hover:bg-blue-200 text-l font-semibold"
                           onClick={handleLogout}
                         >
                           Log Out
@@ -289,8 +281,9 @@ const Layout = () => {
       </div>
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
-          <li>
-            <img src="/src/assets/curaweda.png" className="mx-auto w-24 h-20" alt="Curaweda" />
+          {/* Logo dengan margin bawah yang besar untuk memberi jarak */}
+          <li className="mb-7">
+            <img src="/src/assets/curaweda.png" className="mx-auto w-36" alt="Curaweda" />
           </li>
           {sidebarLinks.map(renderSubLinks)}
         </ul>
