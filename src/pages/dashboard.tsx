@@ -390,13 +390,13 @@ const Dashboard = () => {
               </div>
               {/* Dropdown PIC menggunakan data dari teamApi */}
               <div>
-                <label className="block font-semibold mb-2">PIC</label>
+                <label className="block font-semibold mb-2">PM</label>
                 <select
                   value={selectedPic}
                   onChange={(e) => setSelectedPic(e.target.value)}
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
                 >
-                  <option value="">Select PIC</option>
+                  <option value="">Select PM</option>
                   {teamMembers.map((member) => (
                     <option key={member.id} value={member.id}>
                       {member.name}
