@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginLayout from "../../layout/layoutLogin";
 import loginImage from "../../assets/Tampilan Login.png";
@@ -10,6 +10,23 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("logoutSuccess") === "true") {
+      localStorage.removeItem("logoutSuccess");
+      Swal.fire({
+        icon: "success",
+        title: "Logout successfully",
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        toast: true,
+        timerProgressBar: true,
+      });
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +53,7 @@ const LoginPage: React.FC = () => {
         timerProgressBar: true,
       });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       // Show error notification
       Swal.fire({

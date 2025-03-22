@@ -1,116 +1,178 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import myAccountApi from "../component/api/MyAccountApi";
 
 const MyAccount: React.FC = () => {
-  const [phoneNumber, setPhoneNumber] = useState("081xxxxxxxxx");
-  const [email, setEmail] = useState("axyz@gmail.com");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("********");
   const [isPhoneNumberPopupVisible, setIsPhoneNumberPopupVisible] = useState(false);
   const [isEmailPopupVisible, setIsEmailPopupVisible] = useState(false);
   const [isPasswordPopupVisible, setIsPasswordPopupVisible] = useState(false);
-  const [newPhoneNumber, setNewPhoneNumber] = useState(phoneNumber);
-  const [newEmail, setNewEmail] = useState(email);
-  const [currentPassword, setCurrentPassword] = useState(""); // Kosongkan input initial untuk current password
+  const [newPhoneNumber, setNewPhoneNumber] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const userData = await myAccountApi.getCurrentUser();
+        setEmail(userData.email || "");
+        setPhoneNumber(userData.phone_number || "");
+        setNewEmail(userData.email || "");
+        setNewPhoneNumber(userData.phone_number || "");
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setError("Failed to load your profile. Please try again later.");
+        Swal.fire({
+          icon: "error",
+          title: "Failed to load your profile",
+          background: "#FFA7A7",
+          color: "#000000",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleEditPhoneNumber = () => {
+    setNewPhoneNumber(phoneNumber);
     setIsPhoneNumberPopupVisible(true);
   };
 
   const handleEditEmail = () => {
+    setNewEmail(email);
     setIsEmailPopupVisible(true);
   };
 
   const handleEditPassword = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
     setIsPasswordPopupVisible(true);
   };
 
-  const handleSavePhoneNumber = () => {
-    setPhoneNumber(newPhoneNumber);
-    setIsPhoneNumberPopupVisible(false);
-
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-      },
-    });
-
-    Toast.fire({
-      icon: "success",
-      title: "Phone Number changed successfully",
-      background: "rgb(0, 208, 255)", // Warna biru untuk background
-      color: "#000000", // Warna teks agar terlihat jelas
-    });
-  };
-
-  const handleSaveEmail = () => {
-    setEmail(newEmail);
-    setIsEmailPopupVisible(false);
-
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.onmouseenter = Swal.stopTimer;
-        toast.onmouseleave = Swal.resumeTimer;
-      },
-    });
-
-    Toast.fire({
-      icon: "success",
-      title: "Email changed successfully",
-      background: "rgb(0, 208, 255)", // Warna biru untuk background
-      color: "#000000", // Warna teks agar terlihat jelas
-    });
-  };
-
-  const handleSavePassword = () => {
-    if (newPassword === confirmNewPassword) {
-      setPassword(newPassword);
-      setIsPasswordPopupVisible(false);
-
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.onmouseenter = Swal.stopTimer;
-          toast.onmouseleave = Swal.resumeTimer;
-        },
-      });
-
-      Toast.fire({
+  const handleSavePhoneNumber = async () => {
+    try {
+      setIsLoading(true);
+      await myAccountApi.updatePhoneNumber(newPhoneNumber);
+      setPhoneNumber(newPhoneNumber);
+      setIsPhoneNumberPopupVisible(false);
+      Swal.fire({
         icon: "success",
-        title: "Password changed successfully",
-        background: "rgb(0, 208, 255)", // Warna biru untuk background
-        color: "#000000", // Warna teks agar terlihat jelas
+        title: "Phone Number changed successfully",
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
       });
+    } catch (err: any) {
+      console.error("Failed to update phone number:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to update phone number",
+        confirmButtonColor: "#00D0FF",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    } else {
-      alert("Passwords do not match.");
+  const handleSaveEmail = async () => {
+    try {
+      setIsLoading(true);
+      await myAccountApi.updateEmail(newEmail);
+      setEmail(newEmail);
+      setIsEmailPopupVisible(false);
+      Swal.fire({
+        icon: "success",
+        title: "Email changed successfully",
+        background: "rgb(0, 208, 255)",
+        color: "#000000",
+      });
+    } catch (err: any) {
+      console.error("Failed to update email:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to update email",
+        confirmButtonColor: "#00D0FF",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    try {
+      if (newPassword !== confirmNewPassword) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Passwords do not match",
+          confirmButtonColor: "#00D0FF",
+        });
+        return;
+      }
+      if (!currentPassword) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Current password is required",
+          confirmButtonColor: "#00D0FF",
+        });
+        return;
+      }
+      if (newPassword.length < 6) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "New password must be at least 6 characters long",
+          confirmButtonColor: "#00D0FF",
+        });
+        return;
+      }
+      setIsLoading(true);
+      // Hanya mengirim newPassword ke fungsi changePassword karena parameter currentPassword tidak digunakan
+      const success = await myAccountApi.changePassword(newPassword);
+      if (success) {
+        setPassword("********");
+        setIsPasswordPopupVisible(false);
+        Swal.fire({
+          icon: "success",
+          title: "Password changed successfully",
+          background: "rgb(0, 208, 255)",
+          color: "#000000",
+        });
+      }
+    } catch (err: any) {
+      console.error("Failed to update password:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to update password",
+        confirmButtonColor: "#00D0FF",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="relative">
-      {/* Judul di Kiri Atas */}
       <h1 className="absolute top-0 left-0 text-2xl font-bold text-gray-800">
         My Account
       </h1>
 
-      {/* Background Card */}
       <div
         className="absolute bg-[#D9D9D9] rounded-lg shadow-lg"
         style={{
@@ -123,7 +185,6 @@ const MyAccount: React.FC = () => {
         }}
       ></div>
 
-      {/* Main Card */}
       <div
         className="relative z-10 bg-[#B9B9B9] p-6 rounded-lg drop-shadow-lg"
         style={{
@@ -133,28 +194,36 @@ const MyAccount: React.FC = () => {
           top: "115px",
         }}
       >
-        {/* Card Content */}
         <div className="text-white">
-          {/* Foto Profil */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center rounded-lg z-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-600 text-white p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           <div className="mb-6 text-center">
             <div className="w-20 h-20 mx-auto rounded-full bg-gray-400"></div>
           </div>
 
-          {/* Phone Number */}
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="font-bold text-white">Phone Number</h3>
-              <p>{phoneNumber}</p>
+              <p>{phoneNumber || "Not set"}</p>
             </div>
             <button
               onClick={handleEditPhoneNumber}
               className="bg-gray-800 hover:bg-gray-600 font-bold text-white px-4 py-1 rounded-full"
+              disabled={isLoading}
             >
               Edit
             </button>
           </div>
 
-          {/* Email */}
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="font-bold text-white">Email</h3>
@@ -163,12 +232,12 @@ const MyAccount: React.FC = () => {
             <button
               onClick={handleEditEmail}
               className="bg-gray-800 hover:bg-gray-600 font-bold text-white px-4 py-1 rounded-full"
+              disabled={isLoading}
             >
               Edit
             </button>
           </div>
 
-          {/* Password */}
           <div className="flex justify-between items-center">
             <div>
               <h3 className="font-bold text-white">Password</h3>
@@ -177,6 +246,7 @@ const MyAccount: React.FC = () => {
             <button
               onClick={handleEditPassword}
               className="bg-gray-800 hover:bg-gray-600 font-bold text-white px-4 py-1 rounded-full"
+              disabled={isLoading}
             >
               Edit
             </button>
@@ -184,7 +254,6 @@ const MyAccount: React.FC = () => {
         </div>
       </div>
 
-      {/* Pop-up untuk Edit Phone Number */}
       {isPhoneNumberPopupVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
           <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
@@ -193,26 +262,33 @@ const MyAccount: React.FC = () => {
                 Edit Phone Number
               </h2>
               <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-2">New Phone Number</label>
+                <label htmlFor="new_phone" className="block text-gray-800 font-bold mb-2">
+                  New Phone Number
+                </label>
                 <input
-                  type="phone number"
+                  id="new_phone"
+                  name="new_phone"
+                  type="tel"
                   value={newPhoneNumber}
                   onChange={(e) => setNewPhoneNumber(e.target.value)}
-                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black mx-auto"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
+                  disabled={isLoading}
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsPhoneNumberPopupVisible(false)}
                   className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
+                  disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSavePhoneNumber}
                   className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
+                  disabled={isLoading}
                 >
-                  Save
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>
@@ -220,7 +296,6 @@ const MyAccount: React.FC = () => {
         </div>
       )}
 
-      {/* Pop-up untuk Edit Email */}
       {isEmailPopupVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
           <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
@@ -229,26 +304,33 @@ const MyAccount: React.FC = () => {
                 Edit Email
               </h2>
               <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-2">New Email</label>
+                <label htmlFor="new_email" className="block text-gray-800 font-bold mb-2">
+                  New Email
+                </label>
                 <input
+                  id="new_email"
+                  name="new_email"
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black mx-auto"
+                  className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
+                  disabled={isLoading}
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsEmailPopupVisible(false)}
                   className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
+                  disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveEmail}
                   className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
+                  disabled={isLoading}
                 >
-                  Save
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>
@@ -256,7 +338,6 @@ const MyAccount: React.FC = () => {
         </div>
       )}
 
-      {/* Pop-up untuk Edit Password */}
       {isPasswordPopupVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20">
           <div className="fixed inset-0 flex justify-center items-center z-30 pointer-events-auto">
@@ -265,44 +346,61 @@ const MyAccount: React.FC = () => {
                 Edit Password
               </h2>
               <div className="mb-4">
-                <label className="block text-gray-800 font-bold mb-2">Current Password</label>
+                <label htmlFor="current_password" className="block text-gray-800 font-bold mb-2">
+                  Current Password
+                </label>
                 <input
+                  id="current_password"
+                  name="current_password"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
+                  disabled={isLoading}
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-800 font-bold mb-2">New Password</label>
+                <label htmlFor="new_password" className="block text-gray-800 font-bold mb-2">
+                  New Password
+                </label>
                 <input
+                  id="new_password"
+                  name="new_password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
+                  disabled={isLoading}
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-gray-800 font-bold mb-2">Confirm New Password</label>
+                <label htmlFor="confirm_new_password" className="block text-gray-800 font-bold mb-2">
+                  Confirm New Password
+                </label>
                 <input
+                  id="confirm_new_password"
+                  name="confirm_new_password"
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   className="bg-white p-3 rounded-full border-2 border-black w-full text-black"
+                  disabled={isLoading}
                 />
               </div>
               <div className="flex justify-center space-x-20 mt-auto mb-4">
                 <button
                   onClick={() => setIsPasswordPopupVisible(false)}
                   className="px-9 py-3 bg-[#6D6D6D] hover:bg-[#494949] text-white rounded-full"
+                  disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSavePassword}
                   className="px-10 py-3 bg-curawedaColor hover:bg-[#029FCC] text-white rounded-full"
+                  disabled={isLoading}
                 >
-                  Save
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

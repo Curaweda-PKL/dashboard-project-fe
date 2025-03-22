@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
-import LogOut from "../component/logOut";
 
 const Setting: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("myaccount");
-  const [isLogOutPopupVisible, setIsLogOutPopupVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -15,28 +13,20 @@ const Setting: React.FC = () => {
     const path = location.pathname;
     if (path.includes("/settings/profiles")) {
       setActiveTab("profiles");
-    } else if (path.includes("/settings/logout")) {
-      setActiveTab("logout");
-      setIsLogOutPopupVisible(true);
     } else {
       setActiveTab("myaccount");
-      setIsLogOutPopupVisible(false);
     }
   }, [location]);
 
-  const tabs = ["myaccount", "profiles", "logout"];
+  // Hanya dua tab: myaccount dan profiles
+  const tabs = ["myaccount", "profiles"];
   const filteredTabs = tabs.filter((tab) =>
     tab.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleTabClick = (tab: string) => {
-    if (tab === "logout") {
-      // Jangan mengubah tab langsung, tetap di logout
-      navigate("/settings/logout");
-    } else {
-      setActiveTab(tab);
-      navigate(tab === "myaccount" ? "/settings" : `/settings/${tab}`);
-    }
+    setActiveTab(tab);
+    navigate(tab === "myaccount" ? "/settings" : `/settings/${tab}`);
   };
 
   return (
@@ -65,11 +55,10 @@ const Setting: React.FC = () => {
                   ? "bg-white text-black shadow-md"
                   : "bg-transparent text-gray-700"
               }`}
-              onClick={() => handleTabClick(tab)} // Ubah di sini
+              onClick={() => handleTabClick(tab)}
             >
               {tab === "myaccount" && "My Account"}
               {tab === "profiles" && "Profiles"}
-              {tab === "logout" && "Log Out"}
             </li>
           ))}
         </ul>
@@ -78,7 +67,6 @@ const Setting: React.FC = () => {
       {/* Content */}
       <div className="flex-1 bg-[#F5F5F5] p-8">
         <Outlet />
-        {isLogOutPopupVisible && <LogOut />} {/* Tidak perlu pass onClose */}
       </div>
     </div>
   );
