@@ -244,11 +244,11 @@ const Timeline: React.FC = () => {
           style={{ zIndex: 10 }} // pastikan header berada di atas overlay
         >
           <tr>
-            <th className="p-4 text-white min-w-[200px]">MODULE</th>
-            <th className="p-4 text-white min-w-[150px]">START DATE</th>
-            <th className="p-4 text-white min-w-[150px]">END DATE</th>
-            <th className="p-4 text-white min-w-[150px]">DURATION</th>
-            <th className="p-4 text-white min-w-[200px]">STATUS</th>
+            <th className="p-4 text-white">MODULE</th>
+            <th className="p-4 text-white">START DATE</th>
+            <th className="p-4 text-white">END DATE</th>
+            <th className="p-4 text-white">DURATION</th>
+            <th className="p-4 text-white">STATUS</th>
             {months.map((month, mIndex) => (
               <th key={mIndex} className="p-4 text-white min-w-[120px] border-l border-black relative">
                 <div className="flex flex-col items-center">

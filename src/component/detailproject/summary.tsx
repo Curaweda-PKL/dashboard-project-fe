@@ -368,23 +368,31 @@ const Summary: React.FC = () => {
   return (
     <div>
       <HeaderDetail />
-      <div className="mb-6 text-black font-bold">
-        <p>
-          <strong>Project :</strong> {projectData.projectName}
-        </p>
-        <p>
-          <strong>PIC :</strong> {projectData.pic}
-        </p>
-        <p>
-          <strong>Date :</strong> {projectData.date}
-        </p>
-        <p>
-          <strong>Client :</strong> {projectData.client}
-        </p>
-      </div>
+      <div className="mb-6 text-black text-l font-semibold">
+  <div className="flex">
+    <span className="w-16">Project </span>
+    <span className="w-4 text-center">:</span>
+    <span>{projectData.projectName}</span>
+  </div>
+  <div className="flex">
+    <span className="w-16">PM </span>
+    <span className="w-4 text-center">:</span>
+    <span>{projectData.pic}</span>
+  </div>
+  <div className="flex">
+    <span className="w-16">Date </span>
+    <span className="w-4 text-center">:</span>
+    <span>{projectData.date}</span>
+  </div>
+  <div className="flex">
+    <span className="w-16">Client </span>
+    <span className="w-4 text-center">:</span>
+    <span>{projectData.client}</span>
+  </div>
+</div>
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-          <strong className="font-bold">Error!</strong>
+          <strong className="text-l font-semibold">Error!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
       )}
@@ -407,7 +415,7 @@ const Summary: React.FC = () => {
             {summaries.map((row, index) => (
               <tr
                 key={index}
-                className="border-t text-center text-black font-bold hover:bg-gray-100 transition duration-200"
+                className="border-t text-center text-black text-l font-semibold hover:bg-gray-100 transition duration-200"
               >
                 {isEditing && (
                   <td className="p-4">
@@ -491,13 +499,13 @@ const Summary: React.FC = () => {
       <div className="fixed bottom-10 right-10 flex gap-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-curawedaColor text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-curawedaColor transition duration-200"
+          className="bg-curawedaColor text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-curawedaColor transition duration-200"
         >
           Add summary
         </button>
         {!isEditing ? (
           <button
-            className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+            className="bg-[#B20000] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
             onClick={toggleEditingMode}
           >
             Remove
@@ -505,13 +513,13 @@ const Summary: React.FC = () => {
         ) : (
           <>
             <button
-              className="bg-[#6D6D6D] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
+              className="bg-[#6D6D6D] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
               onClick={toggleEditingMode}
             >
               Cancel
             </button>
             <button
-              className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+              className="bg-[#B20000] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
               onClick={handleRemoveSelectedTasks}
             >
               Remove
@@ -530,7 +538,7 @@ const Summary: React.FC = () => {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-center">Add Summary</h2>
+            <h2 className="text-2xl text-l font-semibold mb-4 text-center">Add Summary</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -539,7 +547,7 @@ const Summary: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg font-bold mb-1">Module Name</label>
+                <label className="block text-l font-semibold mb-1">Module Name</label>
                 <input
                   type="text"
                   value={newSummary.module}
@@ -551,7 +559,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Case</label>
+                <label className="block text-l font-semibold mb-1">Case</label>
                 <input
                   type="text"
                   value={newSummary.case_field}
@@ -563,7 +571,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Causes</label>
+                <label className="block text-l font-semibold mb-1">Causes</label>
                 <input
                   type="text"
                   value={newSummary.causes}
@@ -575,7 +583,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Action</label>
+                <label className="block text-l font-semibold mb-1">Action</label>
                 <input
                   type="text"
                   value={newSummary.action}
@@ -632,7 +640,7 @@ const Summary: React.FC = () => {
                           onClick={() =>
                             setNewSummary({ ...newSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-curawedaColor"
+                          className="bg-curawedaColor text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-curawedaColor"
                         >
                           Submit
                         </button>
@@ -642,7 +650,7 @@ const Summary: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Deadline</label>
+                <label className="block text-l font-semibold mb-1">Deadline</label>
                 <input
                   type="date"
                   value={newSummary.deadline}
@@ -683,7 +691,7 @@ const Summary: React.FC = () => {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-center">Edit Summary</h2>
+            <h2 className="text-2xl text-l font-semibold mb-4 text-center">Edit Summary</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -692,7 +700,7 @@ const Summary: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg font-bold mb-1">Module Name</label>
+                <label className="block text-l font-semibold mb-1">Module Name</label>
                 <input
                   type="text"
                   value={editSummary.module}
@@ -704,7 +712,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Case</label>
+                <label className="block text-l font-semibold mb-1">Case</label>
                 <input
                   type="text"
                   value={editSummary.case_field}
@@ -716,7 +724,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Causes</label>
+                <label className="block text-l font-semibold mb-1">Causes</label>
                 <input
                   type="text"
                   value={editSummary.causes}
@@ -728,7 +736,7 @@ const Summary: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Action</label>
+                <label className="block text-l font-semibold mb-1">Action</label>
                 <input
                   type="text"
                   value={editSummary.action}
@@ -785,7 +793,7 @@ const Summary: React.FC = () => {
                           onClick={() =>
                             setEditSummary({ ...editSummary, showAssigneesDropdown: false })
                           }
-                          className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-curawedaColor"
+                          className="bg-curawedaColor text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-curawedaColor"
                         >
                           Submit
                         </button>
@@ -795,7 +803,7 @@ const Summary: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-lg font-bold mb-1">Deadline</label>
+                <label className="block text-l font-semibold mb-1">Deadline</label>
                 <input
                   type="date"
                   value={editSummary.deadline}
@@ -828,27 +836,27 @@ const Summary: React.FC = () => {
       
       {/* Status Summary Table */}
       <div className="absolute bottom-0 p-4 text-center">
-        <table className="border border-black text-black font-bold">
+        <table className="border border-black text-black text-l font-semibold">
           <tbody>
             <tr>
-              <td className="px-4 py-2 bg-blue-800 text-white font-bold rounded-lg">DONE</td>
+              <td className="px-4 py-2 bg-blue-800 text-white text-l font-semibold rounded-lg">DONE</td>
               <td className="px-4 py-2 border border-black">170</td>
               <td className="px-4 py-2 border border-black">97,70%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 bg-pink-300 text-white font-bold rounded-lg">ON PROGRESS</td>
+              <td className="px-4 py-2 bg-pink-300 text-white text-l font-semibold rounded-lg">ON PROGRESS</td>
               <td className="px-4 py-2 border border-black">3</td>
               <td className="px-4 py-2 border border-black">1,725%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 bg-red-700 text-white font-bold rounded-lg">PENDING</td>
+              <td className="px-4 py-2 bg-red-700 text-white text-l font-semibold rounded-lg">PENDING</td>
               <td className="px-4 py-2 border border-black">1</td>
               <td className="px-4 py-2 border border-black">0,575%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-bold">TOTAL</td>
-              <td className="px-4 py-2 border border-black font-bold">174</td>
-              <td className="px-4 py-2 border border-black font-bold">100,00%</td>
+              <td className="px-4 py-2 text-l font-semibold">TOTAL</td>
+              <td className="px-4 py-2 border border-black text-l font-semibold">174</td>
+              <td className="px-4 py-2 border border-black text-l font-semibold">100,00%</td>
             </tr>
           </tbody>
         </table>

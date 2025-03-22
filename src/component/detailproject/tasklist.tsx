@@ -15,6 +15,7 @@ export interface TaskDetail {
   start_date: Date;
   end_date: Date;
   status: string;
+  assigned?: string; // field ASSIGNED ditambahkan
 }
 
 export interface ProjectTask {
@@ -30,12 +31,19 @@ export interface ProjectTask {
 }
 
 // Interface untuk form input "Add Task" dan "Edit Task Detail"
+// Ditambahkan property "assigned" untuk dropdown
 interface MinimalTaskForm {
   module: string;
   feature: string;
   start_date: Date;
   end_date: Date;
   status: string;
+  assigned: string;
+}
+
+interface TeamMember {
+  id: number;
+  name: string;
 }
 
 const TaskList: React.FC = () => {
@@ -58,10 +66,9 @@ const TaskList: React.FC = () => {
     client?: string;
   }) || {};
 
-  // Jika ada routeState, update sebagian projectData (kecuali pic akan diupdate dari API)
   useEffect(() => {
     if (routeState && routeState.projectName) {
-      setProjectData(prev => ({
+      setProjectData((prev) => ({
         ...prev,
         projectName: routeState.projectName ?? prev.projectName,
         date: routeState.date ?? prev.date,
@@ -79,15 +86,20 @@ const TaskList: React.FC = () => {
         const projectDetails = await projectApi.getProjectById(Number(projectId));
         // Mengambil seluruh team untuk menemukan PIC berdasarkan pic_id
         const teams = await teamApi.getAllTeams();
-        const picMember = teams.find(member => member.id === projectDetails.pic_id);
+        const picMember = teams.find(
+          (member) => member.id === projectDetails.pic_id
+        );
         const picName = picMember ? picMember.name : "Unknown";
         // Format tanggal untuk display
-        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(
+        const formattedDate = `${new Date(
+          projectDetails.start_date
+        ).toLocaleDateString()} - ${new Date(
           projectDetails.end_date
         ).toLocaleDateString()}`;
         // Update projectData, gabungkan dengan routeState jika ada
         setProjectData({
-          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+          projectName:
+            routeState.projectName ?? projectDetails.title ?? "Default Project Name",
           pic: picName,
           date: routeState.date ?? formattedDate,
           client: routeState.client ?? projectDetails.client ?? "Default Client",
@@ -111,10 +123,27 @@ const TaskList: React.FC = () => {
     start_date: new Date(),
     end_date: new Date(),
     status: "PENDING",
+    assigned: "", // nilai awal kosong
   });
   const [editDetail, setEditDetail] = useState<
     (MinimalTaskForm & { id: number; projectName: string }) | null
   >(null);
+
+  // State untuk menyimpan team members (untuk dropdown ASSIGNED)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // Fetch team members untuk dropdown ASSIGNED
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const data = await teamApi.getAllTeams();
+        setTeamMembers(data);
+      } catch (err) {
+        console.error("Error fetching team members", err);
+      }
+    };
+    fetchTeamMembers();
+  }, []);
 
   // Fetch tasks dari API
   useEffect(() => {
@@ -124,13 +153,11 @@ const TaskList: React.FC = () => {
         console.log("Fetched tasks:", data);
         if (Array.isArray(data)) {
           setTasks(data);
-          // Jika routeState tidak ada dan data task tersedia, ambil data project dari task pertama
           if (!routeState?.projectName && data.length > 0) {
             const firstTask = data[0];
-            setProjectData(prev => ({
+            setProjectData((prev) => ({
               ...prev,
               projectName: firstTask.projectName ?? prev.projectName,
-              // Properti pic tidak diupdate di sini agar tetap konsisten dari API project dan team
               date: firstTask.date ?? prev.date,
               client: firstTask.client ?? prev.client,
             }));
@@ -154,7 +181,6 @@ const TaskList: React.FC = () => {
     fetchTasks();
   }, [routeState, projectId]);
 
-  // Toggle mode editing (untuk hapus)
   const toggleEditingMode = () => {
     setIsEditing(!isEditing);
     setSelectedDetailIds([]);
@@ -232,6 +258,7 @@ const TaskList: React.FC = () => {
       ...detail,
       id: detail.id!,
       projectName: projectData.projectName,
+      assigned: detail.assigned || "",
     });
     setIsEditModalOpen(true);
   };
@@ -279,6 +306,7 @@ const TaskList: React.FC = () => {
             start_date: newTask.start_date,
             end_date: newTask.end_date,
             status: newTask.status || "PENDING",
+            assigned: newTask.assigned, // sertakan assigned
           },
         ],
       };
@@ -301,7 +329,8 @@ const TaskList: React.FC = () => {
         feature: "",
         start_date: new Date(),
         end_date: new Date(),
-        status: "Pending",
+        status: "PENDING",
+        assigned: "",
       });
       setIsModalOpen(false);
     } catch (error) {
@@ -319,29 +348,38 @@ const TaskList: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="text-l font-semibold">
       <HeaderDetail />
-      <div className="mb-6 text-black font-bold">
-        <p>
-          <strong>Project :</strong> {projectData.projectName}
-        </p>
-        <p>
-          <strong>PIC :</strong> {projectData.pic}
-        </p>
-        <p>
-          <strong>Date :</strong> {projectData.date}
-        </p>
-        <p>
-          <strong>Client :</strong> {projectData.client}
-        </p>
+      <div className="mb-6 text-black text-l font-semibold">
+        <div className="flex">
+          <span className="w-16">Project</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.projectName}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">PIC</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.pic}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">Date</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.date}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">Client</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.client}</span>
+        </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="text-center w-full rounded-lg overflow-hidden border">
+        <table className="w-full rounded-lg overflow-hidden border text-l">
           <thead>
             <tr className="bg-[#02CCFF] text-white text-center">
               {isEditing && <th className="p-4"></th>}
               <th className="p-4 border-b">MODULE</th>
               <th className="p-4 border-b">FEATURE</th>
+              <th className="p-4 border-b">ASSIGNED</th>
               <th className="p-4 border-b">START DATE</th>
               <th className="p-4 border-b">END DATE</th>
               <th className="p-4 border-b">STATUS</th>
@@ -353,14 +391,14 @@ const TaskList: React.FC = () => {
               if (!task.task_details || task.task_details.length === 0) {
                 return (
                   <tr key={`no-detail-${taskIndex}`}>
-                    <td colSpan={isEditing ? 7 : 6}>No details found</td>
+                    <td colSpan={isEditing ? 8 : 7}>No details found</td>
                   </tr>
                 );
               }
               return task.task_details.map((detail, detailIndex) => (
                 <tr
                   key={`task-${taskIndex}-detail-${detailIndex}`}
-                  className="border-t text-black font-bold hover:bg-gray-100 transition duration-200"
+                  className="border-t text-black text-l font-semibold hover:bg-gray-100 transition duration-200"
                 >
                   {isEditing && (
                     <td className="p-4">
@@ -376,13 +414,22 @@ const TaskList: React.FC = () => {
                   )}
                   <td className="p-4">{detail.module || "-"}</td>
                   <td className="p-4">{detail.feature || "-"}</td>
-                  <td className="p-4">{detail.start_date ? new Date(detail.start_date).toLocaleDateString() : "-"}</td>
-                  <td className="p-4">{detail.end_date ? new Date(detail.end_date).toLocaleDateString() : "-"}</td>
+                  <td className="p-4">{detail.assigned || "-"}</td>
+                  <td className="p-4">
+                    {detail.start_date
+                      ? new Date(detail.start_date).toLocaleDateString()
+                      : "-"}
+                  </td>
+                  <td className="p-4">
+                    {detail.end_date
+                      ? new Date(detail.end_date).toLocaleDateString()
+                      : "-"}
+                  </td>
                   <td className="p-4">{detail.status || "-"}</td>
                   <td className="p-4">
                     <button
                       onClick={() => openEditModal(detail)}
-                      className="text-green-500 hover:text-green-700"
+                      className="text-green-500 hover:text-green-700 text-l font-semibold"
                       title="Edit Task Detail"
                     >
                       <FaPencilAlt />
@@ -394,18 +441,18 @@ const TaskList: React.FC = () => {
           </tbody>
         </table>
       </div>
-      
+
       {/* Fixed container untuk tombol "Add Task" dan "Remove" */}
       <div className="fixed bottom-10 right-10 flex gap-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-curawedaColor text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#029FCC] transition duration-200"
+          className="bg-curawedaColor text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-[#029FCC] transition duration-200"
         >
           Add task
         </button>
         {!isEditing ? (
           <button
-            className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+            className="bg-[#B20000] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
             onClick={toggleEditingMode}
           >
             Remove
@@ -413,13 +460,13 @@ const TaskList: React.FC = () => {
         ) : (
           <>
             <button
-              className="bg-[#6D6D6D] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
+              className="bg-[#6D6D6D] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-[#494949] transition duration-200"
               onClick={toggleEditingMode}
             >
               Cancel
             </button>
             <button
-              className="bg-[#B20000] text-white font-bold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+              className="bg-[#B20000] text-white text-l font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-red-900 transition duration-200"
               onClick={handleRemoveSelectedDetails}
             >
               Remove
@@ -430,14 +477,14 @@ const TaskList: React.FC = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
+          <div className="bg-white w-[500px] text-black text-l font-semibold p-6 rounded-lg shadow-lg relative">
             <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-l"
               onClick={() => setIsModalOpen(false)}
             >
               ✕
             </button>
-            <h2 className="text-2xl text-black font-bold mb-4 text-center">
+            <h2 className="text-l text-black font-semibold mb-4 text-center">
               Add Task
             </h2>
             <form
@@ -448,7 +495,7 @@ const TaskList: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Module Name
                 </label>
                 <input
@@ -462,7 +509,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Project Name
                 </label>
                 <input
@@ -473,7 +520,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Feature
                 </label>
                 <input
@@ -486,13 +533,38 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Field ASSIGNED sebagai dropdown */}
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
+                  Assigned
+                </label>
+                <select
+                  value={newTask.assigned}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, assigned: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="">Select Assigned</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.id} value={member.name}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-l text-black font-semibold mb-1">
                   Start Date
                 </label>
                 <input
                   type="date"
-                  value={newTask.start_date ? new Date(newTask.start_date).toISOString().slice(0, 10) : ""}
+                  value={
+                    newTask.start_date
+                      ? new Date(newTask.start_date).toISOString().slice(0, 10)
+                      : ""
+                  }
                   onChange={(e) =>
                     setNewTask({ ...newTask, start_date: new Date(e.target.value) })
                   }
@@ -501,12 +573,16 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   End Date
                 </label>
                 <input
                   type="date"
-                  value={newTask.end_date ? new Date(newTask.end_date).toISOString().slice(0, 10) : ""}
+                  value={
+                    newTask.end_date
+                      ? new Date(newTask.end_date).toISOString().slice(0, 10)
+                      : ""
+                  }
                   onChange={(e) =>
                     setNewTask({ ...newTask, end_date: new Date(e.target.value) })
                   }
@@ -515,7 +591,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Status
                 </label>
                 <input
@@ -530,13 +606,13 @@ const TaskList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-[#6D6D6D] text-white font-bold py-2 px-4 rounded-md hover:bg-[#494949]"
+                  className="bg-[#6D6D6D] text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-[#494949]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
+                  className="bg-curawedaColor text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-[#029FCC]"
                 >
                   Submit
                 </button>
@@ -548,9 +624,9 @@ const TaskList: React.FC = () => {
 
       {isEditModalOpen && editDetail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-[500px] text-black font-semibold p-6 rounded-lg shadow-lg relative">
+          <div className="bg-white w-[500px] text-black text-l font-semibold p-6 rounded-lg shadow-lg relative">
             <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-l"
               onClick={() => {
                 setIsEditModalOpen(false);
                 setEditDetail(null);
@@ -558,7 +634,7 @@ const TaskList: React.FC = () => {
             >
               ✕
             </button>
-            <h2 className="text-2xl text-black font-bold mb-4 text-center">
+            <h2 className="text-l text-black font-semibold mb-4 text-center">
               Edit Task Detail
             </h2>
             <form
@@ -569,7 +645,7 @@ const TaskList: React.FC = () => {
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Module Name
                 </label>
                 <input
@@ -583,7 +659,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Project Name
                 </label>
                 <input
@@ -594,7 +670,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Feature
                 </label>
                 <input
@@ -607,13 +683,38 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
+              {/* Field Assigned pada edit modal (jika diperlukan) */}
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
+                  Assigned
+                </label>
+                <select
+                  value={editDetail.assigned}
+                  onChange={(e) =>
+                    setEditDetail({ ...editDetail, assigned: e.target.value })
+                  }
+                  className="w-full border rounded-md p-2 bg-white"
+                  required
+                >
+                  <option value="">Select Assigned</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.id} value={member.name}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-l text-black font-semibold mb-1">
                   Start Date
                 </label>
                 <input
                   type="date"
-                  value={editDetail.start_date ? new Date(editDetail.start_date).toISOString().slice(0, 10) : ""}
+                  value={
+                    editDetail.start_date
+                      ? new Date(editDetail.start_date).toISOString().slice(0, 10)
+                      : ""
+                  }
                   onChange={(e) =>
                     setEditDetail({ ...editDetail, start_date: new Date(e.target.value) })
                   }
@@ -622,12 +723,16 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   End Date
                 </label>
                 <input
                   type="date"
-                  value={editDetail.end_date ? new Date(editDetail.end_date).toISOString().slice(0, 10) : ""}
+                  value={
+                    editDetail.end_date
+                      ? new Date(editDetail.end_date).toISOString().slice(0, 10)
+                      : ""
+                  }
                   onChange={(e) =>
                     setEditDetail({ ...editDetail, end_date: new Date(e.target.value) })
                   }
@@ -636,7 +741,7 @@ const TaskList: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-black font-semibold mb-1">
+                <label className="block text-l text-black font-semibold mb-1">
                   Status
                 </label>
                 <input
@@ -654,13 +759,13 @@ const TaskList: React.FC = () => {
                     setIsEditModalOpen(false);
                     setEditDetail(null);
                   }}
-                  className="bg-[#6D6D6D] text-white font-bold py-2 px-4 rounded-md hover:bg-[#494949]"
+                  className="bg-[#6D6D6D] text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-[#494949]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-curawedaColor text-white font-bold py-2 px-4 rounded-md hover:bg-[#029FCC]"
+                  className="bg-curawedaColor text-white text-l font-semibold py-2 px-4 rounded-md hover:bg-[#029FCC]"
                 >
                   Save
                 </button>
