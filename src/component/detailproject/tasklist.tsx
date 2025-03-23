@@ -386,7 +386,8 @@ const TaskList: React.FC = () => {
               <th className="p-4 border-b"></th>
             </tr>
           </thead>
-          <tbody className="bg-white">
+          {/* Menambahkan text-center di sini agar semua isi baris berada di tengah */}
+          <tbody className="bg-white text-center">
             {tasks.map((task, taskIndex) => {
               if (!task.task_details || task.task_details.length === 0) {
                 return (
