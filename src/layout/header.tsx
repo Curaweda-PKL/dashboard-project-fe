@@ -21,7 +21,6 @@ interface SidebarLink {
   children?: SidebarLink[];
 }
 
-// Daftar nama link yang ingin dikelompokkan (akan diberi jarak antar item)
 const groupLinks = ["Team", "Messages", "Calendar", "Settings", "Account"];
 
 const Layout = () => {
@@ -71,11 +70,11 @@ const Layout = () => {
     }));
   }, []);
 
-  // Ambil data user dari API agar username dan email muncul di header
+  // Ambil data user dari API agar username, email, dan role muncul di header
   useEffect(() => {
     async function getUserData() {
       try {
-        // Ganti "1" dengan id user yang sesuai atau ambil dari token / context autentikasi
+        // Misalnya ambil data user dengan id "1" (sesuaikan dengan mekanisme autentikasi)
         const userData = await usersApi.getUser("1");
         setCurrentUser(userData);
       } catch (error) {
@@ -84,6 +83,24 @@ const Layout = () => {
     }
     getUserData();
   }, []);
+
+  // Jika role belum tersedia dari currentUser, ambil dari localStorage
+  const userRole = currentUser?.role || window.localStorage.getItem("accessRole") || "";
+
+  // Filter sidebarLinks berdasarkan role:
+  // - superadmin: melihat semua link
+  // - project manager lead: tidak melihat "Account"
+  // - user: tidak melihat "Team" dan "Account"
+  const filteredSidebarLinks = sidebarLinks.filter((link: SidebarLink) => {
+    if (userRole.toLowerCase() === "superadmin") {
+      return true;
+    } else if (userRole.toLowerCase() === "project manager lead") {
+      return link.name.toLowerCase() !== "account";
+    } else if (userRole.toLowerCase() === "user") {
+      return link.name.toLowerCase() !== "team" && link.name.toLowerCase() !== "account";
+    }
+    return true;
+  });
 
   // Menutup dropdown jika klik di luar area dropdown
   useEffect(() => {
@@ -165,22 +182,20 @@ const Layout = () => {
           </div>
           {link.children && isOpen && (
             <ul className="ml-4 mt-2">
-              {link.children
-                .filter((subLink) => location.pathname.includes(subLink.path || ""))
-                .map((subLink) => (
-                  <li key={subLink.path} className="my-1">
-                    <NavLink
-                      to={subLink.path || ""}
-                      className={({ isActive }) =>
-                        `block p-1 rounded-full text-lg font-semibold ${
-                          isActive ? "text-[#76A8D8BF] bg-[#02CCFF]" : "text-black hover:bg-blue-200"
-                        }`
-                      }
-                    >
-                      {subLink.name}
-                    </NavLink>
-                  </li>
-                ))}
+              {link.children.map((subLink) => (
+                <li key={subLink.path} className="my-1">
+                  <NavLink
+                    to={subLink.path || ""}
+                    className={({ isActive }) =>
+                      `block p-1 rounded-full text-lg font-semibold ${
+                        isActive ? "text-[#76A8D8BF] bg-[#02CCFF]" : "text-black hover:bg-blue-200"
+                      }`
+                    }
+                  >
+                    {subLink.name}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
           )}
         </li>
@@ -214,6 +229,13 @@ const Layout = () => {
             </div>
             <div className="flex items-center justify-start">
               <div className="text-5xl font-semibold mr-8">{pageTitle}</div>
+              {/* Tampilkan nama dan email user yang aktif */}
+              {currentUser && (
+                <div className="text-lg ml-4">
+                  <p className="font-bold">{currentUser.name}</p>
+                  <p className="font-semibold">{currentUser.email}</p>
+                </div>
+              )}
             </div>
             <div className="ml-auto">
               <div className="flex items-center justify-center">
@@ -281,11 +303,11 @@ const Layout = () => {
       </div>
       <div className="h-screen drawer-side border-r border-gray-300 shadow-md">
         <ul className="min-h-full p-4 shadow-md min-w-52 menu bg-white text-black">
-          {/* Logo dengan margin bawah yang besar untuk memberi jarak */}
+          {/* Logo dengan margin bawah yang besar */}
           <li className="mb-7">
             <img src="/src/assets/curaweda.png" className="mx-auto w-36" alt="Curaweda" />
           </li>
-          {sidebarLinks.map(renderSubLinks)}
+          {filteredSidebarLinks.map(renderSubLinks)}
         </ul>
       </div>
       {showNotifications && <NotificationsPopup onClose={() => setShowNotifications(false)} />}
