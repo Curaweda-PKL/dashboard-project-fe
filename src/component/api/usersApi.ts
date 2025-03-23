@@ -1,10 +1,11 @@
 import authApi from "./authApi";
+import roleApi from "./roleApi"; // pastikan roleApi diekspor dengan fungsi getRole
 
 export interface UserSummary {
   id: string;
   name: string;
   email: string;
-  // Tambahkan field lain yang diperlukan
+  role: string; // role berupa nama, misalnya "superadmin", "project manager lead", "user"
 }
 
 // Fungsi helper untuk mengambil email dari token JWT
@@ -31,7 +32,7 @@ const usersApi = (() => {
     return jsonData.data ? jsonData.data : jsonData;
   };
 
-  // Fungsi untuk mendapatkan user berdasarkan ID
+  // Fungsi untuk mendapatkan user berdasarkan ID, kemudian sambungkan dengan data role dari role API
   async function getUser(userId: string): Promise<UserSummary> {
     try {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/users/${userId}`);
@@ -39,7 +40,16 @@ const usersApi = (() => {
       // Pastikan email yang ditampilkan adalah email dari token login
       const loginEmail = getEmailFromToken();
       data.email = loginEmail || data.email;
+      // Jika properti role tidak ada, tetapkan nilai default "user"
+      data.role = data.role || "user";
       console.log("Fetched user data:", data);
+      
+      // Mengambil data role dari role API tanpa parameter
+      // Misalnya, roleApi.getRole() mengembalikan daftar role, lalu kita mencari role yang sesuai
+      const roles = await roleApi.getRole();
+      const roleDetail = roles.find((r: any) => r.name === data.role) || {};
+      data.role = roleDetail.name || data.role;
+      
       return data;
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -49,7 +59,7 @@ const usersApi = (() => {
     }
   }
 
-  // Fungsi untuk mendapatkan user saat ini (berdasarkan token JWT)
+  // Fungsi untuk mendapatkan user saat ini (berdasarkan token JWT) dan sambungkan dengan data role
   async function getCurrentUser(): Promise<UserSummary> {
     try {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/users/me`);
@@ -57,7 +67,15 @@ const usersApi = (() => {
       // Override email dengan email dari token login
       const loginEmail = getEmailFromToken();
       data.email = loginEmail || data.email;
+      // Jika properti role tidak ada, tetapkan nilai default "user"
+      data.role = data.role || "user";
       console.log("Fetched current user data:", data);
+      
+      // Ambil detail role dari role API tanpa parameter
+      const roles = await roleApi.getRole();
+      const roleDetail = roles.find((r: any) => r.name === data.role) || {};
+      data.role = roleDetail.name || data.role;
+      
       return data;
     } catch (error) {
       console.error("Error fetching current user:", error);
@@ -76,6 +94,8 @@ const usersApi = (() => {
         // Override email dengan email dari token jika tersedia
         const loginEmail = getEmailFromToken();
         user.email = loginEmail || user.email;
+        // Jika properti role tidak ada, tetapkan nilai default "user"
+        user.role = user.role || "user";
         return user;
       } catch (error) {
         console.error("Error parsing user from storage:", error);
