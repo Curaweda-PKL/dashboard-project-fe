@@ -392,21 +392,29 @@ const Timeline: React.FC = () => {
   
   return (
     <div>
-      <HeaderDetail />
-      <div className="mb-6 text-black font-bold">
-        <p>
-          <strong>Project :</strong> {projectData.projectName}
-        </p>
-        <p>
-          <strong>PIC :</strong> {projectData.pic}
-        </p>
-        <p>
-          <strong>Date :</strong> {projectData.date}
-        </p>
-        <p>
-          <strong>Client :</strong> {projectData.client}
-        </p>
-      </div>
+    <HeaderDetail />
+    <div className="mb-6 text-black text-l font-semibold">
+<div className="flex">
+  <span className="w-16">Project </span>
+  <span className="w-4 text-center">:</span>
+  <span>{projectData.projectName}</span>
+</div>
+<div className="flex">
+  <span className="w-16">PM </span>
+  <span className="w-4 text-center">:</span>
+  <span>{projectData.pic}</span>
+</div>
+<div className="flex">
+  <span className="w-16">Date </span>
+  <span className="w-4 text-center">:</span>
+  <span>{projectData.date}</span>
+</div>
+<div className="flex">
+  <span className="w-16">Client </span>
+  <span className="w-4 text-center">:</span>
+  <span>{projectData.client}</span>
+</div>
+</div>
       <div className="relative">
         {renderCombinedTable()}
         {modules.length > 0 && renderTimelineOverlay()}
