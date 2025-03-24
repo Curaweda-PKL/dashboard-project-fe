@@ -18,7 +18,7 @@ export interface ProjectTimeline {
   details?: TimelineDetail[];
   projectName?: string;
   pm?: string;
-  date?: string;
+  erd_number?: string;
   client?: string;
 }
 

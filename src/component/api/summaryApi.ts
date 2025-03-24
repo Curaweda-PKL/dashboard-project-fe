@@ -5,7 +5,7 @@ import authApi from "./authApi";
 export interface ProjectDetail {
   projectName: string;
   pm: string;
-  date: string;
+  erd_number: string;
   client: string;
 }
 
