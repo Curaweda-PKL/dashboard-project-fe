@@ -51,7 +51,7 @@ const TaskList: React.FC = () => {
   // State untuk detail project (tampilan)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pic: 0, // Simpan pic sebagai number
+    pm: 0, // Simpan pic sebagai number
     erd_number: "Default No PRD",
     client: "Default Client",
   });
@@ -89,7 +89,7 @@ const TaskList: React.FC = () => {
         const picId = picMember ? picMember.id : 0;
         setProjectData({
           projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
-          pic: picId,
+          pm: picId,
           erd_number: projectDetails.erd_number || "N/A",
           client: routeState.client ?? projectDetails.client ?? "Default Client",
         });
@@ -346,9 +346,9 @@ const TaskList: React.FC = () => {
           <span>{projectData.projectName}</span>
         </div>
         <div className="flex">
-          <span className="w-16">PIC</span>
+          <span className="w-16">PM</span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.pic}</span>
+          <span>{projectData.pm}</span>
         </div>
         <div className="flex">
           <span className="w-16">No PRD</span>

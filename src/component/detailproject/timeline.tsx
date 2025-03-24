@@ -111,7 +111,7 @@ const Timeline: React.FC = () => {
   const location = useLocation();
   const routeState = (location.state as {
     projectName?: string;
-    pic?: string;
+    pm?: string;
     erd_number?: string;
     client?: string;
   }) || {};
@@ -119,8 +119,8 @@ const Timeline: React.FC = () => {
   // State projectData: sekarang field "date" akan menyimpan nilai erd_number (No PRD)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pic: "Default PM",
-    date: "Default No PRD",
+    pm: "Default PM",
+    erd_number: "Default No PRD",
     client: "Default Client",
   });
 
@@ -153,8 +153,8 @@ const Timeline: React.FC = () => {
         // Set projectData menggunakan erd_number dari API sebagai "No PRD"
         setProjectData({
           projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
-          pic: picName,
-          date: projectDetails.erd_number || "N/A",
+          pm: picName,
+          erd_number: projectDetails.erd_number || "N/A",
           client: routeState.client ?? projectDetails.client ?? "Default Client",
         });
         
@@ -395,14 +395,14 @@ const Timeline: React.FC = () => {
           <span>{projectData.projectName}</span>
         </div>
         <div className="flex">
-          <span className="w-16">PIC</span>
+          <span className="w-16">PM</span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.pic}</span>
+          <span>{projectData.pm}</span>
         </div>
         <div className="flex">
           <span className="w-16">No PRD</span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.date}</span>
+          <span>{projectData.erd_number}</span>
         </div>
         <div className="flex">
           <span className="w-16">Client</span>

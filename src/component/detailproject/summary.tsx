@@ -18,8 +18,8 @@ const Summary: React.FC = () => {
   // State untuk detail project (menggunakan data dari route state atau default)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pic: "Default PM",
-    date: "Default No PRD",
+    pm: "Default PM",
+    erd_number: "Default No PRD",
     client: "Default Client",
   });
 
@@ -32,14 +32,14 @@ const Summary: React.FC = () => {
     client?: string;
   }) || {};
 
-  // Jika ada routeState, update projectData untuk properti selain pic
+  // Jika ada routeState, update projectData untuk properti selain pim
   useEffect(() => {
     if (routeState && routeState.projectName) {
       setProjectData((prev) => ({
         ...prev,
         projectName: routeState.projectName ?? prev.projectName,
         // Gunakan routeState.erd_number jika ada
-        date: routeState.erd_number ?? prev.date,
+        erd_number: routeState.erd_number ?? prev.erd_number,
         client: routeState.client ?? prev.client,
       }));
     }
@@ -58,8 +58,8 @@ const Summary: React.FC = () => {
         setProjectData({
           projectName:
             routeState.projectName ?? projectDetails.title ?? "Default Project Name",
-          pic: picName,
-          date: projectDetails.erd_number || "N/A",
+          pm: picName,
+          erd_number: projectDetails.erd_number || "N/A",
           client: routeState.client ?? projectDetails.client ?? "Default Client",
         });
       } catch (error) {
@@ -373,14 +373,14 @@ const Summary: React.FC = () => {
           <span>{projectData.projectName}</span>
         </div>
         <div className="flex">
-          <span className="w-16">PIC </span>
+          <span className="w-16">PM </span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.pic}</span>
+          <span>{projectData.pm}</span>
         </div>
         <div className="flex">
           <span className="w-16">No PRD </span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.date}</span>
+          <span>{projectData.erd_number}</span>
         </div>
         <div className="flex">
           <span className="w-16">Client </span>
