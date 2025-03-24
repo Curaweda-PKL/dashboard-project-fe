@@ -3,7 +3,7 @@ import HeaderDetail from "./headerdetail";
 import { useLocation, useParams } from "react-router-dom";
 import projectTimelineAPI, { ProjectTimeline, TimelineDetail } from "../api/timelineApi";
 import projectApi from "../api/projectApi";
-import teamApi from "../api/TeamApi"; // Add import for TeamApi
+import teamApi from "../api/TeamApi"; // Import untuk TeamApi
 
 /*** 1. Interface data ***/
 interface Module {
@@ -112,14 +112,15 @@ const Timeline: React.FC = () => {
   const routeState = (location.state as {
     projectName?: string;
     pic?: string;
-    date?: string;
+    erd_number?: string;
     client?: string;
   }) || {};
 
+  // State projectData: sekarang field "date" akan menyimpan nilai erd_number (No PRD)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
     pic: "Default PM",
-    date: "Default Date",
+    date: "Default No PRD",
     client: "Default Client",
   });
 
@@ -139,30 +140,25 @@ const Timeline: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Fetch project data first to get pic_id
+        // Fetch project data untuk mendapatkan erd_number (No PRD), pic, dsb.
         const projectDetails = await projectApi.getProjectById(parseInt(projectId));
         console.log("Project details:", projectDetails);
         
-        // Fetch team members - uncomment this section and implement like in TaskList
+        // Fetch team members untuk mendapatkan PIC
         const teams = await teamApi.getAllTeams();
         console.log("Team members:", teams);
-        
-        // Find the team member that matches the pic_id
         const picMember = teams.find(member => member.id === projectDetails.pic_id);
         const picName = picMember ? picMember.name : "Unknown";
         
-        // Format the date untuk display
-        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(projectDetails.end_date).toLocaleDateString()}`;
-        
-        // Set project data dengan nilai dari API
+        // Set projectData menggunakan erd_number dari API sebagai "No PRD"
         setProjectData({
-          projectName: projectDetails.title || "Default Project Name",
-          pic: picName, // Set the PIC name from team member data
-          date: formattedDate,
-          client: projectDetails.client || "Default Client",
+          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+          pic: picName,
+          date: projectDetails.erd_number || "N/A",
+          client: routeState.client ?? projectDetails.client ?? "Default Client",
         });
         
-        // Memanggil getAllTimelines dengan projectId
+        // Panggil getAllTimelines dengan projectId
         const timelineDataArray = await projectTimelineAPI.getAllTimelines(parseInt(projectId));
         console.log("Timeline data received:", timelineDataArray);
         if (timelineDataArray && timelineDataArray.length > 0) {
@@ -186,7 +182,7 @@ const Timeline: React.FC = () => {
     };
     
     fetchTimelineData();
-  }, [projectId]);
+  }, [projectId, routeState]);
 
   useEffect(() => {
     if (routeState && routeState.projectName) {
@@ -194,8 +190,7 @@ const Timeline: React.FC = () => {
         ...prev,
         projectName: routeState.projectName || prev.projectName,
         client: routeState.client || prev.client,
-        // Don't override pic from route state, as we want to use the one from API
-        // pic: routeState.pic || prev.pic, 
+        // Jangan override pic, gunakan dari API
       }));
     }
   }, [routeState]);
@@ -241,7 +236,7 @@ const Timeline: React.FC = () => {
       <table className="min-w-max text-center border-collapse rounded-lg mb-8">
         <thead
           className="sticky top-0 bg-[#02CCFF]"
-          style={{ zIndex: 10 }} // pastikan header berada di atas overlay
+          style={{ zIndex: 10 }}
         >
           <tr>
             <th className="p-4 text-white">MODULE</th>
@@ -361,7 +356,7 @@ const Timeline: React.FC = () => {
                 width: `${finalWidth}px`,
                 height: `${PILL_HEIGHT}px`,
                 whiteSpace: "nowrap",
-                zIndex: 1 // pastikan overlay berada di belakang header
+                zIndex: 1
               }}
             >
               {module.timeline}
@@ -392,29 +387,29 @@ const Timeline: React.FC = () => {
   
   return (
     <div>
-    <HeaderDetail />
-    <div className="mb-6 text-black text-l font-semibold">
-<div className="flex">
-  <span className="w-16">Project </span>
-  <span className="w-4 text-center">:</span>
-  <span>{projectData.projectName}</span>
-</div>
-<div className="flex">
-  <span className="w-16">PM </span>
-  <span className="w-4 text-center">:</span>
-  <span>{projectData.pic}</span>
-</div>
-<div className="flex">
-  <span className="w-16">Date </span>
-  <span className="w-4 text-center">:</span>
-  <span>{projectData.date}</span>
-</div>
-<div className="flex">
-  <span className="w-16">Client </span>
-  <span className="w-4 text-center">:</span>
-  <span>{projectData.client}</span>
-</div>
-</div>
+      <HeaderDetail />
+      <div className="mb-6 text-black text-l font-semibold">
+        <div className="flex">
+          <span className="w-16">Project</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.projectName}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">PIC</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.pic}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">No PRD</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.date}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">Client</span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.client}</span>
+        </div>
+      </div>
       <div className="relative">
         {renderCombinedTable()}
         {modules.length > 0 && renderTimelineOverlay()}

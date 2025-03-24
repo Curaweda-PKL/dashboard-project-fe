@@ -19,7 +19,7 @@ const Summary: React.FC = () => {
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
     pic: "Default PM",
-    date: "Default Date",
+    date: "Default No PRD",
     client: "Default Client",
   });
 
@@ -28,7 +28,7 @@ const Summary: React.FC = () => {
   const routeState = (location.state as {
     projectName?: string;
     pm?: string;
-    date?: string;
+    erd_number?: string;
     client?: string;
   }) || {};
 
@@ -38,7 +38,8 @@ const Summary: React.FC = () => {
       setProjectData((prev) => ({
         ...prev,
         projectName: routeState.projectName ?? prev.projectName,
-        date: routeState.date ?? prev.date,
+        // Gunakan routeState.erd_number jika ada
+        date: routeState.erd_number ?? prev.date,
         client: routeState.client ?? prev.client,
       }));
     }
@@ -53,17 +54,14 @@ const Summary: React.FC = () => {
         const teams = await teamApi.getAllTeams();
         const picMember = teams.find((member) => member.id === projectDetails.pic_id);
         const picName = picMember ? picMember.name : "Unknown";
-        const formattedDate = `${new Date(projectDetails.start_date).toLocaleDateString()} - ${new Date(
-          projectDetails.end_date
-        ).toLocaleDateString()}`;
-
-        setProjectData((prev) => ({
-          ...prev,
-          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+        // Gunakan nilai erd_number langsung dari API sebagai "No PRD"
+        setProjectData({
+          projectName:
+            routeState.projectName ?? projectDetails.title ?? "Default Project Name",
           pic: picName,
-          date: routeState.date ?? formattedDate,
+          date: projectDetails.erd_number || "N/A",
           client: routeState.client ?? projectDetails.client ?? "Default Client",
-        }));
+        });
       } catch (error) {
         console.error("Error fetching project data", error);
       }
@@ -369,27 +367,27 @@ const Summary: React.FC = () => {
     <div>
       <HeaderDetail />
       <div className="mb-6 text-black text-l font-semibold">
-  <div className="flex">
-    <span className="w-16">Project </span>
-    <span className="w-4 text-center">:</span>
-    <span>{projectData.projectName}</span>
-  </div>
-  <div className="flex">
-    <span className="w-16">PM </span>
-    <span className="w-4 text-center">:</span>
-    <span>{projectData.pic}</span>
-  </div>
-  <div className="flex">
-    <span className="w-16">Date </span>
-    <span className="w-4 text-center">:</span>
-    <span>{projectData.date}</span>
-  </div>
-  <div className="flex">
-    <span className="w-16">Client </span>
-    <span className="w-4 text-center">:</span>
-    <span>{projectData.client}</span>
-  </div>
-</div>
+        <div className="flex">
+          <span className="w-16">Project </span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.projectName}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">PIC </span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.pic}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">No PRD </span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.date}</span>
+        </div>
+        <div className="flex">
+          <span className="w-16">Client </span>
+          <span className="w-4 text-center">:</span>
+          <span>{projectData.client}</span>
+        </div>
+      </div>
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
           <strong className="text-l font-semibold">Error!</strong>
@@ -495,7 +493,7 @@ const Summary: React.FC = () => {
         </table>
       </div>
 
-      {/* Fixed container untuk tombol Add summary dan Remove/Cancel */}
+      {/* Fixed container untuk tombol Add Summary dan Remove/Cancel */}
       <div className="fixed bottom-10 right-10 flex gap-4">
         <button
           onClick={() => setIsModalOpen(true)}
@@ -833,30 +831,30 @@ const Summary: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Status Summary Table */}
       <div className="absolute bottom-0 p-4 text-center">
-        <table className="border border-black text-black text-l font-semibold">
+        <table className="border border-black text-black font-bold">
           <tbody>
             <tr>
-              <td className="px-4 py-2 bg-blue-800 text-white text-l font-semibold rounded-lg">DONE</td>
+              <td className="px-4 py-2 bg-blue-800 text-white font-bold rounded-lg">DONE</td>
               <td className="px-4 py-2 border border-black">170</td>
               <td className="px-4 py-2 border border-black">97,70%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 bg-pink-300 text-white text-l font-semibold rounded-lg">ON PROGRESS</td>
+              <td className="px-4 py-2 bg-pink-300 text-white font-bold rounded-lg">ON PROGRESS</td>
               <td className="px-4 py-2 border border-black">3</td>
               <td className="px-4 py-2 border border-black">1,725%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 bg-red-700 text-white text-l font-semibold rounded-lg">PENDING</td>
+              <td className="px-4 py-2 bg-red-700 text-white font-bold rounded-lg">PENDING</td>
               <td className="px-4 py-2 border border-black">1</td>
               <td className="px-4 py-2 border border-black">0,575%</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 text-l font-semibold">TOTAL</td>
-              <td className="px-4 py-2 border border-black text-l font-semibold">174</td>
-              <td className="px-4 py-2 border border-black text-l font-semibold">100,00%</td>
+              <td className="px-4 py-2 font-bold">TOTAL</td>
+              <td className="px-4 py-2 border border-black font-bold">174</td>
+              <td className="px-4 py-2 border border-black font-bold">100,00%</td>
             </tr>
           </tbody>
         </table>
