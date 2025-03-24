@@ -1,4 +1,3 @@
-// projectTaskApi.ts
 import authApi from "./authApi";
 
 // Tipe detail
@@ -8,6 +7,7 @@ export interface TaskDetail {
   start_date: Date;
   end_date: Date;
   status: string;
+  pic?: number | null; // Diubah menjadi number sesuai tipe di backend
 }
 
 // Tipe projectTask
@@ -20,8 +20,8 @@ export interface ProjectTask {
   task_details?: TaskDetail[];
 
   projectName?: string;
-  pic?: string;
-  date?: string;
+  pic?: number;
+  erd_number?: string;
   client?: string;
 }
 
@@ -55,35 +55,18 @@ const projectTaskApi = {
     const result = await response.json();
     console.log("getAllProjectTasks => raw result:", result);
 
-    // Cek apakah data di-wrapping oleh "data" atau "data.result"
-    // Sesuaikan dengan struktur response Anda
-    // Misalnya, jika response-nya:
-    // {
-    //   "message": "Project tasks successfully retrieved!",
-    //   "data": {
-    //       "result": [ ...arrayOfTasks ],
-    //       "page": 0,
-    //       ...
-    //   }
-    // }
-    // maka kita ambil result.data.result
-
     if (result?.data?.result) {
-      return result.data.result; // array of ProjectTask
+      return result.data.result;
     } else if (Array.isArray(result)) {
-      // Kalau ternyata langsung array
       return result;
     } else if (Array.isArray(result?.data)) {
-      // Kalau data langsung array
       return result.data;
     }
 
-    // Jika format tidak sesuai, kembalikan array kosong
     return [];
   },
 
   // Create project task
-  // Payload-nya kita kirim "taskDetails" agar backend simpan di projectTaskDetail
   createProjectTask: async (
     payload: { taskDetails: TaskDetail[] },
     projectId: number
@@ -101,16 +84,6 @@ const projectTaskApi = {
     const createdTask = await response.json();
     console.log("createProjectTask => createdTask:", createdTask);
 
-    // Kalau backend membungkus data di result.data, tangani di sini juga
-    // Misal:
-    // {
-    //   "message": "Project task successfully created!",
-    //   "data": {
-    //       "id": ...,
-    //       "project_id": ...,
-    //       "task_details": [ ... ]
-    //   }
-    // }
     if (createdTask?.data) {
       return createdTask.data;
     }
@@ -119,7 +92,7 @@ const projectTaskApi = {
 
   updateTaskDetail: async (projectId: number, detailId: number, payload: TaskDetail): Promise<any> => {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task-detail/${detailId}`, {
-      method: "PATCH", // atau PATCH sesuai API Anda
+      method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
@@ -128,9 +101,7 @@ const projectTaskApi = {
     }
     return await response.json();
   },
-  
 
-  // Hapus project task (opsional)
   deleteTaskDetail: async (projectId: number, detailId: number): Promise<any> => {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/task-detail/${detailId}`, {
       method: "DELETE",
@@ -141,7 +112,6 @@ const projectTaskApi = {
     }
     return await response.json();
   },
-  
 };
 
 export default projectTaskApi;

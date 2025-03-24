@@ -13,18 +13,16 @@ const Dashboard = () => {
     inProgress: [],
     upcoming: [],
   });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // State form input
   const [projectName, setProjectName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [duration, setDuration] = useState(""); // input berupa string, nantinya dikonversi ke number
   const [contract_number, setContractNumber] = useState("");
   const [erd_number, setNoErd] = useState("");
   const [client, setClientName] = useState("");
   const [description, setDescription] = useState("");
 
-  // State untuk dropdown PIC (dinamis dari teamApi)
+  // State untuk dropdown PM (dinamis dari teamApi)
   const [selectedPic, setSelectedPic] = useState("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
@@ -58,7 +56,7 @@ const Dashboard = () => {
     fetchProjects();
   }, []);
 
-  // Ambil data team members untuk dropdown PIC
+  // Ambil data team members untuk dropdown PM
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
@@ -88,23 +86,19 @@ const Dashboard = () => {
     }
   }, []);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
-  };
-
   const handleAddProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newProjectData = {
       title: projectName,
-      start_date: new Date(startDate),
-      end_date: new Date(endDate),
+      duration: Number(duration), // konversi input ke number (jumlah hari)
       contract_number: contract_number,
       erd_number: erd_number,
       client: client,
-      description: description, // Definition of project
+      description: description,
       status: "upcoming", // default status
-      pic_id: Number(selectedPic) || 1, // gunakan nilai dropdown PIC, default 1 jika kosong
+      // Jika tidak memilih PM, kirimkan pic_id sebagai null
+      pic_id: selectedPic ? Number(selectedPic) : null,
       progress: 0, // default progress
     };
 
@@ -123,8 +117,7 @@ const Dashboard = () => {
       });
       setIsModalOpen(false);
       setProjectName("");
-      setStartDate("");
-      setEndDate("");
+      setDuration("");
       setContractNumber("");
       setNoErd("");
       setClientName("");
@@ -240,7 +233,7 @@ const Dashboard = () => {
                 className="flex flex-col items-start text-start pl-3 border-l-2 border-black"
               >
                 <p className="text-3xl font-semibold mb-2">{item.count}</p>
-                <p className="text-black text-[20px]  whitespace-nowrap">
+                <p className="text-black text-[20px] whitespace-nowrap">
                   {item.label}
                 </p>
               </div>
@@ -304,65 +297,29 @@ const Dashboard = () => {
             </div>
             <form className="space-y-4" onSubmit={handleAddProjectSubmit}>
               <div>
-                <label className="block  mb-2">Project Name</label>
+                <label className="block mb-2">Project Name</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
+                  required
                 />
               </div>
               <div>
-                <label className="block  mb-2">Periode</label>
-                <div className="relative">
-                  <div
-                    className="flex items-center justify-between px-4 py-2 bg-white border rounded-full cursor-pointer"
-                    onClick={toggleDropdown}
-                  >
-                    <span className={`${startDate && endDate ? "text-black" : "text-gray-500"}`}>
-                      {startDate && endDate ? `${startDate} to ${endDate}` : "Select Periode"}
-                    </span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  {isDropdownOpen && (
-                    <div className="absolute z-10 mt-2 w-full bg-white border rounded-lg shadow-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="date"
-                          className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                          value={startDate}
-                          onChange={(e) => setStartDate(e.target.value)}
-                        />
-                        <span className="">to</span>
-                        <input
-                          type="date"
-                          className="w-1/2 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                          value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
-                        />
-                      </div>
-                      <button
-                        className="mt-4 bg-curawedaColor hover:bg-[#029FCC] text-white font-semibold px-4 py-2 rounded-full w-full"
-                        onClick={() => setIsDropdownOpen(false)}
-                        type="button"
-                      >
-                        Confirm
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <label className="block mb-2">Duration (days)</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 30"
+                  className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  required
+                />
               </div>
               <div>
-                <label className="block  mb-2">Contract Number</label>
+                <label className="block mb-2">Contract Number</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -371,7 +328,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block  mb-2">No PRD</label>
+                <label className="block mb-2">No PRD</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -380,7 +337,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block  mb-2">Client Name</label>
+                <label className="block mb-2">Client Name</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
@@ -388,7 +345,7 @@ const Dashboard = () => {
                   onChange={(e) => setClientName(e.target.value)}
                 />
               </div>
-              {/* Dropdown PIC menggunakan data dari teamApi */}
+              {/* Dropdown PM menggunakan data dari teamApi */}
               <div>
                 <label className="block mb-2">PM</label>
                 <select
@@ -405,9 +362,7 @@ const Dashboard = () => {
                 </select>
               </div>
               <div>
-                <label className="block  mb-2">
-                  Definition of Project
-                </label>
+                <label className="block mb-2">Definition of Project</label>
                 <textarea
                   rows={3}
                   className="w-full px-4 py-2 bg-white border rounded-lg focus:outline-none focus:ring focus:ring-blue-500"

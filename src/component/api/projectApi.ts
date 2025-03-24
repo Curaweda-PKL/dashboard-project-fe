@@ -4,11 +4,10 @@ import authApi from "./authApi";
 export interface Project {
   id?: number;
   title: string;
-  start_date: Date;
-  end_date: Date;
+  duration: number; // jumlah hari sebagai number
   description: string;
   status: string;
-  pic_id?: number;
+  pic_id?: number | null;
   contract_number?: string;
   erd_number?: string;
   client?: string;
@@ -20,28 +19,21 @@ export interface Project {
 const projectApi = (() => {
   const BASE_URL = "http://localhost:8080/api";
 
-  // This helper unwraps the data if the backend wraps it in a "data" property.
+  // Helper: Unwrap data jika backend membungkusnya dalam properti "data"
   const processResponse = (jsonData: any) => {
     return jsonData.data ? jsonData.data : jsonData;
   };
 
-  // Convert a Date into a full ISO datetime string
-  const formatDateForAPI = (date: Date) => {
-    if (typeof date === "string") return date;
-    return date.toISOString();
-  };
-
-  // Map the backend project response to our Project interface.
+  // Map response dari backend ke dalam interface Project
   const mapProject = (project: any): Project => ({
     ...project,
-    start_date: new Date(project.start_date),
-    end_date: new Date(project.end_date),
+    duration: project.duration,
     created_at: project.created_at ? new Date(project.created_at) : undefined,
     updated_at: project.updated_at ? new Date(project.updated_at) : undefined,
     pic_id: project.pic ? project.pic.id : project.pic_id,
-    contract_number: project.contract_number, // Ensure this is included
-    erd_number: project.erd_number, // Ensure this is included
-    client: project.client, // Ensure this is included
+    contract_number: project.contract_number,
+    erd_number: project.erd_number,
+    client: project.client,
   });
 
   async function getAllProjects(): Promise<Project[]> {
@@ -49,7 +41,7 @@ const projectApi = (() => {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/projects`);
       const data = processResponse(result);
       console.log("Data fetched from API:", data);
-      // If the returned data is not an array but an object that contains a "result" property, use that array.
+      // Jika data berupa array atau terdapat properti "result"
       const projectsArray = Array.isArray(data)
         ? data
         : data.result && Array.isArray(data.result)
@@ -83,8 +75,9 @@ const projectApi = (() => {
     try {
       const formattedData = {
         ...projectData,
-        start_date: formatDateForAPI(projectData.start_date),
-        end_date: formatDateForAPI(projectData.end_date),
+        duration: Number(projectData.duration),
+        // Jika pic_id adalah falsy (""), kirim null
+        pic_id: projectData.pic_id ? Number(projectData.pic_id) : null,
       };
 
       const result = await authApi._fetchWithAuth(`${BASE_URL}/projects`, {
@@ -94,7 +87,6 @@ const projectApi = (() => {
       });
 
       const data = processResponse(result);
-      // If backend returns an object with a "project" property, extract it.
       const project = data.project ? data.project : data;
       return mapProject(project);
     } catch (error) {
@@ -110,15 +102,18 @@ const projectApi = (() => {
     projectData: Partial<Omit<Project, "id" | "created_at" | "updated_at">>
   ): Promise<Project> {
     try {
-      // Deklarasikan dan gunakan 'formattedData' di dalam blok try
       const formattedData = {
         ...projectData,
-        start_date: projectData.start_date
-          ? formatDateForAPI(projectData.start_date)
-          : undefined,
-        end_date: projectData.end_date
-          ? formatDateForAPI(projectData.end_date)
-          : undefined,
+        duration:
+          projectData.duration !== undefined
+            ? Number(projectData.duration)
+            : undefined,
+        pic_id:
+          projectData.pic_id !== undefined
+            ? projectData.pic_id
+              ? Number(projectData.pic_id)
+              : null
+            : undefined,
       };
   
       const result = await authApi._fetchWithAuth(`${BASE_URL}/projects/${id}`, {
@@ -136,8 +131,6 @@ const projectApi = (() => {
     }
   }
   
-  
-
   async function deleteProject(id: number): Promise<void> {
     try {
       const result = await authApi._fetchWithAuth(`${BASE_URL}/projects/delete/${id}`, {

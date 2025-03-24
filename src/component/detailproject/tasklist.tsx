@@ -7,7 +7,7 @@ import { FaPencilAlt } from "react-icons/fa";
 import projectApi from "../api/projectApi";
 import teamApi from "../api/TeamApi";
 
-// Definisi tipe sesuai backend
+// Definisi tipe sesuai backend untuk TaskDetail dan ProjectTask
 export interface TaskDetail {
   id?: number;
   module: string;
@@ -15,7 +15,7 @@ export interface TaskDetail {
   start_date: Date;
   end_date: Date;
   status: string;
-  assigned?: string; // field ASSIGNED ditambahkan
+  pic?: number | null; // Diubah menjadi number
 }
 
 export interface ProjectTask {
@@ -26,19 +26,18 @@ export interface ProjectTask {
   task_details?: TaskDetail[];
   projectName?: string;
   pm?: string;
-  date?: string;
+  erd_number?: string;
   client?: string;
 }
 
 // Interface untuk form input "Add Task" dan "Edit Task Detail"
-// Ditambahkan property "assigned" untuk dropdown
 interface MinimalTaskForm {
   module: string;
   feature: string;
   start_date: Date;
   end_date: Date;
   status: string;
-  assigned: string;
+  pic: number | null; // Gunakan number atau null
 }
 
 interface TeamMember {
@@ -52,8 +51,8 @@ const TaskList: React.FC = () => {
   // State untuk detail project (tampilan)
   const [projectData, setProjectData] = useState({
     projectName: "Default Project Name",
-    pic: "Default PM",
-    date: "Default Date",
+    pic: 0, // Simpan pic sebagai number
+    erd_number: "Default No PRD",
     client: "Default Client",
   });
 
@@ -62,7 +61,7 @@ const TaskList: React.FC = () => {
   const routeState = (location.state as {
     projectName?: string;
     pm?: string;
-    date?: string;
+    erd_number?: string;
     client?: string;
   }) || {};
 
@@ -71,7 +70,7 @@ const TaskList: React.FC = () => {
       setProjectData((prev) => ({
         ...prev,
         projectName: routeState.projectName ?? prev.projectName,
-        date: routeState.date ?? prev.date,
+        erd_number: routeState.erd_number ?? prev.erd_number,
         client: routeState.client ?? prev.client,
       }));
     }
@@ -82,26 +81,16 @@ const TaskList: React.FC = () => {
     if (!projectId) return;
     const fetchProjectData = async () => {
       try {
-        // Mengambil data project
         const projectDetails = await projectApi.getProjectById(Number(projectId));
-        // Mengambil seluruh team untuk menemukan PIC berdasarkan pic_id
         const teams = await teamApi.getAllTeams();
         const picMember = teams.find(
           (member) => member.id === projectDetails.pic_id
         );
-        const picName = picMember ? picMember.name : "Unknown";
-        // Format tanggal untuk display
-        const formattedDate = `${new Date(
-          projectDetails.start_date
-        ).toLocaleDateString()} - ${new Date(
-          projectDetails.end_date
-        ).toLocaleDateString()}`;
-        // Update projectData, gabungkan dengan routeState jika ada
+        const picId = picMember ? picMember.id : 0;
         setProjectData({
-          projectName:
-            routeState.projectName ?? projectDetails.title ?? "Default Project Name",
-          pic: picName,
-          date: routeState.date ?? formattedDate,
+          projectName: routeState.projectName ?? projectDetails.title ?? "Default Project Name",
+          pic: picId,
+          erd_number: projectDetails.erd_number || "N/A",
           client: routeState.client ?? projectDetails.client ?? "Default Client",
         });
       } catch (err) {
@@ -123,16 +112,16 @@ const TaskList: React.FC = () => {
     start_date: new Date(),
     end_date: new Date(),
     status: "PENDING",
-    assigned: "", // nilai awal kosong
+    pic: null, // inisialisasi null
   });
   const [editDetail, setEditDetail] = useState<
     (MinimalTaskForm & { id: number; projectName: string }) | null
   >(null);
 
-  // State untuk menyimpan team members (untuk dropdown ASSIGNED)
+  // State untuk menyimpan team members (untuk dropdown PIC)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
-  // Fetch team members untuk dropdown ASSIGNED
+  // Fetch team members untuk dropdown PIC
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
@@ -158,7 +147,7 @@ const TaskList: React.FC = () => {
             setProjectData((prev) => ({
               ...prev,
               projectName: firstTask.projectName ?? prev.projectName,
-              date: firstTask.date ?? prev.date,
+              erd_number: firstTask.erd_number ?? prev.erd_number,
               client: firstTask.client ?? prev.client,
             }));
           }
@@ -258,7 +247,7 @@ const TaskList: React.FC = () => {
       ...detail,
       id: detail.id!,
       projectName: projectData.projectName,
-      assigned: detail.assigned || "",
+      pic: detail.pic || null,
     });
     setIsEditModalOpen(true);
   };
@@ -306,7 +295,7 @@ const TaskList: React.FC = () => {
             start_date: newTask.start_date,
             end_date: newTask.end_date,
             status: newTask.status || "PENDING",
-            assigned: newTask.assigned, // sertakan assigned
+            pic: newTask.pic,
           },
         ],
       };
@@ -330,7 +319,7 @@ const TaskList: React.FC = () => {
         start_date: new Date(),
         end_date: new Date(),
         status: "PENDING",
-        assigned: "",
+        pic: null,
       });
       setIsModalOpen(false);
     } catch (error) {
@@ -362,9 +351,9 @@ const TaskList: React.FC = () => {
           <span>{projectData.pic}</span>
         </div>
         <div className="flex">
-          <span className="w-16">Date</span>
+          <span className="w-16">No PRD</span>
           <span className="w-4 text-center">:</span>
-          <span>{projectData.date}</span>
+          <span>{projectData.erd_number}</span>
         </div>
         <div className="flex">
           <span className="w-16">Client</span>
@@ -379,14 +368,13 @@ const TaskList: React.FC = () => {
               {isEditing && <th className="p-4"></th>}
               <th className="p-4 border-b">MODULE</th>
               <th className="p-4 border-b">FEATURE</th>
-              <th className="p-4 border-b">ASSIGNED</th>
+              <th className="p-4 border-b">PIC</th>
               <th className="p-4 border-b">START DATE</th>
               <th className="p-4 border-b">END DATE</th>
               <th className="p-4 border-b">STATUS</th>
               <th className="p-4 border-b"></th>
             </tr>
           </thead>
-          {/* Menambahkan text-center di sini agar semua isi baris berada di tengah */}
           <tbody className="bg-white text-center">
             {tasks.map((task, taskIndex) => {
               if (!task.task_details || task.task_details.length === 0) {
@@ -415,7 +403,7 @@ const TaskList: React.FC = () => {
                   )}
                   <td className="p-4">{detail.module || "-"}</td>
                   <td className="p-4">{detail.feature || "-"}</td>
-                  <td className="p-4">{detail.assigned || "-"}</td>
+                  <td className="p-4">{detail.pic || "-"}</td>
                   <td className="p-4">
                     {detail.start_date
                       ? new Date(detail.start_date).toLocaleDateString()
@@ -443,7 +431,6 @@ const TaskList: React.FC = () => {
         </table>
       </div>
 
-      {/* Fixed container untuk tombol "Add Task" dan "Remove" */}
       <div className="fixed bottom-10 right-10 flex gap-4">
         <button
           onClick={() => setIsModalOpen(true)}
@@ -534,22 +521,21 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Field ASSIGNED sebagai dropdown */}
+              {/* Field PIC sebagai dropdown */}
               <div>
                 <label className="block text-l text-black font-semibold mb-1">
-                  Assigned
+                  Pic
                 </label>
                 <select
-                  value={newTask.assigned}
+                  value={newTask.pic || ""}
                   onChange={(e) =>
-                    setNewTask({ ...newTask, assigned: e.target.value })
+                    setNewTask({ ...newTask, pic: Number(e.target.value) || null })
                   }
                   className="w-full border rounded-md p-2 bg-white"
-                  required
                 >
-                  <option value="">Select Assigned</option>
+                  <option value="">Select Pic</option>
                   {teamMembers.map((member) => (
-                    <option key={member.id} value={member.name}>
+                    <option key={member.id} value={member.id}>
                       {member.name}
                     </option>
                   ))}
@@ -684,22 +670,20 @@ const TaskList: React.FC = () => {
                   required
                 />
               </div>
-              {/* Field Assigned pada edit modal (jika diperlukan) */}
               <div>
                 <label className="block text-l text-black font-semibold mb-1">
-                  Assigned
+                  Pic
                 </label>
                 <select
-                  value={editDetail.assigned}
+                  value={editDetail.pic || ""}
                   onChange={(e) =>
-                    setEditDetail({ ...editDetail, assigned: e.target.value })
+                    setEditDetail({ ...editDetail, pic: Number(e.target.value) || null })
                   }
                   className="w-full border rounded-md p-2 bg-white"
-                  required
                 >
-                  <option value="">Select Assigned</option>
+                  <option value="">Select Pic</option>
                   {teamMembers.map((member) => (
-                    <option key={member.id} value={member.name}>
+                    <option key={member.id} value={member.id}>
                       {member.name}
                     </option>
                   ))}

@@ -1,65 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import projectApi, { Project } from "../component/api/projectApi"; // Pastikan path sesuai
+import projectApi, { Project } from "../component/api/projectApi";
 
 // ------------------------------------
-// Helper: Hitung sisa waktu (time left) berdasarkan tanggal akhir
+// Helper: Berdasarkan duration (days), hasilkan label dan warna
 // ------------------------------------
-function getTimeLeft(startDate: Date, endDate: Date): { label: string; color: string } {
-  const now = new Date();
-  
-  if (now < startDate) {
-    const diff = startDate.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return { label: `Akan Dimulai dalam ${days} hari`, color: "#8E44AD" };
-  }
-  
-  const diff = endDate.getTime() - now.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  
-  if (days <= 0) {
-    return { label: "Overdue", color: "#B20000" };
-  } else if (days < 7) {
-    return { label: `${days} days left`, color: "#D6B41E" };
-  } else if (days < 30) {
-    const weeks = Math.ceil(days / 7);
-    return { label: `${weeks} weeks left`, color: "#029FCC" };
+function getDurationLabelAndColor(duration: number): { label: string; color: string } {
+  if (duration <= 0) {
+    return { label: "Overdue", color: "#B20000" }; // merah
+  } else if (duration < 7) {
+    return { label: `${duration} days left`, color: "#FF9900" }; // kuning
+  } else if (duration < 30) {
+    const weeks = Math.ceil(duration / 7);
+    return { label: `${weeks} weeks left`, color: "#029FCC" }; // biru
   } else {
-    const months = Math.ceil(days / 30);
-    return { label: `${months} months left`, color: "#0AB239" };
+    const months = Math.ceil(duration / 30);
+    return { label: `${months} months left`, color: "#0AB239" }; // hijau
   }
-}
-
-// ------------------------------------
-// Helper: Parse "DD/MM/YYYY" -> Date
-// ------------------------------------
-function parseDateDMY(dateStr: string): Date {
-  const parts = dateStr.split("/");
-  if (parts.length === 3) {
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-    return new Date(year, month, day);
-  }
-  return new Date(dateStr);
-}
-
-// ------------------------------------
-// Helper: Konversi Date ke string "YYYY-MM-DD" (waktu lokal)
-// ------------------------------------
-function toLocalDateString(date: Date): string {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function toDMYString(date: Date): string {
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
 }
 
 // ------------------------------------
@@ -68,7 +26,7 @@ function toDMYString(date: Date): string {
 interface PopupProps {
   id: string;
   title: string;
-  duration: string;
+  duration: number;
   client: string;
   contract_number: string;
   erd_number: string;
@@ -98,12 +56,7 @@ const Popup: React.FC<PopupProps> = ({
   // State untuk mengontrol apakah popup edit muncul
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  // Ubah data project menjadi bentuk objek Date
-  const [startStr, endStr] = duration.split(" - ");
-  const startDateObj = parseDateDMY(startStr);
-  const endDateObj = parseDateDMY(endStr);
-
-  // Simpan data project secara lokal agar bisa diupdate setelah edit
+  // Simpan data project secara lokal
   const [projectDetails, setProjectDetails] = useState({
     title,
     description,
@@ -111,12 +64,11 @@ const Popup: React.FC<PopupProps> = ({
     contract_number,
     erd_number,
     currentStatus,
-    start_date: startDateObj,
-    end_date: endDateObj,
+    duration,
   });
 
-  // Jika data detail berubah (misalnya dari callback edit), perbarui tampilan
-  const localDuration = `${toDMYString(projectDetails.start_date)} - ${toDMYString(projectDetails.end_date)}`;
+  // Format duration sebagai "X days"
+  const localDuration = `${projectDetails.duration} days`;
 
   // Callback update dari PopupEdit
   const handleProjectUpdate = (updatedProject: Project) => {
@@ -127,8 +79,7 @@ const Popup: React.FC<PopupProps> = ({
       contract_number: updatedProject.contract_number || "",
       erd_number: updatedProject.erd_number || "",
       currentStatus: updatedProject.status,
-      start_date: updatedProject.start_date,
-      end_date: updatedProject.end_date,
+      duration: updatedProject.duration,
     });
   };
 
@@ -137,7 +88,7 @@ const Popup: React.FC<PopupProps> = ({
       state: {
         projectName: projectDetails.title,
         pm: "Gustavo Bergson",
-        date: localDuration,
+        duration: localDuration,
         client: projectDetails.client,
       },
     });
@@ -176,9 +127,11 @@ const Popup: React.FC<PopupProps> = ({
         <h1 className="text-2xl font-semibold text-center mb-2 whitespace-normal break-words">
           {projectDetails.title}
         </h1>
-        <p className="text-xl text-center text-gray-700 mb-6">{localDuration}</p>
+        <p className="text-xl text-center text-gray-700 mb-6">
+          {localDuration}
+        </p>
 
-        <div className="text-gray-700 text-lg space-y-3 mb-6 whitespace-normal break-words">
+        <div className="text-gray-700 text-lg space-y-3 mb-6">
           <p>
             <strong>Contract Number:</strong> {projectDetails.contract_number}
           </p>
@@ -230,8 +183,7 @@ const Popup: React.FC<PopupProps> = ({
               contract_number: projectDetails.contract_number,
               erd_number: projectDetails.erd_number,
               status: projectDetails.currentStatus,
-              start_date: projectDetails.start_date,
-              end_date: projectDetails.end_date,
+              duration: projectDetails.duration,
             }}
             onClose={() => setIsEditOpen(false)}
             refreshProjects={refreshProjects}
@@ -260,22 +212,16 @@ export const PopupEdit: React.FC<PopupEditProps> = ({
   onProjectUpdate,
 }) => {
   const [projectName, setProjectName] = useState(project.title);
-  const [startDate, setStartDate] = useState(
-    project.start_date instanceof Date ? toLocalDateString(project.start_date) : ""
-  );
-  const [endDate, setEndDate] = useState(
-    project.end_date instanceof Date ? toLocalDateString(project.end_date) : ""
-  );
+  const [duration, setDuration] = useState(String(project.duration));
   const [contractNumber, setContractNumber] = useState(project.contract_number || "");
   const [erdNumber, setErdNumber] = useState(project.erd_number || "");
   const [client, setClientName] = useState(project.client || "");
   const [description, setDescription] = useState(project.description || "");
 
   // Sinkronisasi state lokal saat props project berubah
-  useEffect(() => {
+  React.useEffect(() => {
     setProjectName(project.title);
-    setStartDate(project.start_date instanceof Date ? toLocalDateString(project.start_date) : "");
-    setEndDate(project.end_date instanceof Date ? toLocalDateString(project.end_date) : "");
+    setDuration(String(project.duration));
     setContractNumber(project.contract_number || "");
     setErdNumber(project.erd_number || "");
     setClientName(project.client || "");
@@ -287,8 +233,7 @@ export const PopupEdit: React.FC<PopupEditProps> = ({
     try {
       await projectApi.updateProject(Number(project.id), {
         title: projectName,
-        start_date: new Date(startDate),
-        end_date: new Date(endDate),
+        duration: Number(duration),
         contract_number: contractNumber,
         erd_number: erdNumber,
         client: client,
@@ -336,24 +281,16 @@ export const PopupEdit: React.FC<PopupEditProps> = ({
             />
           </div>
           <div>
-            <label className="block font-semibold mb-2">Periode</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-              />
-              <span className="font-semibold">to</span>
-              <input
-                type="date"
-                className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-              />
-            </div>
+            <label className="block font-semibold mb-2">Duration (days)</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 30"
+              className="w-full px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring focus:ring-blue-500"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              required
+            />
           </div>
           <div>
             <label className="block font-semibold mb-2">Contract Number</label>
@@ -409,9 +346,7 @@ export const PopupEdit: React.FC<PopupEditProps> = ({
 interface ProjectCardProps {
   id: string;
   title: string;
-  duration: string;
-  startDate: Date;
-  endDate: Date;
+  duration: number;
   client: string;
   description: string;
   status: string;
@@ -426,8 +361,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   id,
   title,
   duration,
-  startDate,
-  endDate,
   client,
   description,
   status,
@@ -439,7 +372,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const isSelected = selectedProjects.includes(id);
-  const { label: timeLeftLabel, color: timeLeftColor } = getTimeLeft(startDate, endDate);
+  const { label: timeLeftLabel, color: timeLeftColor } = getDurationLabelAndColor(duration);
 
   let progressColor = "#F44336";
   if (progress && progress >= 80) {
@@ -467,12 +400,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
       <div className="h-full flex flex-col justify-between">
         <div className="pb-10">
-          <p className="text-lg text-gray-500 mb-1 text-center truncate">{duration}</p>
+          <p className="text-lg text-gray-500 mb-1 text-center truncate">
+            {duration} days
+          </p>
           <h2 className="font-bold text-2xl mb-1 text-center whitespace-normal break-words">
             {title}
           </h2>
           {status.toLowerCase().includes("in progress") ? (
-            <p className="text-base text-center text-gray-700 mb-2 whitespace-normal break-words">
+            <p className="text-base text-center text-gray-700 mb-2">
               <strong>Client:</strong> {client}
             </p>
           ) : (
@@ -498,7 +433,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-          {/* Tombol untuk menuju halaman team dengan route: /project/${id}/team */}
           <div
             className="flex items-center justify-center w-8 h-8 bg-gray-300 text-white rounded-full cursor-pointer"
             style={{ backgroundColor: timeLeftColor }}
@@ -553,47 +487,38 @@ const InProgress: React.FC<ProjectsSectionProps> = ({
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-6 text-left">{sectionTitle}</h1>
       <div className="flex flex-wrap justify-start">
-        {projects.map((project) => {
-          const startStr = new Date(project.start_date).toLocaleDateString();
-          const endStr = new Date(project.end_date).toLocaleDateString();
-          const duration = `${startStr} - ${endStr}`;
-          return (
-            <div
-              key={project.id}
-              className="cursor-pointer"
-              onClick={() => {
+        {projects.map((project) => (
+          <div
+            key={project.id}
+            className="cursor-pointer"
+            onClick={() => {
+              if (!isRemoveMode) setSelectedProject(project);
+            }}
+          >
+            <ProjectCard
+              id={String(project.id)}
+              title={project.title}
+              duration={project.duration}
+              client={project.client || ""}
+              description={project.description || ""}
+              status={project.status}
+              progress={project.progress ?? 0}
+              isRemoveMode={isRemoveMode}
+              onProjectSelect={onProjectSelect}
+              selectedProjects={selectedProjects}
+              onCardClick={() => {
                 if (!isRemoveMode) setSelectedProject(project);
               }}
-            >
-              <ProjectCard
-                id={String(project.id)}
-                title={project.title}
-                duration={duration}
-                startDate={new Date(project.start_date)}
-                endDate={new Date(project.end_date)}
-                client={project.client || ""}
-                description={project.description || ""}
-                status={project.status}
-                progress={project.progress ?? 0}
-                isRemoveMode={isRemoveMode}
-                onProjectSelect={onProjectSelect}
-                selectedProjects={selectedProjects}
-                onCardClick={() => {
-                  if (!isRemoveMode) setSelectedProject(project);
-                }}
-              />
-            </div>
-          );
-        })}
+            />
+          </div>
+        ))}
       </div>
 
       {!isRemoveMode && selectedProject && (
         <Popup
           id={String(selectedProject.id)}
           title={selectedProject.title}
-          duration={`${new Date(selectedProject.start_date).toLocaleDateString()} - ${new Date(
-            selectedProject.end_date
-          ).toLocaleDateString()}`}
+          duration={selectedProject.duration}
           client={selectedProject.client || ""}
           contract_number={selectedProject.contract_number || ""}
           erd_number={selectedProject.erd_number || ""}
@@ -646,47 +571,38 @@ const UpcomingProjects: React.FC<ProjectsSectionProps> = ({
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-6 text-left">{sectionTitle}</h1>
       <div className="flex flex-wrap justify-start">
-        {projects.map((project) => {
-          const startStr = new Date(project.start_date).toLocaleDateString();
-          const endStr = new Date(project.end_date).toLocaleDateString();
-          const duration = `${startStr} - ${endStr}`;
-          return (
-            <div
-              key={project.id}
-              className="cursor-pointer"
-              onClick={() => {
+        {projects.map((project) => (
+          <div
+            key={project.id}
+            className="cursor-pointer"
+            onClick={() => {
+              if (!isRemoveMode) setSelectedProject(project);
+            }}
+          >
+            <ProjectCard
+              id={String(project.id)}
+              title={project.title}
+              duration={project.duration}
+              client={project.client || ""}
+              description={project.description || ""}
+              status={project.status}
+              progress={0}
+              isRemoveMode={isRemoveMode}
+              onProjectSelect={onProjectSelect}
+              selectedProjects={selectedProjects}
+              onCardClick={() => {
                 if (!isRemoveMode) setSelectedProject(project);
               }}
-            >
-              <ProjectCard
-                id={String(project.id)}
-                title={project.title}
-                duration={duration}
-                startDate={new Date(project.start_date)}
-                endDate={new Date(project.end_date)}
-                client={project.client || ""}
-                description={project.description || ""}
-                status={project.status}
-                progress={0}
-                isRemoveMode={isRemoveMode}
-                onProjectSelect={onProjectSelect}
-                selectedProjects={selectedProjects}
-                onCardClick={() => {
-                  if (!isRemoveMode) setSelectedProject(project);
-                }}
-              />
-            </div>
-          );
-        })}
+            />
+          </div>
+        ))}
       </div>
 
       {!isRemoveMode && selectedProject && (
         <Popup
           id={String(selectedProject.id)}
           title={selectedProject.title}
-          duration={`${new Date(selectedProject.start_date).toLocaleDateString()} - ${new Date(
-            selectedProject.end_date
-          ).toLocaleDateString()}`}
+          duration={selectedProject.duration}
           client={selectedProject.client || ""}
           contract_number={selectedProject.contract_number || ""}
           erd_number={selectedProject.erd_number || ""}
